@@ -25,12 +25,20 @@ app.layout = html.Div(className='main-body', children=[
         html.Div(className='widget', children=[
             html.H3('Emerging Trends'),
             
+            # Main Chart Widget can be embedded here!
+            # Create an extra file and call the function which contains the chart here
+            # So no calculations or similiar in this section. Only calling function
+
         ]),
     ]),
     # Widget Top Left CSS tl
     html.Div(className='widget-tr', children=[
         html.Div(className='widget', children=[
             html.H3('Bag of Words'),
+
+            # Bag of Words Chart can be embedded here!
+            # Create an extra file and call the function which contains the chart here
+            # So no calculations or similiar in this section. Only calling function
             
         ]),
     ]),
@@ -38,6 +46,10 @@ app.layout = html.Div(className='main-body', children=[
     html.Div(className='widget-bl', children=[
         html.Div(className='widget', children=[
             html.H3('Most Recent Posts'),
+
+            # Most Recent Posts can be embedded here!
+            # Create an extra file and call the function which contains the chart here
+            # So no calculations or similiar in this section. Only calling function
             
         ]),
     ]),
@@ -46,6 +58,10 @@ app.layout = html.Div(className='main-body', children=[
         html.Div(className='widget', children=[
             html.H3('Topic Focus'),
             
+            # Topic Focus Widget can be embedded here!
+            # Create an extra file and call the function which contains the chart here
+            # So no calculations or similiar in this section. Only calling function
+
         ]),
     ]),
 ])
