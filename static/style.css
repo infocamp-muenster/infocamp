@@ -19,8 +19,9 @@ body {
 .header-settings {
     grid-column: col-start 12 / span 1;
     grid-row: row-start;
-    margin-top: 40px;
-    text-align: center;
+    margin: 40px 20px 0 0;
+    display: flex;
+    align-items: center;
 }
 .widget-tl {
     grid-column: col-start 2 / span 6;
@@ -60,15 +61,17 @@ body {
 .header span {
     font-weight: 300;
 }
-.header-settings span {
+.header-settings a {
     font-weight: 300;
+    color: #273240;
+    text-decoration: none;
 }
 .header-settings-icon {
     width: 30px;
     height: 30px;
     background-color: #8593ED;
     border-radius: 30px;
-    margin: 0 0 -25px -5px
+    margin-right: 10px;
 }
 .widget {
     margin: 0 0 20px 0;
@@ -89,14 +92,26 @@ body {
 .sidebar ul {
     list-style-type: none;
     padding: 0;
+    height: 80%;
 }
 .sidebar ul li {
-    padding: 10px 20px;
+    padding: 10px 10px 20px 20px;
     margin-top: 10px;
 }
 .sidebar ul li a {
     color: #273240;
     text-decoration: none;
     font-weight: 300;
-    font-size: 14px;
+    font-size: 13px;
+}
+.active-tab a {
+    background-color: #8593ED;
+    color: #fff;
+}
+.import-section {
+    padding: 10px;
+}
+.import-section a {
+    color: #273240;
+    font-weight: 300;
 }

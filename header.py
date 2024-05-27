@@ -14,6 +14,6 @@ def get_header():
     # Header Settings
     html.Div(className='header-settings', children=[
         html.Div(className="header-settings-icon"),
-        html.Span('Username')
+        html.A('Username', href='#')
     ]),]
     

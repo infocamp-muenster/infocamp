@@ -10,9 +10,12 @@ def get_sidebar():
     return html.Aside(className='sidebar', children=[
         html.Img(src=pil_image, alt="Misdoom Logo"),
         html.Ul([
-            html.Li(html.A('Real-time View', href='real-time-view.py')),
+            html.Li(html.A('Real-time View', href='real-time-view.py', className='active-tab')),
             html.Li(html.A('Content Analysis', href='content-analysis.py')),
             html.Li(html.A('AI Content', href='#')),
             html.Li(html.A('Account Analysis', href='#')),
+        ]),
+        html.Div(className='import-section', children=[
+            html.A('Import Data', href='#')
         ])
     ])
