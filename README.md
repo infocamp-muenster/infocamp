@@ -1,3 +1,7 @@
+# Zugangsdaten Backend
+username: admin
+passwort: infocamp2024
+
 # INFOCAMP - Board
 
 ![INFOCAMP - Board](images/dashboard_draft_nick.png)
