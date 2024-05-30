@@ -1,6 +1,6 @@
 # Zugangsdaten Backend
-username: admin
-passwort: infocamp2024
+1. username: admin
+2. passwort: infocamp2024
 
 # INFOCAMP - Board
 
