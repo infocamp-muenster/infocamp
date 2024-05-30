@@ -137,16 +137,10 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
     # Kombinieren mit dem bestehenden DataFrame
     cluster_tweet_data = pd.concat([cluster_tweet_data, new_cluster_tweet_data], ignore_index=True)
     return cluster_tweet_data
-
-# Funktion um das Dataframe zum dash Script zu liefern
-def get_cluster_tweet_data():
-    global cluster_tweet_data
-    return cluster_tweet_data
-
 def main_loop():
 
     # CSV-Datei lesen
-    file_path = 'C:/Users/Alice/Downloads/tweets-2022-02-17_detailed.csv'
+    file_path = 'tweets-2022-02-17_detailed.csv'
     tweets = pd.read_csv(file_path, delimiter=';')
     tweets_selected = tweets[['created_at', 'text', 'id_str']]
     tweets_selected.loc[:,'created_at'] = pd.to_datetime(tweets_selected['created_at'], format='%a %b %d %H:%M:%S %z %Y')
@@ -171,8 +165,7 @@ def main_loop():
     while True:
         tweets = fetch_tweets_in_time_window(tweets_selected, start_time, end_time, 'created_at')
         if not tweets.empty:
-            print(f"Tweets von {start_time} bis {end_time}:")
-            print(tweets[['created_at', 'text', 'id_str']])
+
             process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words)
 
         # Informationen der Microcluster speichern (Zentrum usw.)
@@ -185,7 +178,7 @@ def main_loop():
         pd.set_option('display.max_columns', None)
         pd.set_option('display.width', None)
         pd.set_option('display.max_colwidth', None)
-        print(cluster_tweet_data)
+
 
         # Zeitintervall erhöhen
         start_time += timedelta(minutes=1)
@@ -195,4 +188,8 @@ def main_loop():
         time.sleep(2)
 
 
+# Funktion um das Dataframe zum dash Script zu liefern
+def get_cluster_tweet_data():
+    global cluster_tweet_data
+    return cluster_tweet_data
 
