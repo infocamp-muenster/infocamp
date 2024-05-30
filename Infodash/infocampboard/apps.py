@@ -6,5 +6,6 @@ class InfocampboardConfig(AppConfig):
     name = 'infocampboard'
     
     def ready(self):
-        import infocampboard.dash_apps
         import infocampboard.infodash
+        import infocampboard.contentanalysis
+        import infocampboard.realtimeview
