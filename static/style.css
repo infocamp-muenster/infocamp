@@ -3,6 +3,7 @@ body {
     margin: 0;
     font-family: "Inter", sans-serif;
     color: #222;
+    background-color: #F1F2FC;
 }
 .main-body {
     margin-left: 20px;
@@ -26,23 +27,31 @@ body {
 .widget-tl {
     grid-column: col-start 2 / span 6;
     grid-row: 2 / 8;
+    background-color: #fff;
+    border-radius: 10px;
 }
 .widget-tr {
     grid-column: col-start 8 / span 5;
     grid-row: 2 / 8;
+    background-color: #fff;
+    border-radius: 10px;
 }
 .widget-bl {
     grid-column: col-start 2 / span 6;
     grid-row: 8 / 13;
+    background-color: #fff;
+    border-radius: 10px;
 }
 .widget-br {
     grid-column: col-start 8 / span 5;
     grid-row: 8 / 13;
+    background-color: #fff;
+    border-radius: 10px;
 }
 
 .sidebar {
     grid-column: col-start / span 1;
-    background-color: #F1F2F7;
+    background-color: #707FDD;
     grid-row: row-start / 14;
     margin-left: -20px;
 }
@@ -76,11 +85,10 @@ body {
 .widget {
     margin: 0 0 20px 0;
     font-family: "Inter",sans-serif;
-    width: 46%;
 }
 .widget h3 {
     font-weight: 300;
-    margin-top: 10px;
+    margin: 10px 0 0 10px;
 }
 
 
@@ -99,19 +107,15 @@ body {
     margin-top: 10px;
 }
 .sidebar ul li a {
-    color: #273240;
+    color: #ffffff;
     text-decoration: none;
-    font-weight: 300;
-    font-size: 13px;
-}
-.active-tab a {
-    background-color: #8593ED;
-    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
 }
 .import-section {
     padding: 10px;
 }
 .import-section a {
-    color: #273240;
+    color: #fff;
     font-weight: 300;
 }

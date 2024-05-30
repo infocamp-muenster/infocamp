@@ -2,7 +2,6 @@
 from dash import html
 
 # Image sources
-from data_tmp.data_imp import df
 from PIL import Image
 pil_image = Image.open("images/misdoom_logo.png")
 

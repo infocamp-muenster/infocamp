@@ -185,7 +185,7 @@ def main_loop():
         end_time += timedelta(minutes=1)
 
         # Wartezeit bis zum nächsten Schleifendurchlauf
-        time.sleep(2)
+        time.sleep(5)
 
 
 # Funktion um das Dataframe zum dash Script zu liefern
