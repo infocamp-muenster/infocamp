@@ -5,9 +5,9 @@ from django_plotly_dash import DjangoDash
 import pandas as pd
 
 from PIL import Image
-pil_image = Image.open("infocampboard/data/misdoom_logo.png")
+pil_image = Image.open("../infocampboard/images/misdoom_logo.png")
 
-df = pd.read_excel('infocampboard/data/Excel_tweets.xlsx', sheet_name='Sheet1')
+df = pd.read_excel('../infocampboard/data/Excel_tweets.xlsx', sheet_name='Sheet1')
 
 # Initialize the app
 app = DjangoDash('Content-Analysis')

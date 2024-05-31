@@ -2,18 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="439986e6-a006-4d79-a7b4-60aeb772ddbc" name="Changes" comment="resolve merge conflict">
-      <change afterPath="$PROJECT_DIR$/.idea/infocamp.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/content-analysis.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/header.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/real-time-view.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sidebar.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/style.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tweet_processing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Infodash/infocampboard/contentanalysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/Infodash/infocampboard/contentanalysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Infodash/infocampboard/realtimeview.py" beforeDir="false" afterPath="$PROJECT_DIR$/Infodash/infocampboard/realtimeview.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Infodash/static/styles/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/Infodash/static/styles/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/style.css" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -92,6 +85,7 @@
       <workItem from="1715779214849" duration="11000" />
       <workItem from="1716536845920" duration="17156000" />
       <workItem from="1717145694239" duration="476000" />
+      <workItem from="1717146181924" duration="882000" />
     </task>
     <task id="LOCAL-00001" summary="plotly-design - first structure / design draft">
       <created>1715458534978</created>
@@ -135,7 +129,14 @@
       <option name="project" value="LOCAL" />
       <updated>1717144996125</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="resolve merge conflict">
+      <created>1717146513062</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1717146513062</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -177,8 +178,10 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/infocamp$real_time_view.coverage" NAME="real-time-view Coverage Results" MODIFIED="1717145088732" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/infocamp$tweet_processing.coverage" NAME="tweet_processing Coverage Results" MODIFIED="1717085844298" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/infocamp$realtimeview.coverage" NAME="realtimeview Coverage Results" MODIFIED="1717147053956" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Infodash/infocampboard" />
     <SUITE FILE_PATH="coverage/infocamp$dash_app.coverage" NAME="dash_app Coverage Results" MODIFIED="1717085865818" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/infocamp$main.coverage" NAME="main Coverage Results" MODIFIED="1717060054797" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/infocamp$contentanalysis.coverage" NAME="contentanalysis Coverage Results" MODIFIED="1717146916033" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Infodash/infocampboard" />
     <SUITE FILE_PATH="coverage/infocamp$content_analysis.coverage" NAME="content-analysis Coverage Results" MODIFIED="1717060538464" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

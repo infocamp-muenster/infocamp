@@ -7,9 +7,9 @@ import pandas as pd
 app = DjangoDash('Real-Time')
 
 from PIL import Image
-pil_image = Image.open("infocampboard/data/misdoom_logo.png")
+pil_image = Image.open("../infocampboard/data/misdoom_logo.png")
 
-df = pd.read_excel('infocampboard/data/Excel_tweets.xlsx', sheet_name='Sheet1')
+df = pd.read_excel('../infocampboard/data/Excel_tweets.xlsx', sheet_name='Sheet1')
 
 # App layout
 app.layout = html.Div(className='main-body', children=[
