@@ -1,0 +1,121 @@
+/* HTML Elements CSS*/
+body {
+    margin: 0;
+    font-family: "Inter", sans-serif;
+    color: #222;
+    background-color: #F1F2FC;
+}
+.main-body {
+    margin-left: 20px;
+    display: grid;
+    grid-template-columns: repeat(12, [col-start] 1fr);
+    grid-template-rows: repeat(12, [row-start] 1fr);
+    grid-gap: 20px;
+    height: 100vh; /* This will make sure the grid takes up the whole height of the viewport */
+}
+.header {
+    grid-column: col-start 2 / span 10;
+    grid-row: row-start;
+}
+.header-settings {
+    grid-column: col-start 12 / span 1;
+    grid-row: row-start;
+    margin: 40px 20px 0 0;
+    display: flex;
+    align-items: center;
+}
+.widget-tl {
+    grid-column: col-start 2 / span 6;
+    grid-row: 2 / 8;
+    background-color: #fff;
+    border-radius: 10px;
+}
+.widget-tr {
+    grid-column: col-start 8 / span 5;
+    grid-row: 2 / 8;
+    background-color: #fff;
+    border-radius: 10px;
+}
+.widget-bl {
+    grid-column: col-start 2 / span 6;
+    grid-row: 8 / 13;
+    background-color: #fff;
+    border-radius: 10px;
+}
+.widget-br {
+    grid-column: col-start 8 / span 5;
+    grid-row: 8 / 13;
+    background-color: #fff;
+    border-radius: 10px;
+}
+
+.sidebar {
+    grid-column: col-start / span 1;
+    background-color: #707FDD;
+    grid-row: row-start / 14;
+    margin-left: -20px;
+}
+
+
+
+/* Remaining CSS */
+
+
+.header h1{
+    margin-bottom: 0;
+    font-weight: 500;
+    font-size: 22px;
+    margin-top: 20px;
+}
+.header span {
+    font-weight: 300;
+}
+.header-settings a {
+    font-weight: 300;
+    color: #273240;
+    text-decoration: none;
+}
+.header-settings-icon {
+    width: 30px;
+    height: 30px;
+    background-color: #8593ED;
+    border-radius: 30px;
+    margin-right: 10px;
+}
+.widget {
+    margin: 0 0 20px 0;
+    font-family: "Inter",sans-serif;
+}
+.widget h3 {
+    font-weight: 300;
+    margin: 10px 0 0 10px;
+}
+
+
+/* Sidebar */
+.sidebar img {
+    width: 100px;
+    padding: 20px 20px 10px 20px;
+}
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+    height: 80%;
+}
+.sidebar ul li {
+    padding: 10px 10px 20px 20px;
+    margin-top: 10px;
+}
+.sidebar ul li a {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+.import-section {
+    padding: 10px;
+}
+.import-section a {
+    color: #fff;
+    font-weight: 300;
+}
