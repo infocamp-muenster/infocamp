@@ -1,5 +1,8 @@
 # sidebar.py
 from dash import html
+# Image sources
+from PIL import Image
+pil_image = Image.open("images/misdoom_logo.png")
 
 def get_header():
     return[ html.Link(
@@ -8,8 +11,8 @@ def get_header():
     ),
     # Header
     html.Header(className='header', children=[
+        html.Img(src=pil_image, alt="Misdoom Logo"),
         html.H1('INFOCAMP Dashboard'),
-        html.Span('Real-time Visualization of Desinformation Campaigns')
     ]),
     # Header Settings
     html.Div(className='header-settings', children=[
