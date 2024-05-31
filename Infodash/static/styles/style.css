@@ -1,0 +1,105 @@
+/* HTML Elements CSS*/
+body {
+    margin: 0;
+    font-family: "Inter", sans-serif;
+    color: #222;
+    background-color: #F1F2FC;
+}
+.main-body {
+    margin-left: 20px;
+    display: grid;
+    grid-template-columns: repeat(12, [col-start] 1fr);
+    grid-template-rows: repeat(12, [row-start] 1fr);
+    grid-gap: 20px;
+    height: 100vh; /* This will make sure the grid takes up the whole height of the viewport */
+}
+.header {
+    grid-column: col-start / span 12;
+    grid-row: row-start;
+    background-color: #8593ED;
+    margin-left: -20px;
+    display: flex;
+}
+.header-settings {
+    grid-column: col-start 12 / span 1;
+    grid-row: row-start;
+    margin: 0 20px 0 0;
+    display: flex;
+    align-items: center;
+}
+.widget-tl {
+    grid-column: col-start / span 6;
+    grid-row: 2 / 8;
+    background-color: #fff;
+    border-radius: 10px;
+}
+.widget-tr {
+    grid-column: col-start 7 / span 6;
+    grid-row: 2 / 8;
+    background-color: #fff;
+    border-radius: 10px;
+}
+.widget-bl {
+    grid-column: col-start / span 6;
+    grid-row: 8 / 13;
+    background-color: #fff;
+    border-radius: 10px;
+}
+.widget-br {
+    grid-column: col-start 7 / span 6;
+    grid-row: 8 / 13;
+    background-color: #fff;
+    border-radius: 10px;
+}
+
+/* Remaining CSS */
+
+
+.header h1{
+    margin: 30px;
+    font-weight: 300;
+    font-size: 22px;
+    color: #ffffff;
+}
+.header span {
+    font-weight: 300;
+}
+.header-settings a {
+    font-weight: 300;
+    color: #ffffff;
+    text-decoration: none;
+}
+.header-settings-icon {
+    width: 30px;
+    height: 30px;
+    background-color: #fff;
+    border-radius: 30px;
+    margin-right: 10px;
+}
+.widget {
+    margin: 0 0 20px 0;
+    font-family: "Inter",sans-serif;
+}
+.widget h3 {
+    font-weight: 300;
+    margin: 20px 0 5px 20px;
+}
+.widget span {
+    font-weight: 300;
+    color: #848484;
+    margin: 0 0 0 20px;
+}
+
+
+/* Sidebar */
+.header img {
+    width: 100px;
+    padding: 20px;
+}
+.import-section {
+    padding: 10px;
+}
+.import-section a {
+    color: #fff;
+    font-weight: 300;
+}
