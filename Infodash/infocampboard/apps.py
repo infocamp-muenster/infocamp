@@ -6,6 +6,6 @@ class InfocampboardConfig(AppConfig):
     name = 'infocampboard'
     
     def ready(self):
-        import Infodash.infocampboard.infodash_orientierung
+        import infocampboard.infodash_orientierung
         import infocampboard.real_time_view
         # import infocampboard.tweet_processing
