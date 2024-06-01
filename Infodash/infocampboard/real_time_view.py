@@ -29,7 +29,7 @@ app.layout = html.Div(className='main-body', children=[
     # Header Settings
     html.Div(className='header-settings', children=[
         html.Div(className="header-settings-icon"),
-        html.A('Username', href='#')
+        html.A('Username', href='logout/')
     ]),
     # *header,
 
