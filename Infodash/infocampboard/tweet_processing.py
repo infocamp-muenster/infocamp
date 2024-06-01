@@ -140,7 +140,7 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
 def main_loop():
 
     # CSV-Datei lesen
-    file_path = 'tweets-2022-02-17_detailed.csv'
+    file_path = 'infocampboard/data/tweets-2022-02-17_detailed.csv'
     tweets = pd.read_csv(file_path, delimiter=';')
     tweets_selected = tweets[['created_at', 'text', 'id_str']]
     tweets_selected.loc[:,'created_at'] = pd.to_datetime(tweets_selected['created_at'], format='%a %b %d %H:%M:%S %z %Y')
