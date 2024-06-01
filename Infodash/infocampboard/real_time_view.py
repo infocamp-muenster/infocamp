@@ -16,9 +16,8 @@ app = DjangoDash('realtimeview')
 
 from PIL import Image
 pil_image = Image.open("Infodash/infocampboard/data/misdoom_logo.png")
+
 # App layout
-
-
 app.layout = html.Div(className='main-body', children=[
 
     # Header
@@ -26,10 +25,18 @@ app.layout = html.Div(className='main-body', children=[
         html.Img(src=pil_image, alt="Misdoom Logo",style={'filter':'brightness(0) invert(1)'}),
         html.H1('INFOCAMP Dashboard'),
     ]),
+    # Header Documentation
+    html.Div(className='header-documentation', children=[
+        html.Div(className="header-upload-icon"),
+        html.Span('Documentation')
+    ]),
+    # Header Import
+    html.Div(className='header-upload', children=[
+        html.Span('Upload Data')
+    ]),
     # Header Settings
     html.Div(className='header-settings', children=[
-        html.Div(className="header-settings-icon"),
-        html.A('Username', href='logout/')
+        html.A('Logout', href='logout/')
     ]),
     # *header,
 
@@ -71,6 +78,7 @@ app.layout = html.Div(className='main-body', children=[
     html.Div(className='widget-bl', children=[
         html.Div(className='widget', children=[
             html.H3('Most Recent Posts'),
+            html.Span('Post Analysis'),
 
                 # Most Recent Posts can be embedded here!
                 # Create an extra file and call the function which contains the chart here
@@ -82,6 +90,7 @@ app.layout = html.Div(className='main-body', children=[
     html.Div(className='widget-br', children=[
         html.Div(className='widget', children=[
             html.H3('Topic Focus'),
+            html.Span('Cluster Analysis'),
 
                 # Topic Focus Widget can be embedded here!
                 # Create an extra file and call the function which contains the chart here

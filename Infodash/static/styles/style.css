@@ -27,6 +27,21 @@ body {
     display: flex;
     align-items: center;
 }
+.header-upload {
+    grid-column: col-start 10 / span 1;
+    grid-row: row-start;
+    display: flex;
+    align-items: center;
+    color: #fff;
+}
+.header-documentation {
+    grid-column: col-start 8 / span 1;
+    grid-row: row-start;
+    display: flex;
+    align-items: center;
+    color: #fff;
+}
+
 .widget-tl {
     grid-column: col-start / span 6;
     grid-row: 2 / 8;
@@ -57,7 +72,7 @@ body {
 
 .header h1{
     margin: 30px;
-    font-weight: 300;
+    font-weight: 500;
     font-size: 22px;
     color: #ffffff;
 }
@@ -65,7 +80,7 @@ body {
     font-weight: 300;
 }
 .header-settings a {
-    font-weight: 300;
+    font-weight: 500;
     color: #ffffff;
     text-decoration: none;
 }
