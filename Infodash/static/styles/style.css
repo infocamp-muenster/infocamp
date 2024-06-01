@@ -6,11 +6,11 @@ body {
     background-color: #F1F2FC;
 }
 .main-body {
-    margin-left: 20px;
+    margin-left: 10px;
     display: grid;
     grid-template-columns: repeat(12, [col-start] 1fr);
     grid-template-rows: repeat(12, [row-start] 1fr);
-    grid-gap: 20px;
+    grid-gap: 10px;
     height: 100vh; /* This will make sure the grid takes up the whole height of the viewport */
 }
 .header {
@@ -53,18 +53,22 @@ body {
     grid-row: 2 / 8;
     background-color: #fff;
     border-radius: 10px;
+    margin-right: 10px;
 }
 .widget-bl {
     grid-column: col-start / span 6;
     grid-row: 8 / 13;
     background-color: #fff;
     border-radius: 10px;
+    margin-bottom: 10px;
 }
 .widget-br {
     grid-column: col-start 7 / span 6;
     grid-row: 8 / 13;
     background-color: #fff;
     border-radius: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
 }
 
 /* Remaining CSS */

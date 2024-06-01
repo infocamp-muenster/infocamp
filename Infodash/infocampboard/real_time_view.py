@@ -38,8 +38,6 @@ app.layout = html.Div(className='main-body', children=[
     html.Div(className='header-settings', children=[
         html.A('Logout', href='logout/')
     ]),
-    # *header,
-
 
         # Main Body
         # Widget Top Left CSS tl
@@ -50,7 +48,7 @@ app.layout = html.Div(className='main-body', children=[
         dcc.Graph(
                 id='live-update-graph',
                 config={'displayModeBar': False},
-                # style={'marginTop': '-10px',}
+                style={'height': '300px'}
         ),
         dcc.Interval(
             id='interval-component',
@@ -98,6 +96,8 @@ app.layout = html.Div(className='main-body', children=[
 
         ]),
     ]),
+
+
 ])
 
 
