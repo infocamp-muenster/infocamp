@@ -13,6 +13,7 @@ from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 import numpy as np
 
+nltk.download('stopwords')
 # Funktionen
 
 def initialize_time_window(df, time_column):
