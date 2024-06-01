@@ -8,7 +8,6 @@ urlpatterns = [
     path('home/', views.home, name="Home"),
     
     path('realtime', views.realTime, name="Realtime"),
-    path('contentanalysis', views.contentAnalysis, name="Contentanalysis"),
     
     path('django_plotly_dash/', include('django_plotly_dash.urls')),
    

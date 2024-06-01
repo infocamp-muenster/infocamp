@@ -40,9 +40,5 @@ def home(request):
     return render(request, 'infocampboard/home.html')
 
 @login_required(login_url='login')
-def contentAnalysis(request):
-    return render(request, 'infocampboard/contentanalysis.html')
-
-@login_required(login_url='login')
 def realTime(request):
     return render(request, 'infocampboard/realtime.html')

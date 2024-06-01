@@ -9,12 +9,12 @@ app = DjangoDash('Infocamp')
 
 
 # Read the Excel file into a DataFrame
-df = pd.read_excel('infocampboard/data/Excel_tweets.xlsx', sheet_name='Sheet1')
+df = pd.read_excel('Infodash/infocampboard/data/Excel_tweets.xlsx', sheet_name='Sheet1')
 
 from PIL import Image
 
 # Image sources
-pil_image = Image.open("infocampboard/data/misdoom_logo.png")
+pil_image = Image.open("Infodash/infocampboard/data/misdoom_logo.png")
 
 # App layout
 app.layout = html.Div(className='dashboard_main', children=[
