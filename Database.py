@@ -9,7 +9,7 @@ class Database:
         self.es = Elasticsearch(['http://localhost:9200'])
 
     @staticmethod
-    def upload(self, index, file):
+    def upload(index, file):
         es = Elasticsearch(['http://localhost:9200'])
 
         def chunk_document(doc, chunkSize):
@@ -67,13 +67,13 @@ class Database:
         return tunnel1, tunnel2
 
     @staticmethod
-    def toJSON(self, file):
+    def toJSON(file):
         data = file.body if hasattr(file, 'body') else file
         # Convert the extracted data to JSON
         toJSON = json.dumps(data, indent=4)
         return toJSON
 
-    @staticmethod
+
     def searchGetAll(self, index):
         # Initialize the scroll
         page = self.es.search(
