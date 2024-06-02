@@ -17,11 +17,11 @@ To install INFOCAMP - Board, follow these steps:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/your_username/infocamp-board.git
+git clone https://github.com/MattisSipp/infocamp-board.git
 ```
-2. Switch to the dev branch:
+2. Switch to your branch:
 ```bash
-git checkout dev
+git checkout your-branch-name
 ```
 
 ## Contribution
@@ -38,7 +38,7 @@ To contribute, follow these guidelines:
 ```bash
 git push origin your-branch-name
 ```
-4. Submit a pull request targeting the `dev` branch.
+4. Submit a pull request targeting the `main` branch.
 
 Only admins have permission to push to the `master` branch to ensure stability and reliability of the main branch.
 
