@@ -6,12 +6,14 @@ import plotly.graph_objs as go
 import pandas as pd
 import threading
 from tweet_processing import main_loop, get_cluster_tweet_data
+from PIL import Image
 
 def initialize_dash_app():
     app = dash.Dash(__name__)
     app.layout = html.Div([
         html.H1("Live Twitter Cluster Analysis"),
         dcc.Graph(id='live-update-graph'),
+        html.Img(src=Image.open('wordcloud.png'), style={'width': '100%'}),
         dcc.Interval(
             id='interval-component',
             interval=1*2000,  # in milliseconds (10 seconds)
