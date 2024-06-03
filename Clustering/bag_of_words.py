@@ -3,7 +3,8 @@ from collections import defaultdict
 from wordcloud import WordCloud
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-
+import json
+from Database import Database
 
 # TODO: Implement function which gets text from tweets
 texts = [

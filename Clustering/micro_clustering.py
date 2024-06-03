@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import time
 import json
 import os
+import test
 import io
 from river import cluster, feature_extraction
 import re
@@ -12,6 +13,8 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 import numpy as np
+from Database import Database
+from elasticsearch import Elasticsearch, helpers
 
 # Funktionen
 
@@ -139,28 +142,31 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
     return cluster_tweet_data
 
 # Funktion um das Dataframe zum dash Script zu liefern
-def get_cluster_tweet_data():
+def get_cluster_tweet_data(db, index):
     global cluster_tweet_data
-    return cluster_tweet_data
+    cluster_tweet_data_from_db = db.searchGetAll(index)
+    return cluster_tweet_data_from_db
 
-def main_loop():
+def main_loop(db, index):
+    print("getting DB")
+    try:
+        all_tweets_from_db = db.searchGetAll(index)
+    except Exception as e:
+        print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
 
-    # CSV-Datei lesen
-    file_path = 'C:/Users/Alice/Downloads/tweets-2022-02-17_detailed.csv'
-    tweets = pd.read_csv(file_path, delimiter=';')
+
+    tweets = pd.DataFrame([hit["_source"] for hit in all_tweets_from_db])
     tweets_selected = tweets[['created_at', 'text', 'id_str']]
     tweets_selected.loc[:,'created_at'] = pd.to_datetime(tweets_selected['created_at'], format='%a %b %d %H:%M:%S %z %Y')
-
     # Initialisierungen
     start_time, end_time = initialize_time_window(tweets_selected, 'created_at')
     vectorizer = feature_extraction.BagOfWords()
     clustream = cluster.CluStream()
-    stop_words = set(stopwords.words('english'))
+    stop_words = set(stopwords.words('english')) #TODO: Add stopwords for german and other languages
     nlp = spacy.load('en_core_web_sm')
     stemmer = PorterStemmer()
 
     # cluster_tweet_data Dataframe initialisieren
-    global cluster_tweet_data
     columns = ['cluster_id', 'timestamp', 'tweet_count']
     cluster_tweet_data = pd.DataFrame(columns=columns)
 
@@ -179,6 +185,20 @@ def main_loop():
 
         # Cluster_tweet_data Dataframe nach dem Durchlauf des Zeitintervalls aktualisieren
         cluster_tweet_data = transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time, end_time)
+
+        '''        
+        cluster_tweet_data_json = cluster_tweet_data.to_json(orient='records')
+
+        Database.upload(db, 'cluster_tweet_data', cluster_tweet_data_json)
+        #db.es.upload('cluster_tweet_data', cluster_tweet_data_json)
+        try:
+            test = db.searchGetAll('cluster_tweet_data')
+        except Exception as e:
+            print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
+
+        print(test)
+        '''
+
 
         # Cluster_tweet_data printen zur Kontrolle
         pd.set_option('display.max_rows', None)
