@@ -4,7 +4,7 @@ from sshtunnel import SSHTunnelForwarder
 
 
 class Database:
-    @staticmethod
+
     def __init__(self):
         self.es = Elasticsearch(['http://localhost:9200'])
 
