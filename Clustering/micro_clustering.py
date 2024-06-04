@@ -199,6 +199,31 @@ def main_loop(db, index):
         print(test)
         '''
 
+        # Versuche, den DataFrame hochzuladen
+        try:
+            if db.es.indices.exists(index='cluster_tweet_data'):
+                print(f"Update cluster_tweet_data...")
+                db.es.indices.delete(index=index)
+                print(f"Index '{index}' deleted successfully.")
+                db.upload_df('cluster_tweet_data', cluster_tweet_data)
+
+            else:
+                print(f"Create new Index cluster_tweet_data and upload data...")
+                db.upload_df('cluster_tweet_data', cluster_tweet_data)
+        except Exception as e:
+            print(f"An error occurred during upload: {e}")
+
+        print("getting Cluster tweet data from DB...")
+
+        try:
+            cluster_tweet_data_from_db = db.searchGetAll('cluster_tweet_data')
+        except Exception as e:
+            print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
+
+        cluster_tweet_data_df = pd.DataFrame([hit["_source"] for hit in cluster_tweet_data_from_db])
+        print(cluster_tweet_data_from_db)
+        print(cluster_tweet_data_df)
+        print(cluster_tweet_data)
 
         # Cluster_tweet_data printen zur Kontrolle
         pd.set_option('display.max_rows', None)
