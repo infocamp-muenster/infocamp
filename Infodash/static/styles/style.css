@@ -16,7 +16,7 @@ body {
 .header {
     grid-column: col-start / span 12;
     grid-row: row-start;
-    background-color: #8593ED;
+    background-color: #707FDD;
     margin-left: -20px;
     display: flex;
 }
@@ -28,7 +28,7 @@ body {
     align-items: center;
 }
 .header-upload {
-    grid-column: col-start 10 / span 1;
+    grid-column: col-start 10 / span 2;
     grid-row: row-start;
     display: flex;
     align-items: center;
