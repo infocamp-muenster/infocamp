@@ -6,5 +6,5 @@ class InfocampboardConfig(AppConfig):
     name = 'infocampboard'
     
     def ready(self):
-        import infocampboard.real_time_view
+        import infocampboard.dashboard_main_view
         

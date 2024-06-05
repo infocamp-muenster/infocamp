@@ -38,7 +38,7 @@ def logoutPage(request):
 
 @login_required(login_url='login')
 def realTime(request):
-    return render(request, 'infocampboard/realtime.html')
+    return render(request, 'infocampboard/dashboard.html')
 
 def documentation(request):
     return render(request, 'infocampboard/docu.html')

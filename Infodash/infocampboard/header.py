@@ -2,7 +2,7 @@
 from dash import html
 # Image sources
 from PIL import Image
-pil_image = Image.open("Infodash/infocampboard/data/misdoom_logo.png")
+pil_image = Image.open("Infodash/infocampboard/images/misdoom_logo.png")
 
 user_icon = Image.open("Infodash/infocampboard/images/user-solid.png")
 upload_icon = Image.open("Infodash/infocampboard/images/upload-solid.png")

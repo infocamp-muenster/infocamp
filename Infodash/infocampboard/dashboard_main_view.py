@@ -12,13 +12,13 @@ from infocampboard.micro_clustering import main_loop, get_cluster_tweet_data
 from django_plotly_dash import DjangoDash
 
 # Initialize the app
-app = DjangoDash('realtimeview')
+app = DjangoDash('dashboard')
 
 header = get_header()
 
 
 from PIL import Image
-pil_image = Image.open("Infodash/infocampboard/data/misdoom_logo.png")
+pil_image = Image.open("Infodash/infocampboard/images/misdoom_logo.png")
 
 # App layout
 def initialize_dash_app():
