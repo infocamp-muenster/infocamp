@@ -203,8 +203,8 @@ def main_loop(db, index):
         try:
             if db.es.indices.exists(index='cluster_tweet_data'):
                 print(f"Update cluster_tweet_data...")
-                db.es.indices.delete(index=index)
-                print(f"Index '{index}' deleted successfully.")
+                db.es.indices.delete(index='cluster_tweet_data')
+                print(f"Index 'cluster_tweet_data' deleted successfully.")
                 db.upload_df('cluster_tweet_data', cluster_tweet_data)
 
             else:
