@@ -1,5 +1,4 @@
 import json
-
 import requests
 from elasticsearch import Elasticsearch, helpers
 from sshtunnel import SSHTunnelForwarder
@@ -10,12 +9,10 @@ class Database:
         self.es = Elasticsearch(['http://localhost:9200'])
 
     def upload(self, index, file):
-        es = Elasticsearch(['http://localhost:9200'])
-
-        def chunk_document(doc, chunkSize):
+        def chunk_document(doc, chunk_size):
             """Split the document into smaller chunks."""
-            for i in range(0, len(doc), chunkSize):
-                yield doc[i:i + chunkSize]
+            for i in range(0, len(doc), chunk_size):
+                yield doc[i:i + chunk_size]
 
         def create_bulk_data(chunk):
             """Prepare bulk data for indexing."""
@@ -26,8 +23,8 @@ class Database:
                 }
 
         # Read the JSON document from the file with UTF-8 encoding
-        with open(file, 'r', encoding='utf-8') as file:
-            document = json.load(file)
+        with open(file, 'r', encoding='utf-8') as f:
+            document = json.load(f)
 
         # Split the document into chunks of 1000 entries each (adjust size as needed)
         chunk_size = 1000  # Number of entries per chunk
@@ -36,7 +33,7 @@ class Database:
         # Index each chunk using the Bulk API
         for idx, chunk in enumerate(chunks):
             bulk_data = create_bulk_data(chunk)
-            success, failed = helpers.bulk(es, bulk_data, raise_on_error=False)
+            success, failed = helpers.bulk(self.es, bulk_data, raise_on_error=False)
 
             # Log detailed errors if there are any failures
             if failed:
@@ -67,14 +64,12 @@ class Database:
         return tunnel1, tunnel2
 
     @staticmethod
-    def toJSON(file):
+    def to_json(file):
         data = file.body if hasattr(file, 'body') else file
         # Convert the extracted data to JSON
-        toJSON = json.dumps(data, indent=4)
-        return toJSON
+        return json.dumps(data, indent=4)
 
-
-    def searchGetAll(self, index):
+    def search_get_all(self, index):
         # Initialize the scroll
         page = self.es.search(
             index=index,
@@ -105,7 +100,6 @@ class Database:
         return all_hits
 
     def upload_df(self, index, dataframe):
-
         try:
             # Split the DataFrame into chunks of 1000 entries each (adjust size as needed)
             chunk_size = 1000  # Number of entries per chunk
@@ -126,7 +120,6 @@ class Database:
             print(f"An Upload-error occurred: {e}")
 
     def update_df(self, index, dataframe, id_column):
-
         def prepare_bulk_data_df(df):
             for _, row in df.iterrows():
                 doc = row.to_dict()
@@ -143,7 +136,7 @@ class Database:
 
             # Index each chunk using the Bulk API
             for idx, chunk in enumerate(chunks):
-                bulk_data = list(self.prepare_bulk_data_df(chunk, index, id))
+                bulk_data = list(prepare_bulk_data_df(chunk))
                 success, failed = helpers.bulk(self.es, bulk_data, raise_on_error=False)
 
                 # Log detailed errors if there are any failures
@@ -158,17 +151,20 @@ class Database:
     def is_record_existing(self, index, id_column, record):
         query = {"query": {"term": {id_column: record[id_column]}}}
         response = requests.get(f"http://localhost:9200/{index}/_search", json=query).json()
-        return response["hits"]["total"] > 0
+        return response["hits"]["total"]["value"] > 0
 
-    def chunk_dataframe(self, df, chunk_size):
+    @staticmethod
+    def chunk_dataframe(df, chunk_size):
         """Split the DataFrame into smaller chunks."""
         for start in range(0, len(df), chunk_size):
             yield df.iloc[start:start + chunk_size]
 
-    def create_bulk_data_df(self, df, index):
+    @staticmethod
+    def create_bulk_data_df(df, index):
         """Prepare bulk data for indexing."""
         for _, row in df.iterrows():
             yield {
                 "_index": index,
                 "_source": row.to_dict()
             }
+
