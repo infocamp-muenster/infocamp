@@ -5,8 +5,9 @@ from dash.dependencies import Output, Input
 import plotly.graph_objs as go
 import pandas as pd
 import threading
-from micro_clustering import main_loop, get_cluster_tweet_data
+from micro_clustering import get_cluster_tweet_data, main_loop
 from Database import Database
+import time
 
 
 def initialize_dash_app():
@@ -16,7 +17,7 @@ def initialize_dash_app():
         dcc.Graph(id='live-update-graph'),
         dcc.Interval(
             id='interval-component',
-            interval=1*2000,  # in milliseconds (10 seconds)
+            interval=1*1000,  # in milliseconds (1 second)
             n_intervals=0
         )
     ])
@@ -25,15 +26,39 @@ def initialize_dash_app():
                   [Input('interval-component', 'n_intervals')])
     def update_graph_live(n):
         cluster_tweet_data = get_cluster_tweet_data(db, 'cluster_tweet_data')
+
+        # Extracting the '_source' part of each dictionary to create a DataFrame
+        data = [item['_source'] for item in cluster_tweet_data]
+        df = pd.DataFrame(data)
+
+        while df.empty:
+            time.sleep(1)
+            cluster_tweet_data = get_cluster_tweet_data(db, 'cluster_tweet_data')
+
+            # Extracting the '_source' part of each dictionary to create a DataFrame
+            data = [item['_source'] for item in cluster_tweet_data]
+            df = pd.DataFrame(data)
+
+        # Ensure 'timestamp' is in datetime format
+        try:
+            df['timestamp'] = pd.to_datetime(df['timestamp'])
+        except Exception as e:
+            print(f"Error while accessing timestamp: {e}")
+
+        # Plotting
         traces = []
-        for cluster_id in cluster_tweet_data['cluster_id'].unique():
-            cluster_data = cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id]
-            traces.append(go.Scatter(
-                x=cluster_data['timestamp'],
-                y=cluster_data['tweet_count'],
-                mode='lines+markers',
-                name=f'Cluster {cluster_id}'
-            ))
+        try:
+            for cluster_id in df['cluster_id'].unique():
+                cluster_data = df[df['cluster_id'] == cluster_id]
+                traces.append(go.Scatter(
+                    x=cluster_data['timestamp'],
+                    y=cluster_data['tweet_count'],
+                    mode='lines+markers',
+                    name=f'Cluster {cluster_id}'
+                ))
+        except Exception as e:
+            print(f"Error while accessing cluster_id: {e}")
+            print(df)
 
         layout = go.Layout(
             title='Number of Tweets per Cluster Over Time',
@@ -51,8 +76,8 @@ def initialize_dash_app():
 if __name__ == '__main__':
 
     # Adjust to your own user and id_rsa
-    ssh_user = 'jthier'
-    ssh_private_key = '/Users/janthier/.ssh/id_rsa_uni_ps_server'
+    ssh_user = 'bwulf'
+    ssh_private_key = '/Users/bastianwulf/.ssh/id_rsa_uni'
     tunnel1, tunnel2 = Database.create_ssh_tunnel(ssh_user, ssh_private_key)
     tunnel1.start()
     tunnel2.start()

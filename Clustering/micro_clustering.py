@@ -143,17 +143,23 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
 
 # Funktion um das Dataframe zum dash Script zu liefern
 def get_cluster_tweet_data(db, index):
-    global cluster_tweet_data
-    cluster_tweet_data_from_db = db.searchGetAll(index)
-    return cluster_tweet_data_from_db
+
+    while lock:
+        time.sleep(5)
+
+    cluster_tweet_data = db.searchGetAll(index)
+
+    return cluster_tweet_data
 
 def main_loop(db, index):
-    print("getting DB")
+    global lock, all_tweets_from_db
     try:
+        lock = True
         all_tweets_from_db = db.searchGetAll(index)
     except Exception as e:
         print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
-
+    finally:
+        lock = False
 
     tweets = pd.DataFrame([hit["_source"] for hit in all_tweets_from_db])
     tweets_selected = tweets[['created_at', 'text', 'id_str']]
@@ -186,34 +192,19 @@ def main_loop(db, index):
         # Cluster_tweet_data Dataframe nach dem Durchlauf des Zeitintervalls aktualisieren
         cluster_tweet_data = transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time, end_time)
 
-        '''        
-        cluster_tweet_data_json = cluster_tweet_data.to_json(orient='records')
-
-        Database.upload(db, 'cluster_tweet_data', cluster_tweet_data_json)
-        #db.es.upload('cluster_tweet_data', cluster_tweet_data_json)
-        try:
-            test = db.searchGetAll('cluster_tweet_data')
-        except Exception as e:
-            print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
-
-        print(test)
-        '''
-
         # Versuche, den DataFrame hochzuladen
+        global cluster_tweet_data_from_db
+        lock = True
         try:
             if db.es.indices.exists(index='cluster_tweet_data'):
-                print(f"Update cluster_tweet_data...")
                 db.es.indices.delete(index='cluster_tweet_data')
-                print(f"Index 'cluster_tweet_data' deleted successfully.")
                 db.upload_df('cluster_tweet_data', cluster_tweet_data)
-
             else:
-                print(f"Create new Index cluster_tweet_data and upload data...")
                 db.upload_df('cluster_tweet_data', cluster_tweet_data)
         except Exception as e:
             print(f"An error occurred during upload: {e}")
-
-        print("getting Cluster tweet data from DB...")
+        finally:
+            lock = False
 
         try:
             cluster_tweet_data_from_db = db.searchGetAll('cluster_tweet_data')
@@ -221,16 +212,13 @@ def main_loop(db, index):
             print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
 
         cluster_tweet_data_df = pd.DataFrame([hit["_source"] for hit in cluster_tweet_data_from_db])
-        print(cluster_tweet_data_from_db)
-        print(cluster_tweet_data_df)
-        print(cluster_tweet_data)
 
         # Cluster_tweet_data printen zur Kontrolle
         pd.set_option('display.max_rows', None)
         pd.set_option('display.max_columns', None)
         pd.set_option('display.width', None)
         pd.set_option('display.max_colwidth', None)
-        print(cluster_tweet_data)
+        print(cluster_tweet_data_df)
 
         # Zeitintervall erhöhen
         start_time += timedelta(minutes=1)
