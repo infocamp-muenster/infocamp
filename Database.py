@@ -69,7 +69,9 @@ class Database:
         # Convert the extracted data to JSON
         return json.dumps(data, indent=4)
 
-    def search_get_all(self, index):
+
+
+    def searchGetAll(self, index):
         # Initialize the scroll
         page = self.es.search(
             index=index,
@@ -153,11 +155,11 @@ class Database:
         response = requests.get(f"http://localhost:9200/{index}/_search", json=query).json()
         return response["hits"]["total"]["value"] > 0
 
-    @staticmethod
-    def chunk_dataframe(df, chunk_size):
+    def chunk_dataframe(self, df, chunk_size):
         """Split the DataFrame into smaller chunks."""
         for start in range(0, len(df), chunk_size):
             yield df.iloc[start:start + chunk_size]
+
 
     @staticmethod
     def create_bulk_data_df(df, index):
@@ -166,4 +168,4 @@ class Database:
             yield {
                 "_index": index,
                 "_source": row.to_dict()
-            }
+
