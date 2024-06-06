@@ -144,12 +144,13 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
 # Funktion um das Dataframe zum dash Script zu liefern
 def get_cluster_tweet_data(db, index):
 
-    while lock:
-        time.sleep(5)
+    while True:
+        if not lock:
+            cluster_tweet_data = db.searchGetAll(index)
+            return cluster_tweet_data
+        else:
+            time.sleep(5)
 
-    cluster_tweet_data = db.searchGetAll(index)
-
-    return cluster_tweet_data
 
 def main_loop(db, index):
     global lock, all_tweets_from_db
