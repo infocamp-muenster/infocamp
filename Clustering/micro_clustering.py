@@ -2,10 +2,6 @@
 import pandas as pd
 from datetime import datetime, timedelta
 import time
-import json
-import os
-import test
-import io
 from river import cluster, feature_extraction
 import re
 import spacy
@@ -13,8 +9,7 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 import numpy as np
-from Database import Database
-from elasticsearch import Elasticsearch, helpers
+
 
 # Funktionen
 
@@ -26,9 +21,11 @@ def initialize_time_window(df, time_column):
     end_time = start_time + timedelta(minutes=1)
     return start_time, end_time
 
+
 def fetch_tweets_in_time_window(df, start_time, end_time, time_column):
     mask = (df[time_column] >= start_time) & (df[time_column] < end_time)
     return df[mask]
+
 
 def preprocess_tweet(tweet, stemmer, nlp, stop_words):
     tweet = re.sub(r'http\S+|www\S+|https\S+', '', tweet, flags=re.MULTILINE)
@@ -38,6 +35,7 @@ def preprocess_tweet(tweet, stemmer, nlp, stop_words):
     lemmatized_tokens = [token.lemma_ for token in tokens]
     stemmed_tokens = [stemmer.stem(token) for token in lemmatized_tokens]
     return ' '.join(stemmed_tokens)
+
 
 # Funktion die das eigentliche Clustern pro Tweet inkrementell durchführt
 def process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words):
@@ -54,6 +52,7 @@ def process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer
             })
         except KeyError as e:
             print(f"4. KeyError bei CluStream.learn_one: {e}, tweet: {tweet['text']}, features: {features}")
+
 
 # Funktion die das cluster_tweet_data Dataframe nach jedem Zeitintervall updated und sämtliche Kennzahlen berechnet
 def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time, end_time):
@@ -75,7 +74,9 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
     previous_clusters = cluster_tweet_data['cluster_id'].unique() if not cluster_tweet_data.empty else []
 
     # Erstellen einer neuen DataFrame für das aktuelle Zeitintervall
-    new_cluster_tweet_data = pd.DataFrame(columns=['cluster_id', 'timestamp', 'tweet_count', 'average_tweet_count', 'std_dev_tweet_count', 'lower_threshold', 'upper_threshold'])
+    new_cluster_tweet_data = pd.DataFrame(
+        columns=['cluster_id', 'timestamp', 'tweet_count', 'average_tweet_count', 'std_dev_tweet_count',
+                 'lower_threshold', 'upper_threshold'])
 
     # Zählen der Tweets für das aktuelle Zeitintervall und Berechnung des Durchschnitts und der Standardabweichung
     rows_to_add = []
@@ -83,7 +84,8 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
         tweet_count = df_filtered[df_filtered['cluster_id'] == cluster_id].shape[0]
 
         # Berechnung des Durchschnitts der bisherigen tweet_count-Werte für diesen Cluster
-        previous_counts = cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id]['tweet_count'] if not cluster_tweet_data.empty else pd.Series(dtype=float)
+        previous_counts = cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id][
+            'tweet_count'] if not cluster_tweet_data.empty else pd.Series(dtype=float)
         if not previous_counts.empty:
             average_tweet_count = (previous_counts.sum() + tweet_count) / (previous_counts.count() + 1)
             std_dev_tweet_count = np.std(pd.concat([previous_counts, pd.Series([tweet_count])]), ddof=0)
@@ -92,7 +94,9 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
             std_dev_tweet_count = 0
 
         # Berechnung der Thresholds
-        prev_std_dev_tweet_count = cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id]['std_dev_tweet_count'].iloc[-1] if not cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id].empty else 0
+        prev_std_dev_tweet_count = \
+            cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id]['std_dev_tweet_count'].iloc[-1] if not \
+                cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id].empty else 0
         lower_threshold = tweet_count - 6 * prev_std_dev_tweet_count
         upper_threshold = tweet_count + 6 * prev_std_dev_tweet_count
 
@@ -110,7 +114,8 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
     all_clusters = set(unique_clusters).union(previous_clusters)
     for cluster_id in all_clusters:
         if cluster_id not in [row['cluster_id'] for row in rows_to_add]:
-            previous_counts = cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id]['tweet_count'] if not cluster_tweet_data.empty else pd.Series(dtype=float)
+            previous_counts = cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id][
+                'tweet_count'] if not cluster_tweet_data.empty else pd.Series(dtype=float)
 
             # Berechnung des Durchschnitts und der Standardabweichung unter Einbeziehung der 0 für den aktuellen Zeitraum
             if not previous_counts.empty:
@@ -121,7 +126,10 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
                 std_dev_tweet_count = 0
 
             # Berechnung der Thresholds
-            prev_std_dev_tweet_count = cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id]['std_dev_tweet_count'].iloc[-1] if not cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id].empty else 0
+            prev_std_dev_tweet_count = \
+                cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id]['std_dev_tweet_count'].iloc[
+                    -1] if not \
+                    cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id].empty else 0
             lower_threshold = 0 - 6 * prev_std_dev_tweet_count
             upper_threshold = 0 + 6 * prev_std_dev_tweet_count
 
@@ -141,13 +149,28 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
     cluster_tweet_data = pd.concat([cluster_tweet_data, new_cluster_tweet_data], ignore_index=True)
     return cluster_tweet_data
 
+
 # Funktion um das Dataframe zum dash Script zu liefern
 def get_cluster_tweet_data(db, index):
+    global lock
+    df = pd.DataFrame()
 
     while True:
-        if not lock:
-            cluster_tweet_data = db.searchGetAll(index)
-            return cluster_tweet_data
+        if not lock and df.empty:
+            print("trying to get_cluster_tweet_data")
+            lock = True
+            try:
+                cluster_tweet_data = db.searchGetAll(index)
+                # Extracting the '_source' part of each dictionary to create a DataFrame
+                data = [item['_source'] for item in cluster_tweet_data]
+                df = pd.DataFrame(data)
+                print("successfully get_cluster_tweet_data")
+                return df
+
+            except Exception as e:
+                print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
+            finally:
+                lock = False
         else:
             time.sleep(5)
 
@@ -164,12 +187,13 @@ def main_loop(db, index):
 
     tweets = pd.DataFrame([hit["_source"] for hit in all_tweets_from_db])
     tweets_selected = tweets[['created_at', 'text', 'id_str']]
-    tweets_selected.loc[:,'created_at'] = pd.to_datetime(tweets_selected['created_at'], format='%a %b %d %H:%M:%S %z %Y')
+    tweets_selected.loc[:, 'created_at'] = pd.to_datetime(tweets_selected['created_at'],
+                                                          format='%a %b %d %H:%M:%S %z %Y')
     # Initialisierungen
     start_time, end_time = initialize_time_window(tweets_selected, 'created_at')
     vectorizer = feature_extraction.BagOfWords()
     clustream = cluster.CluStream()
-    stop_words = set(stopwords.words('english')) #TODO: Add stopwords for german and other languages
+    stop_words = set(stopwords.words('english'))  # TODO: Add stopwords for german and other languages
     nlp = spacy.load('en_core_web_sm')
     stemmer = PorterStemmer()
 
@@ -191,21 +215,28 @@ def main_loop(db, index):
         # Informationen der Microcluster speichern (Zentrum usw.)
 
         # Cluster_tweet_data Dataframe nach dem Durchlauf des Zeitintervalls aktualisieren
-        cluster_tweet_data = transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time, end_time)
+        cluster_tweet_data = transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time,
+                                                             end_time)
 
         # Versuche, den DataFrame hochzuladen
-        global cluster_tweet_data_from_db
-        lock = True
-        try:
-            if db.es.indices.exists(index='cluster_tweet_data'):
-                db.es.indices.delete(index='cluster_tweet_data')
-                db.upload_df('cluster_tweet_data', cluster_tweet_data)
+        while True:
+            global cluster_tweet_data_from_db
+
+            if not lock:
+                lock = True
+                try:
+                    if db.es.indices.exists(index='cluster_tweet_data'):
+                        db.es.indices.delete(index='cluster_tweet_data')
+                        db.upload_df('cluster_tweet_data', cluster_tweet_data)
+                    else:
+                        db.upload_df('cluster_tweet_data', cluster_tweet_data)
+                except Exception as e:
+                    print(f"An error occurred during upload: {e}")
+                finally:
+                    lock = False
+                    break
             else:
-                db.upload_df('cluster_tweet_data', cluster_tweet_data)
-        except Exception as e:
-            print(f"An error occurred during upload: {e}")
-        finally:
-            lock = False
+                time.sleep(5)
 
         try:
             cluster_tweet_data_from_db = db.searchGetAll('cluster_tweet_data')
@@ -227,6 +258,3 @@ def main_loop(db, index):
 
         # Wartezeit bis zum nächsten Schleifendurchlauf
         time.sleep(2)
-
-
-
