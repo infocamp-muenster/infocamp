@@ -218,7 +218,7 @@ def main_loop(db, index):
         cluster_tweet_data = transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time,
                                                              end_time)
 
-        # Versuche, den DataFrame hochzuladen
+        # Dataframe in Elasticsearch hochladen
         while True:
             global cluster_tweet_data_from_db
 
@@ -227,9 +227,7 @@ def main_loop(db, index):
                 try:
                     if db.es.indices.exists(index='cluster_tweet_data'):
                         db.es.indices.delete(index='cluster_tweet_data')
-                        db.upload_df('cluster_tweet_data', cluster_tweet_data)
-                    else:
-                        db.upload_df('cluster_tweet_data', cluster_tweet_data)
+                    db.upload_df('cluster_tweet_data', cluster_tweet_data)
                 except Exception as e:
                     print(f"An error occurred during upload: {e}")
                 finally:
@@ -243,9 +241,8 @@ def main_loop(db, index):
         except Exception as e:
             print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
 
-        cluster_tweet_data_df = pd.DataFrame([hit["_source"] for hit in cluster_tweet_data_from_db])
-
         # Cluster_tweet_data printen zur Kontrolle
+        cluster_tweet_data_df = pd.DataFrame([hit["_source"] for hit in cluster_tweet_data_from_db])
         pd.set_option('display.max_rows', None)
         pd.set_option('display.max_columns', None)
         pd.set_option('display.width', None)
@@ -256,5 +253,4 @@ def main_loop(db, index):
         start_time += timedelta(minutes=1)
         end_time += timedelta(minutes=1)
 
-        # Wartezeit bis zum nächsten Schleifendurchlauf
         time.sleep(2)
