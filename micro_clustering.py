@@ -160,7 +160,7 @@ def get_cluster_tweet_data(db, index):
             print("trying to get_cluster_tweet_data")
             lock = True
             try:
-                cluster_tweet_data = db.searchGetAll(index)
+                cluster_tweet_data = db.search_get_all(index)
                 # Extracting the '_source' part of each dictionary to create a DataFrame
                 data = [item['_source'] for item in cluster_tweet_data]
                 df = pd.DataFrame(data)
@@ -179,7 +179,7 @@ def main_loop(db, index):
     global lock, all_tweets_from_db
     try:
         lock = True
-        all_tweets_from_db = db.searchGetAll(index)
+        all_tweets_from_db = db.search_get_all(index)
     except Exception as e:
         print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
     finally:
@@ -237,7 +237,7 @@ def main_loop(db, index):
                 time.sleep(5)
 
         try:
-            cluster_tweet_data_from_db = db.searchGetAll('cluster_tweet_data')
+            cluster_tweet_data_from_db = db.search_get_all('cluster_tweet_data')
         except Exception as e:
             print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
 
