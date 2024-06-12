@@ -1,4 +1,4 @@
-# Import of function
+# Import of function ToDo: Check if all imports are needed
 from dash import Dash, html, dash_table, dcc
 import plotly.express as px
 import dash
@@ -10,6 +10,14 @@ import threading
 from infocampboard.header import get_header
 from infocampboard.micro_clustering import main_loop, get_cluster_tweet_data
 from django_plotly_dash import DjangoDash
+from Database import Database
+import time
+
+# Setting global variable for last successful generated micro-clustering figure
+last_figure = {'data': [], 'layout': go.Layout(title='Number of Tweets per Cluster Over Time',
+                                               xaxis=dict(title='Time'),
+                                               yaxis=dict(title='Number of Tweets'))}
+
 
 # Initialize the app
 app = DjangoDash('dashboard')
@@ -39,7 +47,7 @@ def initialize_dash_app():
             ),
             dcc.Interval(
                 id='interval-component',
-                interval=1*2000,  # in milliseconds (10 seconds)
+                interval=1 * 1000,  # in milliseconds (1 second)
                 n_intervals=0
             )
                     # Main Chart Widget can be embedded here!
@@ -89,34 +97,41 @@ def initialize_dash_app():
 @app.callback(Output('live-update-graph', 'figure'),
                 [Input('interval-component', 'n_intervals')])
 def update_graph_live(n):
-    cluster_tweet_data = get_cluster_tweet_data()
-    traces = []
-    for cluster_id in cluster_tweet_data['cluster_id'].unique():
-        cluster_data = cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id]
-        traces.append(go.Scatter(
-            x=cluster_data['timestamp'],
-            y=cluster_data['tweet_count'],
-            mode='lines+markers',
-            name=f'Cluster {cluster_id}'
-        ))
+    global last_figure
 
-    layout = go.Layout(
-        xaxis=dict(title='Time'),
-        yaxis=dict(title='Number of Tweets'),
-        height=380,  # Höhe des Diagramms in Pixel
-    )
+    try:
+        # Trying to get cluster data from db
+        cluster_tweet_data = get_cluster_tweet_data(db, 'cluster_tweet_data')
+        # Ensure 'timestamp' is in datetime format
+        cluster_tweet_data['timestamp'] = pd.to_datetime(cluster_tweet_data['timestamp'])
 
-    return {'data': traces, 'layout': layout}
+        # Plotting
+        traces = []
+        for cluster_id in cluster_tweet_data['cluster_id'].unique():
+            cluster_data = cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id]
+            traces.append(go.Scatter(
+                x=cluster_data['timestamp'],
+                y=cluster_data['tweet_count'],
+                mode='lines+markers',
+                name=f'Cluster {cluster_id}'
+            ))
 
+        layout = go.Layout(
+            title='Number of Tweets per Cluster Over Time',
+            xaxis=dict(title='Time'),
+            yaxis=dict(title='Number of Tweets'),
+            height=360,  # Höhe des Diagramms in Pixel
+        )
 
+        # Update last_figure only if there were no issues while fetching data
+        last_figure = {'data': traces, 'layout': layout}
 
-def background_process():
-    main_loop()
-    
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+    return last_figure
+
 # Run App
-bg_thread = threading.Thread(target=background_process)
-bg_thread.daemon = True
-bg_thread.start()
-    
+# TODO: db Instanz aus dem Thread anders anbindbar, sodass keine neue erzeugt werden musss?
+db = Database()
 initialize_dash_app()
-
