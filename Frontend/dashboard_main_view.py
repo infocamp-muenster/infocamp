@@ -4,7 +4,7 @@ from dash import dcc, html
 from dash.dependencies import Output, Input
 import plotly.graph_objs as go
 import pandas as pd
-from infocampboard.header import get_header
+from Frontend.header import get_header
 from Microclustering.micro_clustering import get_cluster_tweet_data
 from django_plotly_dash import DjangoDash
 from Database import Database
@@ -23,7 +23,7 @@ header = get_header()
 
 
 from PIL import Image
-pil_image = Image.open("infocampboard/images/misdoom_logo.png")
+pil_image = Image.open("Frontend/images/misdoom_logo.png")
 
 # App layout
 def initialize_dash_app():

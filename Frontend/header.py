@@ -2,11 +2,11 @@
 from dash import html
 # Image sources
 from PIL import Image
-pil_image = Image.open("infocampboard/images/misdoom_logo.png")
+pil_image = Image.open("Frontend/images/misdoom_logo.png")
 
-user_icon = Image.open("infocampboard/images/user-solid.png")
-upload_icon = Image.open("infocampboard/images/upload-solid.png")
-file_icon = Image.open("infocampboard/images/file-solid.png")
+user_icon = Image.open("Frontend/images/user-solid.png")
+upload_icon = Image.open("Frontend/images/upload-solid.png")
+file_icon = Image.open("Frontend/images/file-solid.png")
 
 
 def get_header():

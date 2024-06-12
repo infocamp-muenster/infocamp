@@ -30,7 +30,7 @@ def loginPage(request):
             messages.error(request, 'Username OR password does not exist')
             
     context = {'page': page}
-    return render(request, 'infocampboard/login.html', context)
+    return render(request, 'Frontend/login.html', context)
 
 def logoutPage(request):
     logout(request)
@@ -38,7 +38,7 @@ def logoutPage(request):
 
 @login_required(login_url='login')
 def realTime(request):
-    return render(request, 'infocampboard/dashboard.html')
+    return render(request, 'Frontend/dashboard.html')
 
 def documentation(request):
-    return render(request, 'infocampboard/docu.html')
+    return render(request, 'Frontend/docu.html')
