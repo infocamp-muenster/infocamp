@@ -13,7 +13,7 @@ def get_header():
     return [ html.Header(className='header', children=[
         html.Img(src=pil_image, alt="Misdoom Logo",style={'filter':'brightness(0) invert(1)'}),
         html.H1('INFOCAMP Dashboard'),
-    ]),
+    ]), 
     # Header Documentation
     html.Div(className='header-documentation', children=[
         html.Img(src=file_icon, alt="File Icon",style={'width':'15px','margin-right':'10px'}),
@@ -22,7 +22,7 @@ def get_header():
     # Header Import
     html.Div(className='header-upload', children=[
         html.Img(src=upload_icon, alt="Upload Icon",style={'width':'15px','margin-right':'10px'}),
-        html.Span('Upload Data')
+        html.A('Upload Data', href='upload/')
     ]),
     # Header Settings
     html.Div(className='header-settings', children=[

@@ -34,6 +34,11 @@ body {
     align-items: center;
     color: #fff;
 }
+.header-upload a {
+    font-weight: 500;
+    color: #ffffff;
+    text-decoration: none;
+}
 .header-documentation {
     grid-column: col-start 8 / span 1;
     grid-row: row-start;
@@ -121,4 +126,21 @@ body {
 .import-section a {
     color: #fff;
     font-weight: 300;
+}
+.upload_form {
+    grid-column: 5 / span 5;
+    grid-row: row-start / span 8;
+    background-color: #fff;
+    padding: 10px;
+    text-align: center;
+}
+.upload_form h1 {
+    margin-bottom: 50px;
+}
+.upload_form button {
+    background-color: #707FDD;
+    border: none;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
 }
