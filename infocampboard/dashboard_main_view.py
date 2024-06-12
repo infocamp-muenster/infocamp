@@ -1,17 +1,14 @@
 # Import of function ToDo: Check if all imports are needed
-from dash import Dash, html, dash_table, dcc
 import plotly.express as px
-import dash
 from dash import dcc, html
 from dash.dependencies import Output, Input
 import plotly.graph_objs as go
 import pandas as pd
-import threading
 from infocampboard.header import get_header
-from infocampboard.micro_clustering import main_loop, get_cluster_tweet_data
+from Microclustering.micro_clustering import get_cluster_tweet_data
 from django_plotly_dash import DjangoDash
 from Database import Database
-import time
+
 
 # Setting global variable for last successful generated micro-clustering figure
 last_figure = {'data': [], 'layout': go.Layout(title='Number of Tweets per Cluster Over Time',
