@@ -1,0 +1,31 @@
+{% load static %}
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Infocamp</title>
+        <link rel="stylesheet" href="{% static 'styles/style.css' %}">
+    </head>
+    <body>
+
+        <header class="header">
+            <img src="{% static 'images/misdoom_logo.png' %}" alt="Misdoom Logo">
+            <h1>INFOCAMP Dashboard</h1>
+            <div class="header-documentation">
+                <div class="header-upload-icon">
+                    <span>Documentation</span>
+                </div>
+            </div>
+            <div class="header-upload">
+                <span>Upload Data</span>
+            </div>
+            <div class="header-settings">
+                <a href="logout/">Logout</a>
+            </div>
+        </header>
+        
+        <h1>Documentation</h1>
+
+        <p>Hier entsteht die Dokumentation</p>
+    </body>
+</html>
