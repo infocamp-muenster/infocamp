@@ -7,7 +7,7 @@ import pandas as pd
 from Frontend.header import get_header
 from Microclustering.micro_clustering import get_cluster_tweet_data
 from django_plotly_dash import DjangoDash
-from Database import Database
+from Datamanagement.Database import Database
 
 
 # Setting global variable for last successful generated micro-clustering figure
@@ -20,10 +20,6 @@ last_figure = {'data': [], 'layout': go.Layout(title='Number of Tweets per Clust
 app = DjangoDash('dashboard')
 
 header = get_header()
-
-
-from PIL import Image
-pil_image = Image.open("Frontend/images/misdoom_logo.png")
 
 # App layout
 def initialize_dash_app():
