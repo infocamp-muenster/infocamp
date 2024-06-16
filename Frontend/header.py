@@ -17,7 +17,7 @@ def get_header():
     # Header Documentation
     html.Div(className='header-documentation', children=[
         html.Img(src=file_icon, alt="File Icon",style={'width':'15px','margin-right':'10px'}),
-        html.Span('Documentation')
+        html.A('Documentation', href='documentation/')
     ]),
     # Header Import
     html.Div(className='header-upload', children=[

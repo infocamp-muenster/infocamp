@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
+from .forms import CSVUploadForm
+import csv
 
 # Create your views here.
 
@@ -42,3 +44,21 @@ def realTime(request):
 
 def documentation(request):
     return render(request, 'Frontend/docu.html')
+
+# Functions returns df uploaded as CSV
+def upload(request):
+    data = []
+    if request.method == "POST":
+        form = CSVUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            csv_file = request.FILES['csv_file']
+            decoded_file = csv_file.read().decode('utf-8').splitlines()
+            reader = csv.DictReader(decoded_file, delimiter=';')
+            for row in reader:
+                data.append(row)
+
+            # TODO: Datenbank connection und das df dort abspeichern    
+            return redirect('Realtime')
+    else:
+        form = CSVUploadForm()
+    return render(request, 'Frontend/upload.html', {'form': form, 'data': data})

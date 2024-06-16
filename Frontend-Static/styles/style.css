@@ -93,6 +93,11 @@ body {
     color: #ffffff;
     text-decoration: none;
 }
+.header-documentation a {
+    font-weight: 500;
+    color: #ffffff;
+    text-decoration: none;
+}
 .header-settings-icon {
     width: 30px;
     height: 30px;
@@ -129,7 +134,7 @@ body {
 }
 .upload_form {
     grid-column: 5 / span 5;
-    grid-row: row-start / span 8;
+    grid-row: 2 / span 8;
     background-color: #fff;
     padding: 10px;
     text-align: center;
