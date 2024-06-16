@@ -6,30 +6,29 @@ body {
     background-color: #F1F2FC;
 }
 .main-body {
-    margin-left: 10px;
     display: grid;
     grid-template-columns: repeat(12, [col-start] 1fr);
-    grid-template-rows: repeat(12, [row-start] 1fr);
+    grid-auto-rows: minmax(100px, auto);
     grid-gap: 10px;
-    height: 100vh; /* This will make sure the grid takes up the whole height of the viewport */
+    overflow-y: auto; /* Enable vertical scrolling */
 }
 .header {
     grid-column: col-start / span 12;
-    grid-row: row-start;
+    grid-row: 1;
     background-color: #707FDD;
     margin-left: -20px;
     display: flex;
 }
 .header-settings {
     grid-column: col-start 12 / span 1;
-    grid-row: row-start;
+    grid-row: 1;
     margin: 0 20px 0 0;
     display: flex;
     align-items: center;
 }
 .header-upload {
     grid-column: col-start 10 / span 2;
-    grid-row: row-start;
+    grid-row: 1;
     display: flex;
     align-items: center;
     color: #fff;
@@ -41,39 +40,20 @@ body {
 }
 .header-documentation {
     grid-column: col-start 8 / span 1;
-    grid-row: row-start;
+    grid-row: 1;
     display: flex;
     align-items: center;
     color: #fff;
 }
-
-.widget-tl {
-    grid-column: col-start / span 6;
-    grid-row: 2 / 8;
+.widget {
+    margin: 0 0 5px 0;
+    font-family: "Inter",sans-serif;
     background-color: #fff;
     border-radius: 10px;
-}
-.widget-tr {
-    grid-column: col-start 7 / span 6;
-    grid-row: 2 / 8;
-    background-color: #fff;
-    border-radius: 10px;
-    margin-right: 10px;
-}
-.widget-bl {
-    grid-column: col-start / span 6;
-    grid-row: 8 / 13;
-    background-color: #fff;
-    border-radius: 10px;
-    margin-bottom: 10px;
-}
-.widget-br {
-    grid-column: col-start 7 / span 6;
-    grid-row: 8 / 13;
-    background-color: #fff;
-    border-radius: 10px;
-    margin-right: 10px;
-    margin-bottom: 10px;
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    grid-column: span 6;
+    grid-row: span 3;
 }
 
 /* Remaining CSS */
@@ -84,6 +64,7 @@ body {
     font-weight: 500;
     font-size: 22px;
     color: #ffffff;
+    line-height: 2;
 }
 .header span {
     font-weight: 300;
@@ -105,10 +86,6 @@ body {
     border-radius: 30px;
     margin-right: 10px;
 }
-.widget {
-    margin: 0 0 20px 0;
-    font-family: "Inter",sans-serif;
-}
 .widget h3 {
     font-weight: 300;
     margin: 20px 0 5px 20px;
@@ -123,7 +100,9 @@ body {
 /* Sidebar */
 .header img {
     width: 100px;
+    object-fit: contain;
     padding: 20px;
+    margin-left: 20px;
 }
 .import-section {
     padding: 10px;
