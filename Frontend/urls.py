@@ -10,5 +10,7 @@ urlpatterns = [
     path('realtime', views.realTime, name="Realtime"),
     
     path('django_plotly_dash/', include('django_plotly_dash.urls')),
+
+    path('upload/', views.upload, name='upload'),
    
 ]
