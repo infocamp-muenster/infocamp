@@ -89,8 +89,11 @@ def initialize_dash_app():
     ])
 
 
-@app.callback(Output('live-update-graph', 'figure'),
-                [Input('interval-component', 'n_intervals')])
+@app.callback(
+        Output('live-update-graph', 'figure'),
+        [Input('interval-component', 'n_intervals')]
+)
+
 def update_graph_live(n):
     global last_figure
 
@@ -125,6 +128,18 @@ def update_graph_live(n):
         print(f"An error occurred: {e}")
 
     return last_figure
+
+# Callback to toggle dropdown menu
+@app.callback(
+    Output('dropdown-menu', 'style'),
+    [Input('account-toggle', 'n_clicks')]
+)
+def toggle_dropdown(n_clicks):
+    if n_clicks % 2 == 1:
+        return {'display': 'block'}
+    else:
+        return {'display': 'none'}
+
 
 # Run App
 # TODO: db Instanz aus dem Thread anders anbindbar, sodass keine neue erzeugt werden musss?
