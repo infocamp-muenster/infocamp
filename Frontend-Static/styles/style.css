@@ -128,3 +128,96 @@ body {
     padding: 10px 20px;
     border-radius: 5px;
 }
+/* Login Page CSS*/
+
+.login-div {
+    background-color: #8593ED;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    margin: 50px auto;
+    text-align: center;
+    font-family: "Inter", sans-serif;
+}
+.login-div img {
+    filter: brightness(0) invert(1);
+    width: 140px;
+    object-fit: cover;
+    margin: 10px 0;
+}
+.login-div p {
+    color: #fff;
+}
+
+.login-div h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #fff;
+    text-align: center;
+}
+.login-div label {
+    color: #fff;
+}
+
+.login-div form {
+    display: flex;
+    flex-direction: column;
+}
+
+.login-div label {
+    margin: 10px 0 5px;
+}
+
+.login-div input[type="text"],
+.login-div input[type="password"],
+.login-div input[type="email"] {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    text-align: left;
+    color: #333;
+}
+
+.login-div input[type="submit"] {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: white;
+    color: #8593ED;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.login-div input[type="submit"]:hover {
+    background-color: #f0f0f0;
+}
+
+.login-div p {
+    margin: 20px 0 10px;
+}
+
+.login-div a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s;
+}
+
+.login-div a:hover {
+    color: #f0f0f0;
+}
+/*Error Messages Login*/
+.messages {
+    margin: 20px 0 20px 41%;
+    list-style: none;
+}
+.messages li {
+    background-color: #EAD30C;
+    width: fit-content;
+    padding: 10px 20px;
+    color: #fff;
+    border-radius: 10px;
+}

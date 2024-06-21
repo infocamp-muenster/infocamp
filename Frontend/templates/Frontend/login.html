@@ -1,116 +1,59 @@
-{% if page == 'login' %}
-<div class="login-div">
-    <form method="POST" action="">
-        {% csrf_token %}
-        <h1 style="font-size: 24px">INFOCAMP Dashboard</h1>
-        <label>Username:</label>
-        <input type="text" name="username" placeholder="Enter Username" />
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infocamp</title>
+    <link rel="stylesheet" href="{% static 'styles/style.css' %}">
+</head>
+<body>
+    {% if messages %}
+        <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    {% if page == 'login' %}
+        <div class="login-div">
+            <img src="{% static 'images/misdoom_logo.png' %}" alt="Misdoom Logo">
+            <form method="POST" action="">
+                {% csrf_token %}
+                <h1>INFOCAMP Dashboard<br>Login</h1>
+                <label>Username:</label>
+                <input type="text" name="username" placeholder="Enter Username" required/>
 
-        <label>Password:</label>
-        <input type="password" name="password" placeholder="Enter Password" />
+                <label>Password:</label>
+                <input type="password" name="password" placeholder="Enter Password" required/>
 
-        <input type="submit" value="Login"/>
-    </form>  
+                <input type="submit" value="Login"/>
+            </form>  
 
-    <p>Havent signed up yet?</p>
-    <a href="#">Sign up</a>
+            <p>Havent signed up yet?</p>
+            <a href="?page=signup">Sign up</a>
+        </div>
+    {% else %}
+        <div class="login-div">
+            <img src="{% static 'images/misdoom_logo.png' %}" alt="Misdoom Logo">
+            <form method="POST" action="">
+                {% csrf_token %}
+                <h1 style="font-size: 24px">INFOCAMP Dashboard<br>Register </h1>
+                <label>Username:</label>
+                <input type="text" name="username" placeholder="Enter Username" required />
 
-</div>
-<style>
-    body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background-color: #F1F2FC;
-    color: white;
-    font-family: 'Inter', sans-serif;
-    text-align: center;
-}
+                <label>Password:</label>
+                <input type="password" name="password" placeholder="Enter Password" required />
 
-.login-div {
-    background-color: #8593ED;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    width: 300px;
-}
+                <label>Email:</label>
+                <input type="email" name="email" placeholder="Enter Email" />
 
-.login-div h1 {
-    margin-bottom: 20px;
-}
+                <input type="submit" value="Register"/>
+            </form>  
 
-.login-div form {
-    display: flex;
-    flex-direction: column;
-}
-
-.login-div label {
-    margin: 10px 0 5px;
-}
-
-.login-div input[type="text"],
-.login-div input[type="password"] {
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    margin-bottom: 15px;
-    text-align: left;
-    color: #333;
-}
-
-.login-div input[type="submit"] {
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    background-color: white;
-    color: #8593ED;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.login-div input[type="submit"]:hover {
-    background-color: #f0f0f0;
-}
-
-.login-div p {
-    margin: 20px 0 10px;
-}
-
-.login-div a {
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
-    transition: color 0.3s;
-}
-
-.login-div a:hover {
-    color: #f0f0f0;
-}
-
-</style>
-{% else %}
-
-<div class="login-div">
-    <form method="POST" action="">
-        {% csrf_token %}
-        {{form.as_p}}
-
-        <input type="submit" value="Register"/>
-    </form>  
-
-    <p>Already signed up</p>
-    <a href="#">Login</a>
-</div>
-
-<style>
-    .login-div {
-        align-content: center;
-        background-color: #8593ED;
-        color: #fff;
-    }
-</style>
-
-{% endif %}
+            <p>Already signed up?</p>
+            <a href="?page=login">Login</a>
+        </div>
+    {% endif %}
+</body>
+</html>
