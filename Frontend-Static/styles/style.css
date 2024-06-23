@@ -1,103 +1,83 @@
-/* HTML Elements CSS*/
+:root {
+    --bg-color:#F1F2FC;
+    --font-color: #1F384C;
+    --bg-blue: #707FDD;
+    --white: #ffffff;
+    --dark-grey: #C4C7DB;
+    --link-hover: #f0f0f0;
+    --ms-yellow: #EAD30C;
+}
 body {
     margin: 0;
     font-family: "Inter", sans-serif;
-    color: #222;
-    background-color: #F1F2FC;
+    color: var(--font-color);
+    background-color: var(--bg-color);
 }
 .main-body {
     display: grid;
     grid-template-columns: repeat(12, [col-start] 1fr);
     grid-auto-rows: minmax(100px, auto);
-    grid-gap: 10px;
+    grid-gap: 15px;
     overflow-y: auto; /* Enable vertical scrolling */
+    margin: 15px 15px 0 15px;
 }
 .header {
-    grid-column: col-start / span 12;
-    grid-row: 1;
-    background-color: #707FDD;
+    background-color: var(--bg-blue);
     margin-left: -20px;
     display: flex;
 }
-.header-settings {
-    grid-column: col-start 12 / span 1;
-    grid-row: 1;
+.header a {
+    text-decoration: none;
+    display: flex;
+}
+.header div {
     margin: 0 20px 0 0;
     display: flex;
     align-items: center;
 }
-.header-upload {
-    grid-column: col-start 10 / span 2;
-    grid-row: 1;
-    display: flex;
-    align-items: center;
-    color: #fff;
-}
-.header-upload a {
+.header div a {
     font-weight: 500;
-    color: #ffffff;
+    color: var(--white);
     text-decoration: none;
 }
-.header-documentation {
-    grid-column: col-start 8 / span 1;
-    grid-row: 1;
-    display: flex;
-    align-items: center;
-    color: #fff;
-}
 .widget {
-    margin: 0 0 5px 0;
     font-family: "Inter",sans-serif;
     background-color: #fff;
     border-radius: 10px;
-    padding: 10px;
+    padding: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     grid-column: span 6;
     grid-row: span 3;
 }
-
-/* Remaining CSS */
-
-
+.widget-pop-up {
+    grid-column: span 3;
+    background-color: var(--dark-grey);
+}
 .header h1{
-    margin: 30px;
+    margin: 30px 25% 30px 30px;
     font-weight: 500;
     font-size: 22px;
-    color: #ffffff;
+    color: var(--white);
     line-height: 2;
 }
 .header span {
     font-weight: 300;
 }
-.header-settings a {
-    font-weight: 500;
-    color: #ffffff;
-    text-decoration: none;
-}
-.header-documentation a {
-    font-weight: 500;
-    color: #ffffff;
-    text-decoration: none;
-}
-.header-settings-icon {
-    width: 30px;
-    height: 30px;
-    background-color: #fff;
-    border-radius: 30px;
-    margin-right: 10px;
+.widget h2 {
+    margin: 10px 0 10px 10px;
+    color: var(--font-color);
 }
 .widget h3 {
-    font-weight: 300;
-    margin: 20px 0 5px 20px;
+    font-weight: 500;
+    margin: 10px 0 0 10px;
+    color: var(--font-color);
 }
 .widget span {
     font-weight: 300;
-    color: #848484;
-    margin: 0 0 0 20px;
+    color: var(--font-color);
+    margin: 0 0 0 10px;
+    font-size: 14px;
 }
-
-
-/* Sidebar */
 .header img {
     width: 100px;
     object-fit: contain;
@@ -108,30 +88,23 @@ body {
     padding: 10px;
 }
 .import-section a {
-    color: #fff;
+    color: var(--white);
     font-weight: 300;
 }
-.upload_form {
-    grid-column: 5 / span 5;
-    grid-row: 2 / span 8;
-    background-color: #fff;
-    padding: 10px;
-    text-align: center;
-}
-.upload_form h1 {
-    margin-bottom: 50px;
-}
 .upload_form button {
-    background-color: #707FDD;
+    background-color: var(--bg-blue);
     border: none;
     color: #fff;
     padding: 10px 20px;
     border-radius: 5px;
 }
+.upload_form form {
+    margin: 10px;
+}
 /* Login Page CSS*/
 
 .login-div {
-    background-color: #8593ED;
+    background-color: var(--bg-blue);
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
@@ -147,28 +120,24 @@ body {
     margin: 10px 0;
 }
 .login-div p {
-    color: #fff;
+    color: var(--white);
 }
-
 .login-div h1 {
     margin-bottom: 20px;
     font-size: 24px;
-    color: #fff;
+    color: var(--white);
     text-align: center;
 }
 .login-div label {
-    color: #fff;
+    color: var(--white);
 }
-
 .login-div form {
     display: flex;
     flex-direction: column;
 }
-
 .login-div label {
     margin: 10px 0 5px;
 }
-
 .login-div input[type="text"],
 .login-div input[type="password"],
 .login-div input[type="email"] {
@@ -177,7 +146,7 @@ body {
     border-radius: 5px;
     margin-bottom: 15px;
     text-align: left;
-    color: #333;
+    color: var(--font-color);
 }
 
 .login-div input[type="submit"] {
@@ -185,29 +154,25 @@ body {
     border: none;
     border-radius: 5px;
     background-color: white;
-    color: #8593ED;
+    color: var(--bg-blue);
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s;
 }
-
 .login-div input[type="submit"]:hover {
-    background-color: #f0f0f0;
+    background-color: var(--link-hover);
 }
-
 .login-div p {
     margin: 20px 0 10px;
 }
-
 .login-div a {
-    color: white;
+    color: var(--white);
     text-decoration: none;
     font-weight: bold;
     transition: color 0.3s;
 }
-
 .login-div a:hover {
-    color: #f0f0f0;
+    color: var(--link-hover);
 }
 /*Error Messages Login*/
 .messages {
@@ -215,7 +180,7 @@ body {
     list-style: none;
 }
 .messages li {
-    background-color: #EAD30C;
+    background-color: var(--ms-yellow);
     width: fit-content;
     padding: 10px 20px;
     color: #fff;
