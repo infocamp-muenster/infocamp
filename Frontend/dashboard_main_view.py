@@ -23,71 +23,72 @@ header = get_header()
 
 # App layout
 def initialize_dash_app():
-    app.layout = html.Div(className='main-body', children=[
+    app.layout = html.Div(children=[
         
          # Include the header HTML
         *header,
 
-        # Widget Top Left CSS tl
-        html.Div(className='widget', children=[
-            html.H3('Micro Cluster'),
-            html.Span('Emerging Trends'),
-            dcc.Graph(
-                    id='live-update-graph',
-                    config={'displayModeBar': False},
-                    # style={'height': '300px'}
-            ),
-            dcc.Interval(
-                id='interval-component',
-                interval=1 * 1000,  # in milliseconds (1 second)
-                n_intervals=0
-            )
-        ]),
-        html.Div(className='widget', children=[
-                html.H3('Macro Cluster'),
-                html.Span('Bag of Words'),
-
-                    # Bag of Words Chart can be embedded here!
-                    # Create an extra file and call the function which contains the chart here
-                    # So no calculations or similiar in this section. Only calling function
-        ]),
-        html.Div(className='widget', children=[
-                html.H3('Most Recent Posts'),
-                html.Span('Post Analysis'),
-                    # Most Recent Posts can be embedded here!
-                    # Create an extra file and call the function which contains the chart here
-                    # So no calculations or similiar in this section. Only calling function
-        ]),
-        html.Div(className='widget', children=[
-                html.H3('Topic Focus'),
-                html.Span('Cluster Analysis'),
-                    # Topic Focus Widget can be embedded here!
-                    # Create an extra file and call the function which contains the chart here
-                    # So no calculations or similiar in this section. Only calling function
-        ]),
-        html.Div(className='widget', children=[
-                html.H3('Topic Focus'),
-                html.Span('Cluster Analysis'),
-                    # Topic Focus Widget can be embedded here!
-                    # Create an extra file and call the function which contains the chart here
-                    # So no calculations or similiar in this section. Only calling function
-        ]),
-        html.Div(className='widget', children=[
-                html.H3('Topic Focus'),
-                html.Span('Cluster Analysis'),
-                    # Topic Focus Widget can be embedded here!
-                    # Create an extra file and call the function which contains the chart here
-                    # So no calculations or similiar in this section. Only calling function
-        ]),
-        html.Div(className='widget', children=[
-                html.H3('Topic Focus'),
-                html.Span('Cluster Analysis'),
-                    # Topic Focus Widget can be embedded here!
-                    # Create an extra file and call the function which contains the chart here
-                    # So no calculations or similiar in this section. Only calling function
+        html.Div(className='main-body', children=[
+            html.Div(className='widget', style={'grid-column':'span 9'}, children=[
+                    html.H3('KI-Probability'),
+                    html.Span('Of Text based Content'),
+                        # Topic Focus Widget can be embedded here!
+                        # Create an extra file and call the function which contains the chart here
+                        # So no calculations or similiar in this section. Only calling function
+            ]),
+            html.Div(className='widget widget-pop-up', children=[
+                    html.H3('AI-Generation'),
+                    
+            ]),
+            html.Div(className='widget', style={'grid-column':'span 7'}, children=[
+                html.H3('Micro Cluster'),
+                html.Span('Emerging Trends'),
+                dcc.Graph(
+                        id='live-update-graph',
+                        config={'displayModeBar': False},
+                        # style={'height': '300px'}
+                ),
+                dcc.Interval(
+                    id='interval-component',
+                    interval=1 * 1000,  # in milliseconds (1 second)
+                    n_intervals=0
+                )
+            ]),
+            html.Div(className='widget', style={'grid-column':'span 5'}, children=[
+                        # Bag of Words Chart can be embedded here!
+                        # Create an extra file and call the function which contains the chart here
+                        # So no calculations or similiar in this section. Only calling function
+            ]),
+            html.Div(className='widget', style={'grid-column':'span 7'}, children=[
+                    html.H3('Most Recent Posts'),
+                    html.Span('Post Analysis'),
+                        # Most Recent Posts can be embedded here!
+                        # Create an extra file and call the function which contains the chart here
+                        # So no calculations or similiar in this section. Only calling function
+            ]),
+            html.Div(className='widget', style={'grid-column':'span 5'}, children=[
+                    html.H3('Topic Focus'),
+                    html.Span('Cluster Analysis'),
+                        # Topic Focus Widget can be embedded here!
+                        # Create an extra file and call the function which contains the chart here
+                        # So no calculations or similiar in this section. Only calling function
+            ]),
+            html.Div(className='widget', style={'grid-column':'span 7'}, children=[
+                    html.H3('Topic Focus'),
+                    html.Span('Cluster Analysis'),
+                        # Topic Focus Widget can be embedded here!
+                        # Create an extra file and call the function which contains the chart here
+                        # So no calculations or similiar in this section. Only calling function
+            ]),
+            html.Div(className='widget', style={'grid-column':'span 5'}, children=[
+                    html.H3('Topic Focus'),
+                    html.Span('Cluster Analysis'),
+                        # Topic Focus Widget can be embedded here!
+                        # Create an extra file and call the function which contains the chart here
+                        # So no calculations or similiar in this section. Only calling function
+            ]),
         ]),
     ])
-
 
 @app.callback(
         Output('live-update-graph', 'figure'),

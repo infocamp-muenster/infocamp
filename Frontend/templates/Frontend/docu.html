@@ -5,23 +5,28 @@
     <title>Infocamp</title>
     <link rel="stylesheet" href="{% static 'styles/style.css' %}">
 </head>
-<body class="main-body">
+<body>
     <header class="header">
-        <img src="{% static 'images/misdoom_logo.png' %}" alt="Misdoom Logo", style="filter: brightness(0) invert(1);">
-        <h1>INFOCAMP Dashboard</h1>
+        <a href="/realtime" style="margin-right: 23%;">
+            <img src="{% static 'images/misdoom_logo.png' %}" alt="Misdoom Logo", style="filter: brightness(0) invert(1);">
+            <h1 style="margin: 30px 30px 30px 30px;">INFOCAMP Dashboard</h1>
+        </a>
         <div class="header-documentation">
-            <img src="{% static 'images/file-solid.png' %}" alt="File Solid", style="width: 15px; margin-right: 10px;">
-            <span>Documentation</span>
+            <img src="{% static 'images/file-solid.png' %}" alt="File Solid", style="width: 15px;">
+            <a href="#">Documentation</span>
         </div>
         <div class="header-upload">
-            <img src="{% static 'images/upload-solid.png' %}" alt="Upload Solid", style="width: 15px; margin-right: 10px;">
-            <span>Upload Data</span>
+            <img src="{% static 'images/upload-solid.png' %}" alt="Upload Solid", style="width: 15px;">
+            <a href="/upload/">Upload Data</span>
         </div>
         <div class="header-settings">
-            <img src="{% static 'images/user-solid.png' %}" alt="User Solid", style="width: 15px; margin-right: 10px;">
-            <a href="logout/">Logout</a>
+            <img src="{% static 'images/user-solid.png' %}" alt="User Solid", style="width: 15px;">
+            <a href="/logout/">Logout</a>
         </div>
     </header>
-    <h1>Documentation pending!</h1>
-
+    <div class="main-body">
+        <div class="widget" style="grid-column: span 12;grid-row: span 5;">
+            <h2>Documentation pending!</h1>
+        </div>
+    </div>
 </body>
