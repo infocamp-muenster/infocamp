@@ -8,34 +8,27 @@ class Database:
     def __init__(self):
         self.es = Elasticsearch(['http://localhost:9200'])
 
-    def upload(self, index, file):
+    def upload(self, index, data):
         def chunk_document(doc, chunk_size):
-            """Split the document into smaller chunks."""
             for i in range(0, len(doc), chunk_size):
                 yield doc[i:i + chunk_size]
 
         def create_bulk_data(chunk):
-            """Prepare bulk data for indexing."""
             for entry in chunk:
                 yield {
                     "_index": index,
                     "_source": entry
                 }
 
-        # Read the JSON document from the file with UTF-8 encoding
-        with open(file, 'r', encoding='utf-8') as f:
-            document = json.load(f)
+        document = data
 
-        # Split the document into chunks of 1000 entries each (adjust size as needed)
-        chunk_size = 1000  # Number of entries per chunk
+        chunk_size = 1000
         chunks = chunk_document(document, chunk_size)
 
-        # Index each chunk using the Bulk API
         for idx, chunk in enumerate(chunks):
             bulk_data = create_bulk_data(chunk)
             success, failed = helpers.bulk(self.es, bulk_data, raise_on_error=False)
 
-            # Log detailed errors if there are any failures
             if failed:
                 print(f"Errors in chunk {idx + 1}:")
                 for item in failed:

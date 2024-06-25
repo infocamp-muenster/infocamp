@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="9e8abc68-6660-468c-947b-4f15fb8213e2" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/infocamp" beforeDir="false" afterPath="$PROJECT_DIR$/infocamp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Datamanagement/BlueskyFirehose.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Datamanagement/Database.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend-Static/images/file-arrow-up-solid.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend-Static/images/file-solid.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend-Static/images/misdoom_logo.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend-Static/images/upload-solid.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend-Static/images/user-solid.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend-Static/styles/style.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/admin.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/apps.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/dashboard_main_view.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/forms.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/header.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/images/file-arrow-up-solid.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/images/file-solid.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/images/misdoom_logo.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/images/upload-solid.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/images/user-solid.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/migrations/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/models.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/templates/Frontend/dashboard.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/templates/Frontend/docu.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/templates/Frontend/login.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/templates/Frontend/upload.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/tests.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/urls.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Frontend/views.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Infodash/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Infodash/asgi.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Infodash/settings.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Infodash/urls.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Infodash/wsgi.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Macroclustering/bag_of_words.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Macroclustering/macro_clustering_using_database.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Microclustering/micro_clustering.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Microclustering/thread_micro_clustering.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Readme/Micro-Clustering_Sequenzdiagramm.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/Readme/figma_draft.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/db.sqlite3" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/infocamp/manage.py" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2iKPLZhopgdG9CWcq61K8Zpyqv7" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="9e8abc68-6660-468c-947b-4f15fb8213e2" name="Changes" comment="" />
+      <created>1719236239346</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1719236239346</updated>
+      <workItem from="1719236241075" duration="6613000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
