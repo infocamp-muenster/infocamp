@@ -7,8 +7,9 @@ Das Projektseminar ist für Technik- und Data Science-Affine sowie diejenigen, d
 Harte Anforderungen gibt es keine, aber ein paar Anzeichen dafür, dass das Projektseminar das richtige für Dich ist: Wenn Du Interesse am Social Media Kosmos, Spaß am Programmieren insbesondere mit Python hast, Du ein Dashboard konzeptuell und nutzerfreundlich gestalten möchtest, Dich mit dem visuellen Design von (Web)applikationen auseinandersetzen willst oder schon Erfahrung mit Dash hast (wirklich nur zufällig😉). Oder Du hast einfach Lust, gelernte Ansätze zur Data Science auszuprobieren und neue zu entdecken. Dann bist du hier richtig!
 
 # Run the Application locally
-1. adjust the user information in Microclustering/thread_micro_clustering.py line 7 and line 8
-2. run ```python manage.py runserver ``` or ```python3 manage.py runserver ``` depending on your environment
+0. install all necessary packages: see the file 'necessary_packages.txt.'
+2. adjust the user information in Microclustering/thread_micro_clustering.py line 7 and line 8
+3. run ```python manage.py runserver ``` or ```python3 manage.py runserver ``` depending on your environment
 
 # Zugangsdaten via Django
 - Username: admin
