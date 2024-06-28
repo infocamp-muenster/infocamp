@@ -1,0 +1,36 @@
+Installiere die fehlenden packages mit pip3 install package_name:
+pandas
+timedelta
+river
+spacy
+nltk
+numpy
+django
+django_plotly_dash
+Image
+elasticsearch
+sshtunnel
+
+import nltk
+nltk.download('stopwords')
+
+python3 -m spacy download en_core_web_sm
+
+// Falls Error: 
+// nltk.download('punkt')    
+// [nltk_data] Error loading Punkt: <urlopen error [SSL:
+// [nltk_data]     CERTIFICATE_VERIFY_FAILED] certificate verify failed
+// [nltk_data]     (_ssl.c:590)>
+// False
+
+import nltk
+import ssl
+
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
+
+nltk.download('stopwords')

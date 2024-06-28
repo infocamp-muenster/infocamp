@@ -4,9 +4,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
+
+from Datamanagement.Database import Database
+from Datamanagement.mapping import map_data_to_json
 from .forms import CSVUploadForm
 from django.contrib.auth.hashers import make_password
 import csv
+import json
+import os
 
 # LoginPage (Detects if Login or Signup. User database call)
 def loginPage(request):
@@ -75,12 +80,34 @@ def upload(request):
         form = CSVUploadForm(request.POST, request.FILES)
         if form.is_valid():
             csv_file = request.FILES['csv_file']
-            decoded_file = csv_file.read().decode('utf-8').splitlines()
-            reader = csv.DictReader(decoded_file, delimiter=';')
-            for row in reader:
-                data.append(row)
+            file_name = os.path.splitext(csv_file.name)[0]  # Extrahieren des Dateinamens ohne Erweiterung
 
-            # TODO: Datenbank connection und das df dort abspeichern    
+            # Extrahieren der benutzerdefinierten Attribute
+            timestamp_key = request.POST['timestamp_key']
+            username_key = request.POST['username_key']
+            user_id_key = request.POST['user_id_key']
+            post_id_key = request.POST['post_id_key']
+            text_key = request.POST['text_key']
+
+            # Überprüfen des Dateiformats
+            file_extension = os.path.splitext(csv_file.name)[1].lower()
+            if file_extension == '.csv':
+                decoded_file = csv_file.read().decode('utf-8').splitlines()
+                reader = csv.DictReader(decoded_file, delimiter=';')
+                for row in reader:
+                    data.append(row)
+            elif file_extension == '.json':
+                data = json.load(csv_file)
+            else:
+                raise ValueError("Unsupported file format. Only JSON and CSV are supported.")
+
+            # Daten mapping
+            mapped_data = map_data_to_json(data, timestamp_key, username_key, user_id_key, post_id_key, text_key)
+
+            # Speichern der gemappten Daten in der Datenbank
+            db = Database()
+            db.upload(index=file_name, data=json.loads(mapped_data))  # Verwenden des Dateinamens als Index
+
             return redirect('Realtime')
     else:
         form = CSVUploadForm()

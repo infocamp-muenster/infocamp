@@ -2,15 +2,16 @@
 
 ![INFOCAMP - Board](Readme/figma_draft.png)
 
-Die Präsidentschaftswahl in den Staaten steht an und noch bevor der Wahlkampf richtig begonnen hat, geht es online bereits in die Vollen: Unauthentisches, koordiniertes Verhalten erodiert das Vertrauen in (soziale) Medien, egal um welche Themen es geht, von den Konflikten zwischen Russland und der Ukraine sowie Israel und Palästina, bis zu den Wahlen im In- und Ausland. Zu viele Meinungen und Informationen - und obendrein wird es immer schwieriger zu entscheiden, was wahr und fake ist. Und als wäre das nicht genug, werden durch den immensen Fortschritt KI-getriebener Sprachmodelle wie ChatGPT die Möglichkeiten Social Bots für die eigenen, dunklen Zwecke zu verwenden, immer vielfältiger. 
-Das Projektseminar ist für Technik- und Data Science-Affine sowie diejenigen, die sich mit gesellschaftlichen Themen auseinandersetzen wollen zugleich. Ziel ist die Erstellung eines hybriden Dashboards für die Echtzeitvisualisierung und Analyse von (Des)Informationskampagnen. Hybrid bedeutet eine Aufteilung in zwei Phasen: Die Echtzeitvisualisierung soll ein Live-tracking von inhaltlich automatisch gruppierten Posts beinhalten, die eine Erkennung von Mustern, die auf Koordination im Postingverhalten hinweisen, ermöglicht. Die Analysephase besteht aus einer inhaltlichen Analyse von identifizierten Clustern sowie einem Vergleich von Clustern über Zeit, da diese auf erneute Koordination aber auch auf thematische Wechsel im jeweiligen Kontext hinweisen können. 
-Harte Anforderungen gibt es keine, aber ein paar Anzeichen dafür, dass das Projektseminar das richtige für Dich ist: Wenn Du Interesse am Social Media Kosmos, Spaß am Programmieren insbesondere mit Python hast, Du ein Dashboard konzeptuell und nutzerfreundlich gestalten möchtest, Dich mit dem visuellen Design von (Web)applikationen auseinandersetzen willst oder schon Erfahrung mit Dash hast (wirklich nur zufällig😉). Oder Du hast einfach Lust, gelernte Ansätze zur Data Science auszuprobieren und neue zu entdecken. Dann bist du hier richtig!
+## Motivation
+The presidential election in the United States is coming up and even before the campaign has really started, things are already in full swing online: Inauthentic, coordinated behaviour is eroding trust in (social) media, no matter what the topic, from the conflicts between Russia and Ukraine and Israel and Palestine, to elections at home and abroad. Too many opinions and too much information - and on top of that, it is becoming increasingly difficult to decide what is true and what is fake. And as if that wasn't enough, the immense progress of AI-driven language models such as ChatGPT means that the possibilities of using social bots for your own dark purposes are becoming ever more diverse. The project seminar is for those interested in technology and data science as well as those who want to deal with social issues. The aim is to create a hybrid dashboard for the real-time visualisation and analysis of (dis)information campaigns. Hybrid means a division into two phases: The real-time visualisation should include live tracking of posts that are automatically grouped by content, which enables the recognition of patterns that indicate coordination in posting behaviour. The analysis phase consists of a content analysis of identified clusters as well as a comparison of clusters over time, as these can indicate renewed coordination but also thematic changes in the respective context. 
+There are no hard requirements, but there are a few signs that the project seminar is the right one for you: If you are interested in the social media cosmos, enjoy programming, especially with Python, want to design a conceptual and user-friendly dashboard, want to deal with the visual design of (web) applications or already have experience with Dash (really only by chance😉). Or you simply want to try out familiar approaches to data science and discover new ones. Then you've come to the right place!
 
 # Run the Application locally
-1. adjust the user information in Microclustering/thread_micro_clustering.py line 7 and line 8
-2. run ```python manage.py runserver ``` or ```python3 manage.py runserver ``` depending on your environment
+0. install all necessary packages: see the file 'necessary_packages.txt.'
+2. adjust the user information in Microclustering/thread_micro_clustering.py line 7 and line 8
+3. run ```python manage.py runserver ``` or ```python3 manage.py runserver ``` depending on your environment
 
-# Zugangsdaten via Django
+# Access via Django
 - Username: admin
 - Passwort: infocamp2024
 
@@ -50,8 +51,8 @@ git push origin your-branch-name
 
 Only admins have permission to push to the `master` branch to ensure stability and reliability of the main branch.
 
-
-
+# Info for Developers 
+![INFOCAMP - Board](Readme/Micro-Clustering_Sequenzdiagramm.pdf)
 
 
 

@@ -1,9 +1,57 @@
-{% load static %}
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Infocamp</title>
     <link rel="stylesheet" href="{% static 'styles/style.css' %}">
+    <style>
+        .upload_form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: auto;
+            max-width: 600px;
+            text-align: left;
+        }
+        .upload_form h2 {
+            text-align: center;
+            color: var(--font-color);
+        }
+        .upload_form label {
+            display: inline-block;
+            width: 150px;
+            text-align: left;
+        }
+        .upload_form input[type="text"],
+        .upload_form input[type="file"] {
+            text-align: left;
+            margin-bottom: 10px;
+            flex: 1;
+        }
+        .upload_form div {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .upload_form button {
+            background-color: var(--bg-blue);
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin: auto;
+        }
+        .upload_form form {
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
 </head>
 <body>
     <div class="outer-header-sticky">
@@ -29,39 +77,37 @@
         </header>
     </div>
     <div class="main-body">
-        <div class="widget upload_form" style="grid-column: span 12;grid-row: span 4;">
-            <h2>Upload CSV File</h1>
+        <div class="widget upload_form" style="grid-column: span 12; grid-row: span 4;">
+            <h2>Upload CSV or JSON File</h2>
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                <input type="file" name="csv_file" accept=".csv">
+                <div>
+                    <label for="csv_file">CSV or JSON File:</label>
+                    <input type="file" name="csv_file" accept=".csv, .json" required>
+                </div>
+                <div>
+                    <label for="timestamp_key">Timestamp Key:</label>
+                    <input type="text" name="timestamp_key" required>
+                </div>
+                <div>
+                    <label for="username_key">Username Key:</label>
+                    <input type="text" name="username_key" required>
+                </div>
+                <div>
+                    <label for="user_id_key">User ID Key:</label>
+                    <input type="text" name="user_id_key" required>
+                </div>
+                <div>
+                    <label for="post_id_key">Post ID Key:</label>
+                    <input type="text" name="post_id_key" required>
+                </div>
+                <div>
+                    <label for="text_key">Text Key:</label>
+                    <input type="text" name="text_key" required>
+                </div>
                 <button type="submit">Upload</button>
             </form>
         </div>
     </div>
-    <!--
-    If data was uploaded it preview could be shown
-    {% if data %}
-    <h2>Uploaded Data</h2>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>tweets</th>
-                <th>created_at</th>
-                <th>user</th>
-                <th>language</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in data %}
-            <tr>
-                <td>{{ row.tweets }}</td>
-                <td>{{ row.created_at }}</td>
-                <td>{{ row.user }}</td>
-                <td>{{ row.language }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% endif %}
-    -->
 </body>
+</html>
