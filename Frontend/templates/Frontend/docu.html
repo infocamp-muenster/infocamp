@@ -6,24 +6,28 @@
     <link rel="stylesheet" href="{% static 'styles/style.css' %}">
 </head>
 <body>
-    <header class="header">
-        <a href="/realtime" style="margin-right: 23%;">
-            <img src="{% static 'images/misdoom_logo.png' %}" alt="Misdoom Logo", style="filter: brightness(0) invert(1);">
-            <h1 style="margin: 30px 30px 30px 30px;">INFOCAMP Dashboard</h1>
-        </a>
-        <div class="header-documentation">
-            <img src="{% static 'images/file-solid.png' %}" alt="File Solid", style="width: 15px;">
-            <a href="#">Documentation</span>
-        </div>
-        <div class="header-upload">
-            <img src="{% static 'images/upload-solid.png' %}" alt="Upload Solid", style="width: 15px;">
-            <a href="/upload/">Upload Data</span>
-        </div>
-        <div class="header-settings">
-            <img src="{% static 'images/user-solid.png' %}" alt="User Solid", style="width: 15px;">
-            <a href="/logout/">Logout</a>
-        </div>
-    </header>
+    <div class="outer-header-sticky">
+        <header class="header">
+            <a href="/realtime">
+                <img src="{% static 'images/misdoom_logo.png' %}" alt="Misdoom Logo", style="filter: brightness(0) invert(1);">
+                <h1>INFOCAMP Dashboard</h1>
+            </a>
+            <div class="header-right">
+                <div class="header-documentation">
+                    <img src="{% static 'images/file-solid.png' %}" alt="File Solid", style="width: 15px;">
+                    <a href="#">Documentation</span>
+                </div>
+                <div class="header-upload">
+                    <img src="{% static 'images/upload-solid.png' %}" alt="Upload Solid", style="width: 15px;">
+                    <a href="/upload/">Upload Data</span>
+                </div>
+                <div class="header-settings">
+                    <img src="{% static 'images/user-solid.png' %}" alt="User Solid", style="width: 15px;">
+                    <a href="/logout/">Logout</a>
+                </div>
+            </div>
+        </header>
+    </div>
     <div class="main-body">
         <div class="widget" style="grid-column: span 12;grid-row: span 5;">
             <h2>Documentation pending!</h1>

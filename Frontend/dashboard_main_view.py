@@ -37,10 +37,9 @@ def initialize_dash_app():
                         # So no calculations or similiar in this section. Only calling function
             ]),
             html.Div(className='widget widget-pop-up', children=[
-                    html.H3('AI-Generation'),
-                    
+                    html.H3('AI-Generation'),    
             ]),
-            html.Div(className='widget', style={'grid-column':'span 7'}, children=[
+            html.Div(className='widget', style={'grid-column':'span 9'}, children=[
                 html.H3('Micro Cluster'),
                 html.Span('Emerging Trends'),
                 dcc.Graph(
@@ -53,6 +52,9 @@ def initialize_dash_app():
                     interval=1 * 1000,  # in milliseconds (1 second)
                     n_intervals=0
                 )
+            ]),
+            html.Div(className='widget widget-pop-up', id='popup-micro-cluster', children=[
+                    html.Span('Micro Cluster Pop Up'),
             ]),
             html.Div(className='widget', style={'grid-column':'span 5'}, children=[
                         # Bag of Words Chart can be embedded here!
@@ -130,16 +132,30 @@ def update_graph_live(n):
 
     return last_figure
 
-# Callback to toggle dropdown menu
+#Callback for Micro Cluster Pop Up Widget Information of Datapoints will be shown in Widget with id #popup-micro-cluster
 @app.callback(
-    Output('dropdown-menu', 'style'),
-    [Input('account-toggle', 'n_clicks')]
+        Output('popup-micro-cluster', 'children'),
+        [Input('live-update-graph', 'clickData')]
 )
-def toggle_dropdown(n_clicks):
-    if n_clicks % 2 == 1:
-        return {'display': 'block'}
-    else:
-        return {'display': 'none'}
+def micro_cluster_pop_up(clickData):
+    if clickData is None:
+        return html.Div(className='popup-micro-cluster',children=[
+        html.H4('Click on cluster for detailed information')
+    ])
+    
+    point = clickData['points'][0]
+    cluster_number = point['curveNumber']
+    cluster_index = point['pointNumber']
+    cluster_timestamp = point['x']
+    cluster_tweet_count = point['y']
+    
+    return html.Div(className='popup-micro-cluster',children=[
+        html.H4('Cluster Information'),
+        html.P(f'Cluster Number: {cluster_number}'),
+        html.P(f'Cluster Index: {cluster_index}'),
+        html.P(f'Timestamp: {cluster_timestamp}'),
+        html.P(f'Tweet Count: {cluster_tweet_count}')
+    ])
 
 
 # Run App
