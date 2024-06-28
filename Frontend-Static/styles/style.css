@@ -25,20 +25,31 @@ body {
     background-color: var(--bg-blue);
     margin-left: -20px;
     display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 .header a {
     text-decoration: none;
     display: flex;
 }
-.header div {
-    margin: 0 20px 0 0;
-    display: flex;
-    align-items: center;
-}
 .header div a {
     font-weight: 500;
     color: var(--white);
     text-decoration: none;
+}
+.header-right {
+    display: flex;
+    gap: 20px; /* Space between the items */
+    margin-right: 60px;
+}
+.header-right div {
+    display: flex;
+    align-items: center;
+}
+.outer-header-sticky {
+    position:sticky;
+    top:0;
+    z-index:100;
 }
 .widget {
     font-family: "Inter",sans-serif;
@@ -52,9 +63,12 @@ body {
 .widget-pop-up {
     grid-column: span 3;
     background-color: var(--dark-grey);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .header h1{
-    margin: 30px 25% 30px 30px;
+    margin: 30px 0;
     font-weight: 500;
     font-size: 22px;
     color: var(--white);

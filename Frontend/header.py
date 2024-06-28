@@ -10,24 +10,30 @@ file_icon = Image.open("Frontend/images/file-solid.png")
 
 
 def get_header():
-    return [ html.Header(className='header', children=[
-        html.Img(src=pil_image, alt="Misdoom Logo",style={'filter':'brightness(0) invert(1)'}),
-        html.H1('INFOCAMP Dashboard'),
-    
-    # Header Documentation
-    html.Div(children=[
-        html.Img(src=file_icon, alt="File Icon",style={'width':'15px',}),
-        html.A('Documentation', href='documentation/')
-    ]),
-    # Header Import
-    html.Div(children=[
-        html.Img(src=upload_icon, alt="Upload Icon",style={'width':'15px',}),
-        html.A('Upload Data', href='upload/')
-    ]),
-    # Header Settings
-    html.Div(children=[
-        html.Img(src=user_icon, alt="User Icon",style={'width':'15px',}),
-        html.A('Logout', href='logout/')
-    ]),
-    ]), 
+    return [ 
+        html.Div(className='outer-header-sticky', children=[ #Sticky Header needs Div around itself
+            html.Header(className='header', children=[
+                html.A(href='/', children=[
+                    html.Img(src=pil_image, alt="Misdoom Logo",style={'filter':'brightness(0) invert(1)'}),
+                    html.H1('INFOCAMP Dashboard'),
+                ]),
+                html.Div(className='header-right', children=[
+                    # Header Documentation
+                    html.Div(children=[
+                        html.Img(src=file_icon, alt="File Icon",style={'width':'15px',}),
+                        html.A('Documentation', href='documentation/')
+                    ]),
+                    # Header Import
+                    html.Div(children=[
+                        html.Img(src=upload_icon, alt="Upload Icon",style={'width':'15px',}),
+                        html.A('Upload Data', href='upload/')
+                    ]),
+                    # Header Settings
+                    html.Div(children=[
+                        html.Img(src=user_icon, alt="User Icon",style={'width':'15px',}),
+                        html.A('Logout', href='logout/')
+                    ]),
+                ])
+            ]), 
+        ]),
     ]
