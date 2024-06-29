@@ -190,6 +190,9 @@ def get_cluster_tweet_data(db, index):
 
 def main_loop(db, index):
     global lock, all_tweets_from_db
+    # TODO: Implement suitable macro-cluster call
+    cluster_iterations = 0
+
     try:
         lock = True
         all_tweets_from_db = db.search_get_all(index)
@@ -262,8 +265,13 @@ def main_loop(db, index):
         pd.set_option('display.max_colwidth', None)
         print(cluster_tweet_data_df)
 
+        if cluster_iterations >= 10:
+            main(cluster_tweet_data)
+            cluster_iterations = 0
+
         # Zeitintervall erhöhen
         start_time += timedelta(minutes=1)
         end_time += timedelta(minutes=1)
 
         time.sleep(2)
+        cluster_iterations += 1
