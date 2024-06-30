@@ -1,3 +1,10 @@
+'''
+- This files contains the code for the main view of the dashboard.
+- The inital Django App named "app" is initialized and all HTML frontend widgets are deployed in this file.
+- Major widget as the clustering graphs are updated in this file as well
+- Each widget is defined by a Div with CSS class 'widget'
+'''
+
 # Import of function ToDo: Check if all imports are needed
 import plotly.express as px
 from dash import dcc, html
@@ -5,7 +12,7 @@ from dash.dependencies import Output, Input
 import plotly.graph_objs as go
 import pandas as pd
 from Frontend.header import get_header
-from Microclustering.micro_clustering import get_cluster_tweet_data
+from Microclustering.micro_clustering import get_cluster_tweet_data, convert_date
 from django_plotly_dash import DjangoDash
 from Datamanagement.Database import Database
 
@@ -19,6 +26,7 @@ last_figure = {'data': [], 'layout': go.Layout(title='Number of Tweets per Clust
 # Initialize the app
 app = DjangoDash('dashboard')
 
+# HTML Header for Dashboard
 header = get_header()
 
 # App layout
@@ -28,93 +36,88 @@ def initialize_dash_app():
          # Include the header HTML
         *header,
 
+        # Main Div element named 'main-body' contains import style information and all widgets are childs of it
         html.Div(className='main-body', children=[
+
             html.Div(className='widget', style={'grid-column':'span 9'}, children=[
                     html.H3('KI-Probability'),
                     html.Span('Of Text based Content'),
-                        # Topic Focus Widget can be embedded here!
-                        # Create an extra file and call the function which contains the chart here
-                        # So no calculations or similiar in this section. Only calling function
+                        # Widget can be embedded here!
             ]),
             html.Div(className='widget widget-pop-up', children=[
                     html.H3('AI-Generation'),    
             ]),
+            # Main Micro Cluster Widget
             html.Div(className='widget', style={'grid-column':'span 9'}, children=[
                 html.H3('Micro Cluster'),
                 html.Span('Emerging Trends'),
                 dcc.Graph(
                         id='live-update-graph',
                         config={'displayModeBar': False},
-                        # style={'height': '300px'}
                 ),
                 dcc.Interval(
                     id='interval-component',
-                    interval=1 * 1000,  # in milliseconds (1 second)
+                    interval=1 * 1000, # in milliseconds (1 second)
                     n_intervals=0
                 )
             ]),
             html.Div(className='widget widget-pop-up', id='popup-micro-cluster', children=[
                     html.Span('Micro Cluster Pop Up'),
             ]),
-            html.Div(className='widget', style={'grid-column':'span 5'}, children=[
-                        # Bag of Words Chart can be embedded here!
-                        # Create an extra file and call the function which contains the chart here
-                        # So no calculations or similiar in this section. Only calling function
+
+            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
+                html.H3('Topic Focus'),
+                html.Span('Cluster Analysis'),
+                # Widget can be embedded here!
             ]),
-            html.Div(className='widget', style={'grid-column':'span 7'}, children=[
-                    html.H3('Most Recent Posts'),
-                    html.Span('Post Analysis'),
-                        # Most Recent Posts can be embedded here!
-                        # Create an extra file and call the function which contains the chart here
-                        # So no calculations or similiar in this section. Only calling function
+            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
+                html.H3('Most Recent Posts'),
+                html.Span('Post Analysis'),
+                    # Widget can be embedded here!
             ]),
-            html.Div(className='widget', style={'grid-column':'span 5'}, children=[
-                    html.H3('Topic Focus'),
-                    html.Span('Cluster Analysis'),
-                        # Topic Focus Widget can be embedded here!
-                        # Create an extra file and call the function which contains the chart here
-                        # So no calculations or similiar in this section. Only calling function
+            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
+                html.H3('Topic Focus'),
+                html.Span('Cluster Analysis'),
+                    # Widget can be embedded here!
             ]),
-            html.Div(className='widget', style={'grid-column':'span 7'}, children=[
-                    html.H3('Topic Focus'),
-                    html.Span('Cluster Analysis'),
-                        # Topic Focus Widget can be embedded here!
-                        # Create an extra file and call the function which contains the chart here
-                        # So no calculations or similiar in this section. Only calling function
-            ]),
-            html.Div(className='widget', style={'grid-column':'span 5'}, children=[
-                    html.H3('Topic Focus'),
-                    html.Span('Cluster Analysis'),
-                        # Topic Focus Widget can be embedded here!
-                        # Create an extra file and call the function which contains the chart here
-                        # So no calculations or similiar in this section. Only calling function
+            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
+                html.H3('Topic Focus'),
+                html.Span('Cluster Analysis'),
+                    # Widget can be embedded here!
             ]),
         ]),
     ])
 
+# Callback function for updating the realtime micro cluster chart
 @app.callback(
         Output('live-update-graph', 'figure'),
         [Input('interval-component', 'n_intervals')]
 )
 
+# Function inclduing necessary code for updating micro cluster chart in realtime
 def update_graph_live(n):
     global last_figure
 
     try:
         # Trying to get cluster data from db
         cluster_tweet_data = get_cluster_tweet_data(db, 'cluster_tweet_data')
+
         # Ensure 'timestamp' is in datetime format
         cluster_tweet_data['timestamp'] = pd.to_datetime(cluster_tweet_data['timestamp'])
 
+        # Predefined line colors
+        line_colors_list = ['#07368C', '#707FDD', '#BBC4FD', '#455BE7', '#F1F2FC']
+
         # Plotting
         traces = []
-        for cluster_id in cluster_tweet_data['cluster_id'].unique():
+        for i, cluster_id in enumerate(cluster_tweet_data['cluster_id'].unique()):
             cluster_data = cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id]
             traces.append(go.Scatter(
                 x=cluster_data['timestamp'],
                 y=cluster_data['tweet_count'],
                 mode='lines+markers',
-                name=f'Cluster {cluster_id}'
+                name=f'Cluster {cluster_id}',
+                line=dict(color=line_colors_list[i % len(line_colors_list)]) # Assign color from predefined list
             ))
 
         layout = go.Layout(
@@ -132,29 +135,49 @@ def update_graph_live(n):
 
     return last_figure
 
-#Callback for Micro Cluster Pop Up Widget Information of Datapoints will be shown in Widget with id #popup-micro-cluster
+# Callback for Micro Cluster Pop Up Widget Information of Datapoints will be shown in widget with id #popup-micro-cluster
 @app.callback(
         Output('popup-micro-cluster', 'children'),
         [Input('live-update-graph', 'clickData')]
 )
+
+# Function including HTML Output for micro cluster pop up information
 def micro_cluster_pop_up(clickData):
     if clickData is None:
-        return html.Div(className='popup-micro-cluster',children=[
+        return html.Div(className='widget-pop-up-default',children=[
         html.H4('Click on cluster for detailed information')
     ])
     
     point = clickData['points'][0]
+    print(point)
     cluster_number = point['curveNumber']
     cluster_index = point['pointNumber']
-    cluster_timestamp = point['x']
+    cluster_timestamp = convert_date(point['x'])
     cluster_tweet_count = point['y']
+
+    # Predefined line colors
+    line_colors_list = ['#07368C', '#707FDD', '#BBC4FD', '#455BE7', '#F1F2FC']
+    cluster_color = line_colors_list[cluster_number]
     
-    return html.Div(className='popup-micro-cluster',children=[
-        html.H4('Cluster Information'),
-        html.P(f'Cluster Number: {cluster_number}'),
-        html.P(f'Cluster Index: {cluster_index}'),
-        html.P(f'Timestamp: {cluster_timestamp}'),
-        html.P(f'Tweet Count: {cluster_tweet_count}')
+    return html.Div(children=[
+        html.H3('Cluster Information'),
+        html.Span('Analytics for selected cluster'),
+        html.P(children=[
+            html.Span(f'Cluster Index:'),
+            html.Span(f'{cluster_index}',style={'font-weight':'600'}),
+        ]),
+        html.P(children=[
+            html.Span(f'Cluster Color:'),
+            html.Span(f'{cluster_color}',style={'color': cluster_color,'font-weight':'600'}),
+        ]),
+        html.P(children=[
+            html.Span(f'Timestamp:'),
+            html.Span(f'{cluster_timestamp}',style={'font-weight':'600'}),
+        ]),
+        html.P(children=[
+            html.Span(f'Tweet Count:'),
+            html.Span(f'{cluster_tweet_count}',style={'font-weight':'600'}),
+        ]),
     ])
 
 

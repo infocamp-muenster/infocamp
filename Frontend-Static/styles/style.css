@@ -1,26 +1,37 @@
+/* style.css */
+/* includes all css used on website */
+
+/* defining colors */
 :root {
     --bg-color:#F1F2FC;
     --font-color: #1F384C;
-    --bg-blue: #707FDD;
+    --bg-blue: #5A6ACF;
     --white: #ffffff;
     --dark-grey: #C4C7DB;
     --link-hover: #f0f0f0;
     --ms-yellow: #EAD30C;
 }
+
+/* body as main HTML element */
 body {
     margin: 0;
     font-family: "Inter", sans-serif;
     color: var(--font-color);
     background-color: var(--bg-color);
 }
+
+/* main-body is the major div including important css grid definition */
 .main-body {
     display: grid;
     grid-template-columns: repeat(12, [col-start] 1fr);
     grid-auto-rows: minmax(100px, auto);
     grid-gap: 15px;
     overflow-y: auto; /* Enable vertical scrolling */
-    margin: 15px 15px 0 15px;
+    margin: 15px;
 }
+
+
+/* --- CSS related to the HTML header --- */
 .header {
     background-color: var(--bg-blue);
     margin-left: -20px;
@@ -46,11 +57,30 @@ body {
     display: flex;
     align-items: center;
 }
+.header h1{
+    margin: 30px 0;
+    font-weight: 500;
+    font-size: 22px;
+    color: var(--white);
+    line-height: 2;
+}
+.header span {
+    font-weight: 300;
+}
 .outer-header-sticky {
     position:sticky;
     top:0;
     z-index:100;
 }
+.header img {
+    width: 100px;
+    object-fit: contain;
+    padding: 20px;
+    margin-left: 20px;
+}
+
+
+/* --- CSS related to widgets --- */
 .widget {
     font-family: "Inter",sans-serif;
     background-color: #fff;
@@ -62,49 +92,32 @@ body {
 }
 .widget-pop-up {
     grid-column: span 3;
-    background-color: var(--dark-grey);
+}
+.widget-pop-up-default {
     display: flex;
     justify-content: center;
     align-items: center;
-}
-.header h1{
-    margin: 30px 0;
-    font-weight: 500;
-    font-size: 22px;
-    color: var(--white);
-    line-height: 2;
-}
-.header span {
-    font-weight: 300;
 }
 .widget h2 {
     margin: 10px 0 10px 10px;
     color: var(--font-color);
 }
+/* main widget title */
 .widget h3 {
     font-weight: 500;
     margin: 10px 0 0 10px;
     color: var(--font-color);
 }
+/* widget subtitle */
 .widget span {
     font-weight: 300;
     color: var(--font-color);
     margin: 0 0 0 10px;
     font-size: 14px;
 }
-.header img {
-    width: 100px;
-    object-fit: contain;
-    padding: 20px;
-    margin-left: 20px;
-}
-.import-section {
-    padding: 10px;
-}
-.import-section a {
-    color: var(--white);
-    font-weight: 300;
-}
+
+
+/* --- CSS for upload page --- */
 .upload_form button {
     background-color: var(--bg-blue);
     border: none;
@@ -115,8 +128,10 @@ body {
 .upload_form form {
     margin: 10px;
 }
-/* Login Page CSS*/
 
+
+
+/* --- CSS for login page --- */
 .login-div {
     background-color: var(--bg-blue);
     padding: 20px;
@@ -162,7 +177,6 @@ body {
     text-align: left;
     color: var(--font-color);
 }
-
 .login-div input[type="submit"] {
     padding: 10px;
     border: none;
@@ -188,7 +202,7 @@ body {
 .login-div a:hover {
     color: var(--link-hover);
 }
-/*Error Messages Login*/
+/* error messages login page */
 .messages {
     margin: 20px 0 20px 41%;
     list-style: none;
