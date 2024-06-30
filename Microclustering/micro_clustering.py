@@ -9,7 +9,7 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 import numpy as np
-
+from Macroclustering.macro_clustering_using_database import main
 
 # Funktionen
 from datetime import datetime
@@ -47,14 +47,19 @@ def preprocess_tweet(tweet, stemmer, nlp, stop_words):
     return ' '.join(stemmed_tokens)
 
 
-# Funktion die das eigentliche Clustern pro Tweet inkrementell durchführt
-def process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words):
+# Funktion die das eigentliche Clustern pro Tweet inkrementell durchführt; tweet_cluster_mapping ist dabei Zuordnung von jedem Tweet zu einem Micro-Cluster
+def process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words, micro_cluster_centers):
     for _, tweet in tweets.iterrows():
         processed_tweet = preprocess_tweet(tweet['text'], stemmer, nlp, stop_words)
         features = vectorizer.transform_one(processed_tweet)
         try:
             clustream.learn_one(features)
             cluster_id = clustream.predict_one(features)
+            # get center for each micro-cluster
+            center = clustream.micro_clusters[cluster_id].center
+            micro_cluster_centers[cluster_id] = center
+
+
             tweet_cluster_mapping.append({
                 'tweet_id': tweet['id_str'],
                 'cluster_id': cluster_id,
@@ -65,7 +70,7 @@ def process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer
 
 
 # Funktion die das cluster_tweet_data Dataframe nach jedem Zeitintervall updated und sämtliche Kennzahlen berechnet
-def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time, end_time):
+def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time, end_time, micro_cluster_centers):
     """
     Diese Funktion transformiert die tweet_cluster_mapping (Update nach jedem tweet) Liste in eine
     Liste mit sieben Spalten: cluster_id, timestamp, Anzahl der Tweets, durchschnittlicher tweet_count,
@@ -73,7 +78,7 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
     """
     df = pd.DataFrame(tweet_cluster_mapping)
     df['timestamp'] = pd.to_datetime(df['timestamp'])
-    df['timestamp'] = df['timestamp'].dt.floor('T')  # Auf Minutenebene runden
+    df['timestamp'] = df['timestamp'].dt.floor('min')  # Auf Minutenebene runden
 
     # Filtern der Daten nach dem gegebenen Zeitintervall
     mask = (df['timestamp'] >= start_time) & (df['timestamp'] < end_time)
@@ -86,7 +91,7 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
     # Erstellen einer neuen DataFrame für das aktuelle Zeitintervall
     new_cluster_tweet_data = pd.DataFrame(
         columns=['cluster_id', 'timestamp', 'tweet_count', 'average_tweet_count', 'std_dev_tweet_count',
-                 'lower_threshold', 'upper_threshold'])
+                 'lower_threshold', 'upper_threshold', 'center'])
 
     # Zählen der Tweets für das aktuelle Zeitintervall und Berechnung des Durchschnitts und der Standardabweichung
     rows_to_add = []
@@ -110,6 +115,9 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
         lower_threshold = tweet_count - 6 * prev_std_dev_tweet_count
         upper_threshold = tweet_count + 6 * prev_std_dev_tweet_count
 
+        # Hinzufügen des Clusterzentrums
+        center = micro_cluster_centers.get(cluster_id, None)
+
         rows_to_add.append({
             'cluster_id': cluster_id,
             'timestamp': end_time,
@@ -117,7 +125,8 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
             'average_tweet_count': average_tweet_count,
             'std_dev_tweet_count': std_dev_tweet_count,
             'lower_threshold': lower_threshold,
-            'upper_threshold': upper_threshold
+            'upper_threshold': upper_threshold,
+            'center': center
         })
 
     # Sicherstellen, dass Cluster ohne Einträge im Zeitintervall hinzugefügt werden
@@ -143,6 +152,9 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
             lower_threshold = 0 - 6 * prev_std_dev_tweet_count
             upper_threshold = 0 + 6 * prev_std_dev_tweet_count
 
+            # Hinzufügen des Clusterzentrums
+            center = micro_cluster_centers.get(cluster_id, None)
+
             rows_to_add.append({
                 'cluster_id': cluster_id,
                 'timestamp': end_time,
@@ -150,7 +162,8 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
                 'average_tweet_count': average_tweet_count,
                 'std_dev_tweet_count': std_dev_tweet_count,
                 'lower_threshold': lower_threshold,
-                'upper_threshold': upper_threshold
+                'upper_threshold': upper_threshold,
+                'center': center
             })
 
     new_cluster_tweet_data = pd.concat([new_cluster_tweet_data, pd.DataFrame(rows_to_add)], ignore_index=True)
@@ -187,6 +200,9 @@ def get_cluster_tweet_data(db, index):
 
 def main_loop(db, index):
     global lock, all_tweets_from_db
+    # TODO: Implement suitable macro-cluster call
+    cluster_iterations = 0
+
     try:
         lock = True
         all_tweets_from_db = db.search_get_all(index)
@@ -214,19 +230,22 @@ def main_loop(db, index):
     # Zuordnungsliste Cluster id zu Tweet id
     tweet_cluster_mapping = []
 
+    # Dictionary zum Speichern der Mikro-Cluster-Zentren
+    micro_cluster_centers = {}
+
     # Schleife die jeden Tweet des Zeitintervalls behandelt
     while True:
         tweets = fetch_tweets_in_time_window(tweets_selected, start_time, end_time, 'created_at')
         if not tweets.empty:
             print(f"Tweets von {start_time} bis {end_time}:")
             print(tweets[['created_at', 'text', 'id_str']])
-            process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words)
+            process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words, micro_cluster_centers)
 
         # Informationen der Microcluster speichern (Zentrum usw.)
 
         # Cluster_tweet_data Dataframe nach dem Durchlauf des Zeitintervalls aktualisieren
         cluster_tweet_data = transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time,
-                                                             end_time)
+                                                             end_time, micro_cluster_centers)
 
         # Dataframe in Elasticsearch hochladen
         while True:
@@ -259,8 +278,13 @@ def main_loop(db, index):
         pd.set_option('display.max_colwidth', None)
         print(cluster_tweet_data_df)
 
+        if cluster_iterations >= 10:
+            main(cluster_tweet_data)
+            cluster_iterations = 0
+
         # Zeitintervall erhöhen
         start_time += timedelta(minutes=1)
         end_time += timedelta(minutes=1)
 
         time.sleep(2)
+        cluster_iterations += 1
