@@ -220,19 +220,22 @@ def main_loop(db, index):
     # Zuordnungsliste Cluster id zu Tweet id
     tweet_cluster_mapping = []
 
+    # Dictionary zum Speichern der Mikro-Cluster-Zentren
+    micro_cluster_centers = {}
+
     # Schleife die jeden Tweet des Zeitintervalls behandelt
     while True:
         tweets = fetch_tweets_in_time_window(tweets_selected, start_time, end_time, 'created_at')
         if not tweets.empty:
             print(f"Tweets von {start_time} bis {end_time}:")
             print(tweets[['created_at', 'text', 'id_str']])
-            process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words)
+            process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words, micro_cluster_centers)
 
         # Informationen der Microcluster speichern (Zentrum usw.)
 
         # Cluster_tweet_data Dataframe nach dem Durchlauf des Zeitintervalls aktualisieren
         cluster_tweet_data = transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time,
-                                                             end_time)
+                                                             end_time, micro_cluster_centers)
 
         # Dataframe in Elasticsearch hochladen
         while True:
