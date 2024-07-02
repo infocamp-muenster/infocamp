@@ -57,7 +57,7 @@ def initialize_dash_app():
                 ),
                 dcc.Interval(
                     id='interval-component',
-                    interval=1 * 1000, # in milliseconds (1 second)
+                    interval=1 * 3000,  # in milliseconds (3 seconds)
                     n_intervals=0
                 )
             ]),

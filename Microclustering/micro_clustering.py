@@ -9,7 +9,8 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 import numpy as np
-from Macroclustering.macro_clustering_using_database import main
+from Macroclustering.macro_clustering_using_database import main_local
+from Infodash.globals import global_lock
 
 # Funktionen
 from datetime import datetime
@@ -175,41 +176,45 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
 
 # Funktion um das Dataframe zum dash Script zu liefern
 def get_cluster_tweet_data(db, index):
-    global lock
     df = pd.DataFrame()
 
     while True:
-        if not lock and df.empty:
-            print("trying to get_cluster_tweet_data")
-            lock = True
+        if global_lock.acquire(blocking=False):  # Versuche, die Lock zu erwerben, ohne zu blockieren
             try:
-                cluster_tweet_data = db.search_get_all(index)
-                # Extracting the '_source' part of each dictionary to create a DataFrame
-                data = [item['_source'] for item in cluster_tweet_data]
-                df = pd.DataFrame(data)
-                print("successfully get_cluster_tweet_data")
-                return df
+                if df.empty:
+                    print("Trying to get cluster tweet data")
+                    cluster_tweet_data = db.search_get_all(index)
+                    # Extracting the '_source' part of each dictionary to create a DataFrame
+                    data = [item['_source'] for item in cluster_tweet_data]
+                    df = pd.DataFrame(data)
+                    print("Successfully retrieved cluster tweet data")
+                    return df
 
             except Exception as e:
                 print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
+
             finally:
-                lock = False
+                global_lock.release()  # Sicherstellen, dass die Lock immer freigegeben wird
+
         else:
+            # Wenn die Lock nicht verfügbar ist, warte etwas und versuche es erneut
+            print("Lock is busy, waiting...")
             time.sleep(5)
 
 
 def main_loop(db, index):
-    global lock, all_tweets_from_db
-    # TODO: Implement suitable macro-cluster call
-    cluster_iterations = 0
+    global all_tweets_from_db
 
     try:
-        lock = True
+        global_lock.acquire(blocking=True)
         all_tweets_from_db = db.search_get_all(index)
     except Exception as e:
         print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
     finally:
-        lock = False
+        global_lock.release()
+
+    # TODO: Implement suitable macro-cluster call
+    cluster_iterations = 0
 
     tweets = pd.DataFrame([hit["_source"] for hit in all_tweets_from_db])
     tweets_selected = tweets[['created_at', 'text', 'id_str']]
@@ -247,39 +252,29 @@ def main_loop(db, index):
         cluster_tweet_data = transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time,
                                                              end_time, micro_cluster_centers)
 
-        # Dataframe in Elasticsearch hochladen
-        while True:
-            global cluster_tweet_data_from_db
-
-            if not lock:
-                lock = True
-                try:
-                    if db.es.indices.exists(index='cluster_tweet_data'):
-                        db.es.indices.delete(index='cluster_tweet_data')
-                    db.upload_df('cluster_tweet_data', cluster_tweet_data)
-                except Exception as e:
-                    print(f"An error occurred during upload: {e}")
-                finally:
-                    lock = False
-                    break
-            else:
-                time.sleep(5)
-
-        try:
-            cluster_tweet_data_from_db = db.search_get_all('cluster_tweet_data')
-        except Exception as e:
-            print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
 
         # Cluster_tweet_data printen zur Kontrolle
-        cluster_tweet_data_df = pd.DataFrame([hit["_source"] for hit in cluster_tweet_data_from_db])
         pd.set_option('display.max_rows', None)
         pd.set_option('display.max_columns', None)
         pd.set_option('display.width', None)
         pd.set_option('display.max_colwidth', None)
-        print(cluster_tweet_data_df)
+        print("Kontroll-Print:")
+        print(cluster_tweet_data)
+
+        # Dataframe in Elasticsearch hochladen
+        try:
+            global_lock.acquire(blocking=True)
+            if db.es.indices.exists(index='cluster_tweet_data'):
+                db.es.indices.delete(index='cluster_tweet_data')
+            db.upload_df('cluster_tweet_data', cluster_tweet_data)
+        except Exception as e:
+            print(f"An error occurred during upload: {e}")
+
+        finally:
+            global_lock.release()
 
         if cluster_iterations >= 10:
-            main(cluster_tweet_data)
+            main_local(cluster_tweet_data)
             cluster_iterations = 0
 
         # Zeitintervall erhöhen
