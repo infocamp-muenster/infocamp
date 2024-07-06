@@ -12,5 +12,6 @@ urlpatterns = [
     path('django_plotly_dash/', include('django_plotly_dash.urls')),
 
     path('upload/', views.upload, name='upload'),
+    path('export/', views.dataExport, name="export"),
    
 ]

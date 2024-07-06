@@ -74,6 +74,7 @@ def documentation(request):
     return render(request, 'Frontend/docu.html')
 
 # Functions returns df uploaded as CSV
+@login_required(login_url='login')
 def upload(request):
     data = []
     if request.method == "POST":
@@ -112,3 +113,6 @@ def upload(request):
     else:
         form = CSVUploadForm()
     return render(request, 'Frontend/upload.html', {'form': form, 'data': data})
+
+def dataExport(request):
+    return render(request, 'Frontend/export.html')
