@@ -3,15 +3,18 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.forms import UserCreationForm
+from django.http import HttpResponse
 
 from Datamanagement.Database import Database
 from Datamanagement.mapping import map_data_to_json
 from .forms import CSVUploadForm
 from django.contrib.auth.hashers import make_password
+from Microclustering.micro_clustering import export_data
 import csv
 import json
 import os
+import io
+import pandas as pd
 
 # LoginPage (Detects if Login or Signup. User database call)
 def loginPage(request):
@@ -115,4 +118,18 @@ def upload(request):
     return render(request, 'Frontend/upload.html', {'form': form, 'data': data})
 
 def dataExport(request):
-    return render(request, 'Frontend/export.html')
+    data = export_data()
+
+    # Erstellt einen Pandas DataFrame aus den Daten
+    df = pd.DataFrame(data)
+    
+    # Generiert die CSV-Datei in einem StringIO-Objekt
+    csv_buffer = io.StringIO()
+    df.to_csv(csv_buffer, index=False, sep=';')
+    csv_buffer.seek(0)
+
+    # Erstellt einen HttpResponse mit dem CSV-Inhalt
+    response = HttpResponse(csv_buffer, content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="data-export.csv"'
+
+    return response
