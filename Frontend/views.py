@@ -16,6 +16,9 @@ import os
 import io
 import pandas as pd
 
+from .models import UploadedData
+
+
 # LoginPage (Detects if Login or Signup. User database call)
 def loginPage(request):
     page = request.GET.get('page', 'login')
@@ -80,20 +83,21 @@ def documentation(request):
 @login_required(login_url='login')
 def upload(request):
     data = []
+    message = ""
     if request.method == "POST":
         form = CSVUploadForm(request.POST, request.FILES)
         if form.is_valid():
             csv_file = request.FILES['csv_file']
-            file_name = os.path.splitext(csv_file.name)[0]  # Extrahieren des Dateinamens ohne Erweiterung
+            file_name = os.path.splitext(csv_file.name)[0]
+            username = request.user.username
+            index_name = f"{username}_{file_name}"
 
-            # Extrahieren der benutzerdefinierten Attribute
             timestamp_key = request.POST['timestamp_key']
             username_key = request.POST['username_key']
             user_id_key = request.POST['user_id_key']
             post_id_key = request.POST['post_id_key']
             text_key = request.POST['text_key']
 
-            # Überprüfen des Dateiformats
             file_extension = os.path.splitext(csv_file.name)[1].lower()
             if file_extension == '.csv':
                 decoded_file = csv_file.read().decode('utf-8').splitlines()
@@ -103,19 +107,35 @@ def upload(request):
             elif file_extension == '.json':
                 data = json.load(csv_file)
             else:
-                raise ValueError("Unsupported file format. Only JSON and CSV are supported.")
+                message = "Unsupported file format. Only JSON and CSV are supported."
+                return render(request, 'Frontend/upload.html', {'form': form, 'data': data, 'message': message})
 
-            # Daten mapping
-            mapped_data = map_data_to_json(data, timestamp_key, username_key, user_id_key, post_id_key, text_key)
+            # Data Mapping
+            mapped_data = map_data_to_json(
+                data,
+                timestamp_key,
+                username_key,
+                user_id_key,
+                post_id_key,
+                text_key
+            )
 
-            # Speichern der gemappten Daten in der Datenbank
+            # Save Data to ES
             db = Database()
-            db.upload(index=file_name, data=json.loads(mapped_data))  # Verwenden des Dateinamens als Index
+            db.upload(index=index_name, data=json.loads(mapped_data))
 
-            return redirect('Realtime')
+            # Speichern der Metadaten in der Django-Datenbank
+            UploadedData.objects.create(
+                user=request.user,
+                file_name=file_name,
+                index_name=index_name
+            )
+
+            message = "Ihr Datensatz wurde erfolgreich hochgeladen!"
     else:
         form = CSVUploadForm()
-    return render(request, 'Frontend/upload.html', {'form': form, 'data': data})
+    return render(request, 'Frontend/upload.html', {'form': form, 'data': data, 'message': message})
+
 
 def dataExport(request):
     data = export_data()

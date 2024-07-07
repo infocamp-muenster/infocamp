@@ -51,6 +51,11 @@
             display: flex;
             flex-direction: column;
         }
+        .status_message {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--font-color);
+        }
     </style>
 </head>
 <body>
@@ -111,6 +116,9 @@
                 </div>
                 <button type="submit">Upload</button>
             </form>
+            {% if message %}
+                <div class="status_message">{{ message }}</div>
+            {% endif %}
         </div>
     </div>
 </body>
