@@ -4,59 +4,9 @@
     {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infocamp</title>
+    <title>INFOCAMP Dashboard - Upload</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'styles/style.css' %}">
-    <style>
-        .upload_form {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin: auto;
-            max-width: 600px;
-            text-align: left;
-        }
-        .upload_form h2 {
-            text-align: center;
-            color: var(--font-color);
-        }
-        .upload_form label {
-            display: inline-block;
-            width: 150px;
-            text-align: left;
-        }
-        .upload_form input[type="text"],
-        .upload_form input[type="file"] {
-            text-align: left;
-            margin-bottom: 10px;
-            flex: 1;
-        }
-        .upload_form div {
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .upload_form button {
-            background-color: var(--bg-blue);
-            border: none;
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            display: block;
-            margin: auto;
-        }
-        .upload_form form {
-            display: flex;
-            flex-direction: column;
-        }
-        .status_message {
-            text-align: center;
-            margin-top: 20px;
-            color: var(--font-color);
-        }
-    </style>
 </head>
 <body>
     <div class="outer-header-sticky">
@@ -86,35 +36,40 @@
         </header>
     </div>
     <div class="main-body">
-        <div class="widget upload_form" style="grid-column: span 12; grid-row: span 4;">
+        <div class="widget upload_form" style="grid-column: span 12;min-width: 600px;">
             <h2>Upload CSV or JSON File</h2>
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" style="margin-top: 40px;">
                 {% csrf_token %}
                 <div>
-                    <label for="csv_file">CSV or JSON File:</label>
-                    <input type="file" name="csv_file" accept=".csv, .json" required>
+                    <span style="margin: 0 0 10px 0;">Upload your CSV or JSON file:</span>
                 </div>
                 <div>
+                    <input type="file" name="csv_file" accept=".csv, .json" required>
+                </div>
+                <div style="margin-top: 20px">
+                    <span style="margin: 0 0 10px 0;">Enter your column names:</span>
+                </div>
+                <div class="input-row">
                     <label for="timestamp_key">Timestamp Key:</label>
                     <input type="text" name="timestamp_key" required>
                 </div>
-                <div>
+                <div class="input-row">
                     <label for="username_key">Username Key:</label>
                     <input type="text" name="username_key" required>
                 </div>
-                <div>
+                <div class="input-row">
                     <label for="user_id_key">User ID Key:</label>
                     <input type="text" name="user_id_key" required>
                 </div>
-                <div>
+                <div class="input-row">
                     <label for="post_id_key">Post ID Key:</label>
                     <input type="text" name="post_id_key" required>
                 </div>
-                <div>
+                <div class="input-row">
                     <label for="text_key">Text Key:</label>
                     <input type="text" name="text_key" required>
                 </div>
-                <button type="submit">Upload</button>
+                <button type="submit" style="margin-top: 20px">Upload</button>
             </form>
             {% if message %}
                 <div class="status_message">{{ message }}</div>
