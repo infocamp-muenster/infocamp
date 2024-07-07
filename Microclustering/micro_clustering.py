@@ -11,6 +11,7 @@ from nltk.stem import PorterStemmer
 import numpy as np
 from Macroclustering.macro_clustering_using_database import main_local
 from Infodash.globals import global_lock
+from detector import Detector  # neu
 
 data_for_export = []
 
