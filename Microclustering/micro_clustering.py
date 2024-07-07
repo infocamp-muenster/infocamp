@@ -12,6 +12,8 @@ import numpy as np
 from Macroclustering.macro_clustering_using_database import main_local
 from Infodash.globals import global_lock
 
+data_for_export = []
+
 # Funktionen
 from datetime import datetime
 
@@ -201,9 +203,14 @@ def get_cluster_tweet_data(db, index):
             print("Lock is busy, waiting...")
             time.sleep(5)
 
+def export_data():
+    global data_for_export
+    return data_for_export
+
 
 def main_loop(db, index):
     global all_tweets_from_db
+    global data_for_export
 
     try:
         global_lock.acquire(blocking=True)
@@ -235,6 +242,8 @@ def main_loop(db, index):
     # Zuordnungsliste Cluster id zu Tweet id
     tweet_cluster_mapping = []
 
+    data_for_export = tweet_cluster_mapping
+    
     # Dictionary zum Speichern der Mikro-Cluster-Zentren
     micro_cluster_centers = {}
 

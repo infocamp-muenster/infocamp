@@ -6,6 +6,7 @@ pil_image = Image.open("Frontend/images/misdoom_logo.png")
 
 user_icon = Image.open("Frontend/images/user-solid.png")
 upload_icon = Image.open("Frontend/images/upload-solid.png")
+export_icon = Image.open("Frontend/images/export-solid.png")
 file_icon = Image.open("Frontend/images/file-solid.png")
 
 
@@ -27,6 +28,11 @@ def get_header():
                     html.Div(children=[
                         html.Img(src=upload_icon, alt="Upload Icon",style={'width':'15px',}),
                         html.A('Upload Data', href='upload/')
+                    ]),
+                    # Header Export
+                    html.Div(children=[
+                        html.Img(src=export_icon, alt="Export Icon",style={'width':'15px',}),
+                        html.A('Export Data', href='export/')
                     ]),
                     # Header Settings
                     html.Div(children=[
