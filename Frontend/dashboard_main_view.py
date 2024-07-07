@@ -117,7 +117,8 @@ def update_graph_live(n):
                 y=cluster_data['tweet_count'],
                 mode='lines+markers',
                 name=f'Cluster {cluster_id}',
-                line=dict(color=line_colors_list[i % len(line_colors_list)]) # Assign color from predefined list
+                line=dict(color=line_colors_list[i % len(line_colors_list)]), # Assign color from predefined list
+                customdata=cluster_data['center'], # Keywords for popup widget
             ))
 
         layout = go.Layout(
@@ -149,11 +150,16 @@ def micro_cluster_pop_up(clickData):
     ])
     
     point = clickData['points'][0]
-    print(point)
     cluster_number = point['curveNumber']
     cluster_index = point['pointNumber']
     cluster_timestamp = convert_date(point['x'])
     cluster_tweet_count = point['y']
+    
+    if point['customdata'] != None:
+        cluster_key_words = point['customdata'].keys()
+        cluster_key_words_string = ", ".join(cluster_key_words)
+    else:
+        cluster_key_words_string = ""
 
     # Predefined line colors
     line_colors_list = ['#07368C', '#707FDD', '#BBC4FD', '#455BE7', '#F1F2FC']
@@ -169,6 +175,10 @@ def micro_cluster_pop_up(clickData):
         html.P(children=[
             html.Span(f'Cluster Color:'),
             html.Span(f'{cluster_color}',style={'color': cluster_color,'font-weight':'600'}),
+        ]),
+        html.P(children=[
+            html.Span(f'Cluster Keywords:'),
+            html.Span(f'{cluster_key_words_string}',style={'font-weight':'600'}),
         ]),
         html.P(children=[
             html.Span(f'Timestamp:'),
