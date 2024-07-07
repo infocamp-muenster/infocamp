@@ -51,31 +51,32 @@
             display: flex;
             flex-direction: column;
         }
+        .status_message {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--font-color);
+        }
     </style>
 </head>
 <body>
-    <div class="outer-header-sticky">
-        <header class="header">
-            <a href="/realtime">
-                <img src="{% static 'images/misdoom_logo.png' %}" alt="Misdoom Logo", style="filter: brightness(0) invert(1);">
-                <h1>INFOCAMP Dashboard</h1>
-            </a>
-            <div class="header-right">
-                <div class="header-documentation">
-                    <img src="{% static 'images/file-solid.png' %}" alt="File Solid", style="width: 15px;">
-                    <a href="/documentation/">Documentation</span>
-                </div>
-                <div class="header-upload">
-                    <img src="{% static 'images/upload-solid.png' %}" alt="Upload Solid", style="width: 15px;">
-                    <a href="#">Upload Data</span>
-                </div>
-                <div class="header-settings">
-                    <img src="{% static 'images/user-solid.png' %}" alt="User Solid", style="width: 15px;">
-                    <a href="/logout/">Logout</a>
-                </div>
-            </div>
-        </header>
-    </div>
+    <header class="header">
+        <a href="/realtime" style="margin-right: 23%;">
+            <img src="{% static 'images/misdoom_logo.png' %}" alt="Misdoom Logo" style="filter: brightness(0) invert(1);">
+            <h1 style="margin: 30px 30px 30px 30px;">INFOCAMP Dashboard</h1>
+        </a>
+        <div class="header-documentation">
+            <img src="{% static 'images/file-solid.png' %}" alt="File Solid" style="width: 15px;">
+            <a href="/documentation/">Documentation</a>
+        </div>
+        <div class="header-upload">
+            <img src="{% static 'images/upload-solid.png' %}" alt="Upload Solid" style="width: 15px;">
+            <a href="#">Upload Data</a>
+        </div>
+        <div class="header-settings">
+            <img src="{% static 'images/user-solid.png' %}" alt="User Solid" style="width: 15px;">
+            <a href="/logout/">Logout</a>
+        </div>
+    </header>
     <div class="main-body">
         <div class="widget upload_form" style="grid-column: span 12; grid-row: span 4;">
             <h2>Upload CSV or JSON File</h2>
@@ -107,6 +108,9 @@
                 </div>
                 <button type="submit">Upload</button>
             </form>
+            {% if message %}
+                <div class="status_message">{{ message }}</div>
+            {% endif %}
         </div>
     </div>
 </body>
