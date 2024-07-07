@@ -251,7 +251,7 @@ def get_cluster_tweet_data(db, index):
             print("Lock is busy, waiting...")
             time.sleep(5)
 
-def get_tweet_cluster_mapping():
+#def get_tweet_cluster_mapping():
 #MUSS NOCH IMPLEMENTIERT WERDEN
 
 def export_data():
@@ -288,12 +288,10 @@ def main_loop(db, index):
     dd = Detector('http://ls-stat-ml.uni-muenster.de:7100/compute')  # neu
 
     # cluster_tweet_data Dataframe initialisieren
-    global cluster_tweet_data
     columns = ['cluster_id', 'timestamp', 'tweet_count']
     cluster_tweet_data = pd.DataFrame(columns=columns)
 
     # Zuordnungsdataframe Cluster id zu Tweet id
-    global tweet_cluster_mapping
     columns2 = ['tweet_id', 'timestamp', 'cluster_id', 'ki_generated', 'p_picture', 'verified']
     tweet_cluster_mapping = pd.DataFrame(columns=columns2)  # neu
 
