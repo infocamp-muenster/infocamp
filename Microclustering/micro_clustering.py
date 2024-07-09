@@ -289,12 +289,12 @@ def main_loop(db, index):
     dd = Detector('http://ls-stat-ml.uni-muenster.de:7100/compute')  # neu
 
     # cluster_tweet_data Dataframe initialisieren
-    columns = ['cluster_id', 'timestamp', 'tweet_count']
-    cluster_tweet_data = pd.DataFrame(columns=columns)
+    columns_cluster_tweet_data = ['cluster_id', 'timestamp', 'tweet_count']
+    cluster_tweet_data = pd.DataFrame(columns=columns_cluster_tweet_data)
 
     # Zuordnungsdataframe Cluster id zu Tweet id
-    columns2 = ['tweet_id', 'timestamp', 'cluster_id', 'ki_generated', 'p_picture', 'verified']
-    tweet_cluster_mapping = pd.DataFrame(columns=columns2)  # neu
+    columns_tweet_cluster_mapping = ['tweet_id', 'timestamp', 'cluster_id', 'ki_generated', 'p_picture', 'verified']
+    tweet_cluster_mapping = pd.DataFrame(columns=columns_tweet_cluster_mapping)  # neu
 
     data_for_export = tweet_cluster_mapping
     
@@ -323,6 +323,7 @@ def main_loop(db, index):
         pd.set_option('display.max_colwidth', None)
         print("Kontroll-Print:")
         print(cluster_tweet_data)
+    
 
         # Dataframe in Elasticsearch hochladen
         try:
