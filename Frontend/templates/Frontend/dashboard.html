@@ -11,9 +11,9 @@
     
 </head>
 <body>
+    {% include 'Frontend/header.html' %}
     
     {% plotly_header %}
-    {% comment %} {% include 'infocampboard/header.html' %} {% endcomment %}
     
     <div id="dashboard" >
         {% plotly_direct name="dashboard" %}
