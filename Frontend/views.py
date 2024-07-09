@@ -24,7 +24,7 @@ def loginPage(request):
     page = request.GET.get('page', 'login')
     
     if request.user.is_authenticated:
-        return redirect('Realtime')
+        return redirect('realtime')
     
     if request.method == 'POST':
         if page == 'login':
@@ -41,7 +41,7 @@ def loginPage(request):
             
             if user is not None:
                 login(request, user)
-                return redirect('Realtime')
+                return redirect('realtime')
             else:
                 messages.error(request, 'Password does not exist!')
         else:

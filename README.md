@@ -8,6 +8,10 @@ There are no hard requirements, but there are a few signs that the project semin
 
 # Run the Application locally
 0. install all necessary packages: see the file 'necessary_packages.txt.'
+1. you can use the requirements.txt with pip (for much quicker pip package installation)
+```bash
+pip install -r requirements.txt
+```
 2. adjust the user information in Microclustering/thread_micro_clustering.py line 7 and line 8
 3. run ```python manage.py runserver ``` or ```python3 manage.py runserver ``` depending on your environment
 

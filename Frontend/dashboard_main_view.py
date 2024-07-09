@@ -11,7 +11,6 @@ from dash import dcc, html
 from dash.dependencies import Output, Input
 import plotly.graph_objs as go
 import pandas as pd
-from Frontend.header import get_header
 from Microclustering.micro_clustering import get_cluster_tweet_data, convert_date
 from django_plotly_dash import DjangoDash
 from Datamanagement.Database import Database
@@ -26,15 +25,9 @@ last_figure = {'data': [], 'layout': go.Layout(title='Number of Tweets per Clust
 # Initialize the app
 app = DjangoDash('dashboard')
 
-# HTML Header for Dashboard
-header = get_header()
-
 # App layout
 def initialize_dash_app():
     app.layout = html.Div(children=[
-        
-         # Include the header HTML
-        *header,
 
         # Main Div element named 'main-body' contains import style information and all widgets are childs of it
         html.Div(className='main-body', children=[

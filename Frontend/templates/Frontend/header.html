@@ -1,0 +1,27 @@
+{% load static %}
+<div class="outer-header-sticky">
+    <header class="header">
+        <a href="{% url 'realtime' %}">
+            <img src="{% static 'images/misdoom_logo.png' %}" alt="Misdoom Logo" style="filter: brightness(0) invert(1);">
+            <h1>INFOCAMP Dashboard</h1>
+        </a>
+        <div class="header-right">
+            <div class="header-documentation">
+                <img src="{% static 'images/file-solid.png' %}" alt="File Solid" style="width: 15px;">
+                <a href="{% url 'documentation' %}">Documentation</a>
+            </div>
+            <div class="header-upload">
+                <img src="{% static 'images/upload-solid.png' %}" alt="Upload Solid" style="width: 15px;">
+                <a href="{% url 'upload' %}">Upload Data</a>
+            </div>
+            <div class="header-export">
+                <img src="{% static 'images/export-solid.png' %}" alt="Export Solid" style="width: 15px;">
+                <a href="{% url 'export' %}">Export Data</a>
+            </div>
+            <div class="header-settings">
+                <img src="{% static 'images/user-solid.png' %}" alt="User Solid" style="width: 15px;">
+                <a href="{% url 'logout' %}">Logout</a>
+            </div>
+        </div>
+    </header>
+</div>
