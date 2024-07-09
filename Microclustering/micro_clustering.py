@@ -52,10 +52,10 @@ def preprocess_tweet(tweet, stemmer, nlp, stop_words):
 
 
 # Funktion die das eigentliche Clustern pro Tweet inkrementell durchführt; tweet_cluster_mapping ist dabei Zuordnung von jedem Tweet zu einem Micro-Cluster
-def process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words, dd):  # neu dd
+def process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words, micro_cluster_centers, dd):  # neu dd
     for _, tweet in tweets.iterrows():
         try:
-            processed_tweet = preprocess_tweet(tweet['text'], stemmer, nlp, stop_words, valid_words)
+            processed_tweet = preprocess_tweet(tweet['text'], stemmer, nlp, stop_words)
             features = vectorizer.transform_one(processed_tweet)
 
             try:
@@ -94,7 +94,7 @@ def process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer
 
 
 # Funktion die das cluster_tweet_data Dataframe nach jedem Zeitintervall updated und sämtliche Kennzahlen berechnet
-def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time, end_time):
+def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time, end_time, micro_cluster_centers):
     """
     Diese Funktion transformiert die tweet_cluster_mapping (Update nach jedem tweet) Liste in eine
     Liste mit zusätzlichen Spalten für KI, Bilder und Verifizierungsinformationen.
