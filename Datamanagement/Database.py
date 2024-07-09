@@ -90,6 +90,7 @@ class Database:
             # Add the results to the all_hits array
             all_hits.extend(page['hits']['hits'])
 
+
         return all_hits
 
     def upload_df(self, index, dataframe):
@@ -160,4 +161,5 @@ class Database:
                 "_index": index,
                 "_source": row.to_dict()
             }
+
 

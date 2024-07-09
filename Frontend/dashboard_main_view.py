@@ -6,16 +6,16 @@
 '''
 
 # Import of function ToDo: Check if all imports are needed
-import plotly.express as px
 from dash import dcc, html
 from dash.dependencies import Output, Input
 import plotly.graph_objs as go
 import pandas as pd
+
+from Frontend.OpenAI_API import summarize_tweets
 from Frontend.header import get_header
 from Microclustering.micro_clustering import get_cluster_tweet_data, convert_date
 from django_plotly_dash import DjangoDash
 from Datamanagement.Database import Database
-
 
 # Setting global variable for last successful generated micro-clustering figure
 last_figure = {'data': [], 'layout': go.Layout(title='Number of Tweets per Cluster Over Time',
@@ -86,6 +86,30 @@ def initialize_dash_app():
                 html.H3('Topic Focus'),
                 html.Span('Cluster Analysis'),
                     # Widget can be embedded here!
+            ]),
+            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
+                html.H3('KI-Summary Widget', style={'text-align': 'center', 'padding': '20px 0'}),
+                html.Div([
+                    html.Button('Get Summary', id='summary-button', n_clicks=0, style={
+                        'background-color': '#4B72B0',  # Farbe des Headers
+                        'color': 'white',
+                        'font-size': '20px',
+                        'padding': '15px 30px',  # Größerer Button mit mehr Padding
+                        'border-radius': '10px',  # Abgerundete Ecken
+                        'border': 'none',
+                        'cursor': 'pointer',
+                        'margin': '20px 0'  # Abstand zum nächsten Element
+                    }),
+                    html.Div(id='summary-output', style={
+                        'padding': '20px',
+                        'border': '1px solid #ddd',
+                        'border-radius': '10px',
+                        'background-color': '#f9f9f9',
+                        'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
+                        'max-width': '800px',
+                        'margin': 'auto'  # Zentriert das Widget
+                    })
+                ], style={'text-align': 'center'})
             ]),
         ]),
     ])
@@ -231,6 +255,42 @@ def micro_cluster_pop_up(clickData):
         ]),
     ])
 
+
+# Callback für den Button-Klick
+@app.callback(
+    Output('summary-output', 'children'),
+    Input('summary-button', 'n_clicks')
+)
+def update_summary(n_clicks):
+    if n_clicks > 0:
+        # Pfad zur SQLite-Datenbankdatei
+        #database_path = 'infocamp/db.sqlite3'
+
+        # Verbindung zur SQLite-Datenbank herstellen
+        #conn = sqlite3.connect(database_path)
+
+        # Tweets aus der Datenbank abfragen
+        #tweets_query = "SELECT text FROM your_tweets_table"
+        #tweets_df = pd.read_sql_query(tweets_query, conn)
+
+        # Verbindung zur Datenbank schließen
+        #conn.close()
+
+        # Texte der Tweets extrahieren
+        #tweets = tweets_df['text'].tolist()
+
+        # Zusammenfassung der Tweets erhalten
+        summary = summarize_tweets()
+
+        return html.Div([
+            html.H3('Zusammenfassung der Tweets:'),
+            html.P(summary)
+        ])
+    return ""
+
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
 
 # Run App
 # TODO: db Instanz aus dem Thread anders anbindbar, sodass keine neue erzeugt werden musss?
