@@ -61,6 +61,8 @@ def initialize_dash_app():
                     n_intervals=0
                 )
             ]),
+            # Pop Up Widget. Gets activated by clicking on data point of micro cluster widget
+            # HTML Output of widget is defined below
             html.Div(className='widget widget-pop-up', id='popup-micro-cluster', children=[
                     html.Span('Micro Cluster Pop Up'),
             ]),
@@ -112,13 +114,14 @@ def update_graph_live(n):
         traces = []
         for i, cluster_id in enumerate(cluster_tweet_data['cluster_id'].unique()):
             cluster_data = cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id]
+
             traces.append(go.Scatter(
                 x=cluster_data['timestamp'],
                 y=cluster_data['tweet_count'],
                 mode='lines+markers',
                 name=f'Cluster {cluster_id}',
                 line=dict(color=line_colors_list[i % len(line_colors_list)]), # Assign color from predefined list
-                customdata=cluster_data['center'], # Keywords for popup widget
+                customdata=list(zip(cluster_data['center'],cluster_data['lower_threshold'],cluster_data['upper_threshold'],cluster_data['std_dev_tweet_count'])),
             ))
 
         layout = go.Layout(
@@ -144,6 +147,7 @@ def update_graph_live(n):
 
 # Function including HTML Output for micro cluster pop up information
 def micro_cluster_pop_up(clickData):
+    # Default HTML Output of Widget
     if clickData is None:
         return html.Div(className='widget-pop-up-default',children=[
         html.H4('Click on cluster for detailed information')
@@ -154,39 +158,76 @@ def micro_cluster_pop_up(clickData):
     cluster_index = point['pointNumber']
     cluster_timestamp = convert_date(point['x'])
     cluster_tweet_count = point['y']
-    
-    if point['customdata'] != None:
-        cluster_key_words = point['customdata'].keys()
-        cluster_key_words_string = ", ".join(cluster_key_words)
+
+    # Get cluster keywords
+    cluster_key_words_string = ", ".join(point['customdata'][0].keys()) if point['customdata'][0] else ""
+
+    # Get cluster threshold
+    cluster_lower_threshold = point['customdata'][1] if point['customdata'][1] else ""
+    cluster_upper_threshold = point['customdata'][2] if point['customdata'][2] else ""
+
+    # Get std_dev_tweet_count
+    cluster_std_dev = int(point['customdata'][3]) if point['customdata'][3] else ""
+
+    # Calculation of CSS-Width-vlaues
+    if cluster_std_dev != None and cluster_lower_threshold != None and cluster_upper_threshold != None:
+        lower_bound = cluster_tweet_count - cluster_std_dev
+        upper_bound = cluster_tweet_count + cluster_std_dev
+
+        lower_bound_percentage = 100 * (lower_bound - cluster_lower_threshold) / (cluster_upper_threshold - cluster_lower_threshold)
+        upper_bound_percentage = 100 * (upper_bound - cluster_lower_threshold) / (cluster_upper_threshold - cluster_lower_threshold)
+        width_percentage = upper_bound_percentage - lower_bound_percentage
     else:
-        cluster_key_words_string = ""
+        width_percentage = 100
+        lower_bound_percentage = 0
 
     # Predefined line colors
     line_colors_list = ['#07368C', '#707FDD', '#BBC4FD', '#455BE7', '#F1F2FC']
     cluster_color = line_colors_list[cluster_number]
-    
+
+    # HTML Output of Pop Up Widgets
     return html.Div(children=[
         html.H3('Cluster Information'),
         html.Span('Analytics for selected cluster'),
-        html.P(children=[
-            html.Span(f'Cluster Index:'),
-            html.Span(f'{cluster_index}',style={'font-weight':'600'}),
-        ]),
-        html.P(children=[
-            html.Span(f'Cluster Color:'),
-            html.Span(f'{cluster_color}',style={'color': cluster_color,'font-weight':'600'}),
-        ]),
-        html.P(children=[
-            html.Span(f'Cluster Keywords:'),
-            html.Span(f'{cluster_key_words_string}',style={'font-weight':'600'}),
-        ]),
-        html.P(children=[
-            html.Span(f'Timestamp:'),
-            html.Span(f'{cluster_timestamp}',style={'font-weight':'600'}),
-        ]),
-        html.P(children=[
-            html.Span(f'Tweet Count:'),
-            html.Span(f'{cluster_tweet_count}',style={'font-weight':'600'}),
+        html.Div(className="popup-widget-info",children=[
+            html.Div(children=[
+                html.Span(f'Cluster Index:',className="label"),
+                html.Span(f'{cluster_index}',className="value"),
+            ]),
+            html.Div(children=[
+                html.Span(f'Cluster Color:',className="label"),
+                html.Span(f'{cluster_color}',style={'color': cluster_color},className="value"),
+            ]),
+            html.Div(className="keywords",children=[ # Extra CSS class for larger width handling
+                html.Span(f'Cluster Keywords:',className="label"),
+                html.Span(f'{cluster_key_words_string}',className="value"),
+            ]),
+            html.Div(children=[
+                html.Span(f'Timestamp:',className="label"),
+                html.Span(f'{cluster_timestamp}',className="value"),
+            ]),
+            html.Div(children=[
+                html.Span(f'Tweet Count:',className="label"),
+                html.Span(f'{cluster_tweet_count}',className="value"),
+            ]),
+            html.Div(children=[
+                html.Span(f'Lower Threshold:',className="label"),
+                html.Span(f'{round(cluster_lower_threshold,2)}',className="value"),
+            ]),
+            html.Div(children=[
+                html.Span(f'Upper Threshold:',className="label"),
+                html.Span(f'{round(cluster_upper_threshold,2)}',className="value"),
+            ]),
+            html.Div(children=[
+                html.Span(f'Standard Deviation:',className="label"),
+                html.Span(f'{round(cluster_std_dev,2)}', className="value"),
+            ]),
+            html.Div(children=[
+                html.Span(f'Position in Cluster:', className="label"),
+                html.Div(className="threshold-bar", children=[
+                        html.Div(className="threshold-bar-inner",style={'width': f'{round(width_percentage,0)}%','left': f'{round(lower_bound_percentage)}%'}),
+                ])
+            ]),
         ]),
     ])
 
