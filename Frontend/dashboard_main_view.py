@@ -11,9 +11,11 @@ from dash import dcc, html
 from dash.dependencies import Output, Input
 import plotly.graph_objs as go
 import pandas as pd
-from Microclustering.micro_clustering import get_cluster_tweet_data, convert_date
+from Microclustering.micro_clustering import convert_date
+from Macroclustering.macro_clustering_using_database import convert_macro_cluster_visualization
 from django_plotly_dash import DjangoDash
-from Datamanagement.Database import Database
+from Datamanagement.Database import Database, get_cluster_tweet_data, get_micro_macro_data
+import Infodash.globals as glob
 
 # Define initial empty figures
 empty_figure = {
@@ -24,6 +26,8 @@ empty_figure = {
         yaxis=dict(title='')
     )
 }
+
+last_chart = go.Figure()
 
 # Initialize the app
 app = DjangoDash('dashboard')
@@ -72,11 +76,19 @@ def initialize_dash_app():
             html.Div(className='widget widget-pop-up', id='popup-micro-cluster', children=[
                     html.Span('Micro Cluster Pop Up'),
             ]),
-
-            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
-                html.H3('Topic Focus'),
-                html.Span('Cluster Analysis'),
-                # Widget can be embedded here!
+            # Main Macro Cluster Widget
+            html.Div(className='widget', style={'grid-column': 'span 6'}, children=[
+                html.H3('Macro Cluster'),
+                html.Span('Bar Chart'),
+                dcc.Graph(
+                    id='bar-chart',
+                    config={'displayModeBar': False},
+                ),
+                dcc.Interval(
+                    id='interval-component',
+                    interval=1 * 10000,  # in milliseconds (10 seconds)
+                    n_intervals=0
+                )
             ]),
             html.Div(className='widget', style={'grid-column':'span 6'}, children=[
                 html.H3('Most Recent Posts'),
@@ -202,10 +214,10 @@ def micro_cluster_update_graph_live(n):
 def micro_cluster_pop_up(clickData):
     # Default HTML Output of Widget
     if clickData is None:
-        return html.Div(className='widget-pop-up-default',children=[
-        html.H4('Click on cluster for detailed information')
-    ])
-    
+        return html.Div(className='widget-pop-up-default', children=[
+            html.H4('Click on cluster for detailed information')
+        ])
+
     point = clickData['points'][0]
     cluster_number = point['curveNumber']
     cluster_index = point['pointNumber']
@@ -226,7 +238,6 @@ def micro_cluster_pop_up(clickData):
     if cluster_std_dev != None and cluster_lower_threshold != None and cluster_upper_threshold != None:
         lower_bound = cluster_tweet_count - cluster_std_dev
         upper_bound = cluster_tweet_count + cluster_std_dev
-
         lower_bound_percentage = 100 * (lower_bound - cluster_lower_threshold) / (cluster_upper_threshold - cluster_lower_threshold)
         upper_bound_percentage = 100 * (upper_bound - cluster_lower_threshold) / (cluster_upper_threshold - cluster_lower_threshold)
         width_percentage = upper_bound_percentage - lower_bound_percentage
@@ -283,6 +294,33 @@ def micro_cluster_pop_up(clickData):
             ]),
         ]),
     ])
+
+
+# Callback for updating macro-cluster chart
+@app.callback(
+    Output('bar-chart', 'figure'),
+    [Input('interval-component', 'n_intervals')]
+)
+def update_chart(n):
+    global last_chart
+
+    if glob.macro_df:
+        try:
+            # Create dataframe and bar chart
+            df = get_micro_macro_data(db, 'macro_micro_dict')
+
+            grouped_df = convert_macro_cluster_visualization(df)
+            last_chart = px.bar(grouped_df, x='macro_cluster', y='micro_cluster_tweet_sum',
+                                title='Summe der Tweets pro Macro-Cluster',
+                                labels={'macro_cluster': 'Macro Cluster',
+                                        'micro_cluster_tweet_sum': 'Summe der Tweets'},
+                                text='micro_cluster_tweet_sum')
+            return last_chart
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+    return last_chart
 
 
 # Run App

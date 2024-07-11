@@ -10,9 +10,13 @@
                 <img src="{% static 'images/file-solid.png' %}" alt="File Solid" style="width: 15px;">
                 <a href="{% url 'documentation' %}">Documentation</a>
             </div>
-            <div class="header-upload">
+            <div class="header-upload header-menu">
                 <img src="{% static 'images/upload-solid.png' %}" alt="Upload Solid" style="width: 15px;">
-                <a href="{% url 'upload' %}">Upload Data</a>
+                <a href="#" onclick="toggleMenu()">Import Data</a>
+                <div id="dropdownMenu" class="dropdown-content" style="display: none;">
+                    <a href="{% url 'upload' %}">Upload Data</a>
+                    <a href="{% url 'realtime' %}?api">Enable API</a>
+                </div>
             </div>
             <div class="header-export">
                 <img src="{% static 'images/export-solid.png' %}" alt="Export Solid" style="width: 15px;">
@@ -25,3 +29,15 @@
         </div>
     </header>
 </div>
+
+<!-- JS for toggle menu click function -->
+<script>
+    function toggleMenu() {
+        var menu = document.getElementById("dropdownMenu");
+        if (menu.style.display === "none") {
+            menu.style.display = "block";
+        } else {
+            menu.style.display = "none";
+        }
+    }
+</script>

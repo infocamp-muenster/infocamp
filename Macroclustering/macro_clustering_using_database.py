@@ -1,39 +1,15 @@
-import time
 import pandas as pd
-from river import stats
 from sklearn.cluster import KMeans
 import numpy as np
-import matplotlib.pyplot as plt
-from Datamanagement.Database import Database
+import Infodash.globals as glob
+from Datamanagement.Database import Database, get_cluster_tweet_data
 import ast
-#from Microclustering.micro_clustering import get_cluster_tweet_data
 
 
-def get_micro_clusters_id_and_center_local(db, micro_clusters):
-    # TODO: Hier noch Datenbankabfrage implementieren; Diese eventuell noch auslagern in Database File??? (get_cluster_tweet_data aus micro_clustering.py wäre passende Methode)
-    # Datenbankabfrage
-    #micro_clusters = get_cluster_tweet_data(db, 'cluster_tweet_data')
-
-    #for micro_cluster in micro_clusters:
-    #    print(micro_cluster["id"])
-    #    print(micro_cluster["center"])
-
-    return micro_clusters
-
-'''
-def get_micro_clusters_id_and_center(db, index):
-    # TODO: Hier noch Datenbankabfrage implementieren; Diese eventuell noch auslagern in Database File??? (get_cluster_tweet_data aus micro_clustering.py wäre passende Methode)
-    # Datenbankabfrage
+def macro_clustering(db, index):
+    print("Macro Clustering starten....")
     micro_clusters = get_cluster_tweet_data(db, index)
 
-    #for micro_cluster in micro_clusters:
-    #    print(micro_cluster["id"])
-    #    print(micro_cluster["center"])
-
-    return micro_clusters
-'''
-
-def macro_clustering(micro_clusters):
     # Only apply macro-clustering in case there are any micro-clusters
     if len(micro_clusters) > 0:
         # Use only the last timestamp for macro-clustering
@@ -84,15 +60,8 @@ def macro_clustering(micro_clusters):
 
         macro_micro_df = pd.DataFrame(data)
 
-        print(f"Macro micro df: {macro_micro_df}")
-
-        print(micro_clusters)
-
         # Adding tweet_count of every micro-cluster for future visualizing of macro-cluster tweet_count
         micro_cluster_data = pd.DataFrame(micro_clusters)
-        print(micro_cluster_data)
-
-        print('Nur eine Cluster-ID printen:')
 
         tweet_sums = {}
 
@@ -100,73 +69,39 @@ def macro_clustering(micro_clusters):
             filtered_df = micro_cluster_data[micro_cluster_data['cluster_id'] == micro_cluster]
             tweet_sum = filtered_df['tweet_count'].sum()
             tweet_sums[micro_cluster] = tweet_sum
-            print(filtered_df)
-            print("Cluster-ID", micro_cluster, "Summe: ", tweet_sum)
-
-        print(tweet_sums)
 
         macro_micro_df['micro_cluster_tweet_sum'] = macro_micro_df['micro_cluster'].map(tweet_sums)
-
-        print(macro_micro_df)
 
         return macro_micro_df
 
 
 def store_macro_micro_dict_in_database(db, macro_micro_dict):
-    # Datenbankanfrage
-    # TODO: Not tested yet, only tested on local base
+    index_name = 'macro_micro_dict'
+
+    # Dataupload
     try:
-        if db.es.indices.exists(index='macro_micro_dict'):
-            db.es.indices.delete(index='macro_micro_dict')
-        db.upload_df('macro_micro_dict', macro_micro_dict)
+        if db.es.indices.exists(index=index_name):
+            db.es.indices.delete(index=index_name)
+        db.upload_df(index_name, macro_micro_dict)
+        glob.macro_df = True
     except Exception as e:
         print(f"An error occurred during upload: {e}")
     return
 
 
-# TODO: Not tested yet
-def get_macro_micro_dict_from_database(db, index):
-    try:
-        micro_macro_dict = db.search_get_all(index)
-        # Extracting the '_source' part of each dictionary to create a DataFrame
-        data = [item['_source'] for item in micro_macro_dict]
-        df = pd.DataFrame(data)
-        return df
-
-    except Exception as e:
-        print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
+def delete_macro_micro_dict_in_database(db):
+    index_name = 'macro_micro_dict'
+    db.es.indices.delete(index=index_name)
 
 
-def convert_macro_cluster_visualization(db, micro_macro_df):
+def convert_macro_cluster_visualization(micro_macro_df):
     grouped_df = micro_macro_df.groupby('macro_cluster')['micro_cluster_tweet_sum'].sum().reset_index()
-
     return grouped_df
 
 
-
-def main_local(cluster_tweet_data):
+def main_macro():
+    print("Started main_macro....")
     db = Database()
-    micro_clusters = get_micro_clusters_id_and_center_local(db, cluster_tweet_data)
-    macro_micro_dict = macro_clustering(micro_clusters)
-    #store_macro_micro_dict_in_database(db, macro_micro_dict)
-    #result = get_macro_micro_dict_from_database(db, 'macro_micro_dict')
+    macro_micro_dict = macro_clustering(db, 'cluster_tweet_data')
 
-    print('##################')
-    print('Macro-Print:')
-    #print(result)
-    print(macro_micro_dict)
-    print('##################')
-
-def main():
-    time.sleep(60)
-    db = Database()
-    micro_clusters = get_micro_clusters_id_and_center_local(db)
-    macro_micro_dict = macro_clustering(micro_clusters)
-    #store_macro_micro_dict_in_database(db, macro_micro_dict)
-    #result = get_macro_micro_dict_from_database(db, 'macro_micro_dict')
-
-    print('##################')
-    print('Macro-Print:')
-    #print(result)
-    print(macro_micro_dict)
-    print('##################')
+    store_macro_micro_dict_in_database(db, macro_micro_dict)
