@@ -1,28 +1,29 @@
 # micro_clustering.py
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import timedelta
 import time
 from river import cluster, feature_extraction
 import re
 import spacy
-import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 import numpy as np
-from Macroclustering.macro_clustering_using_database import main_local
+from Macroclustering.macro_clustering_using_database import main_macro
 from Infodash.globals import global_lock
 
 # Funktionen
 from datetime import datetime
 
+
 def convert_date(date_str):
     # Parse the input date string to a datetime object
     dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M')
-    
+
     # Format the datetime object to the desired output format
     european_format_date_str = dt.strftime('%d.%m.%Y %H:%M')
-    
+
     return european_format_date_str
+
 
 def initialize_time_window(df, time_column):
     """
@@ -48,8 +49,10 @@ def preprocess_tweet(tweet, stemmer, nlp, stop_words):
     return ' '.join(stemmed_tokens)
 
 
-# Funktion die das eigentliche Clustern pro Tweet inkrementell durchführt; tweet_cluster_mapping ist dabei Zuordnung von jedem Tweet zu einem Micro-Cluster
-def process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words, micro_cluster_centers):
+# Funktion die das eigentliche Clustern pro Tweet inkrementell durchführt; tweet_cluster_mapping ist dabei Zuordnung
+# von jedem Tweet zu einem Micro-Cluster
+def process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words,
+                   micro_cluster_centers):
     for _, tweet in tweets.iterrows():
         processed_tweet = preprocess_tweet(tweet['text'], stemmer, nlp, stop_words)
         features = vectorizer.transform_one(processed_tweet)
@@ -59,7 +62,6 @@ def process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer
             # get center for each micro-cluster
             center = clustream.micro_clusters[cluster_id].center
             micro_cluster_centers[cluster_id] = center
-
 
             tweet_cluster_mapping.append({
                 'tweet_id': tweet['id_str'],
@@ -71,7 +73,8 @@ def process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer
 
 
 # Funktion die das cluster_tweet_data Dataframe nach jedem Zeitintervall updated und sämtliche Kennzahlen berechnet
-def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time, end_time, micro_cluster_centers):
+def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time, end_time,
+                                    micro_cluster_centers):
     """
     Diese Funktion transformiert die tweet_cluster_mapping (Update nach jedem tweet) Liste in eine
     Liste mit sieben Spalten: cluster_id, timestamp, Anzahl der Tweets, durchschnittlicher tweet_count,
@@ -174,36 +177,8 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
     return cluster_tweet_data
 
 
-# Funktion um das Dataframe zum dash Script zu liefern
-def get_cluster_tweet_data(db, index):
-    df = pd.DataFrame()
-
-    while True:
-        if global_lock.acquire(blocking=False):  # Versuche, die Lock zu erwerben, ohne zu blockieren
-            try:
-                if df.empty:
-                    print("Trying to get cluster tweet data")
-                    cluster_tweet_data = db.search_get_all(index)
-                    # Extracting the '_source' part of each dictionary to create a DataFrame
-                    data = [item['_source'] for item in cluster_tweet_data]
-                    df = pd.DataFrame(data)
-                    print("Successfully retrieved cluster tweet data")
-                    return df
-
-            except Exception as e:
-                print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
-
-            finally:
-                global_lock.release()  # Sicherstellen, dass die Lock immer freigegeben wird
-
-        else:
-            # Wenn die Lock nicht verfügbar ist, warte etwas und versuche es erneut
-            print("Lock is busy, waiting...")
-            time.sleep(5)
-
-
 def main_loop(db, index):
-    global all_tweets_from_db
+    print("Starting micro_clustering main loop...")
 
     try:
         global_lock.acquire(blocking=True)
@@ -213,8 +188,9 @@ def main_loop(db, index):
     finally:
         global_lock.release()
 
-    # TODO: Implement suitable macro-cluster call
-    cluster_iterations = 0
+    # Initializing macro-cluster call
+    macro_cluster_iterations = 8  # Counter after how many micro-clustering iterations macro clustering starts
+    micro_cluster_iterations = 0  # Setting micro-cluster iterations initially on 0
 
     tweets = pd.DataFrame([hit["_source"] for hit in all_tweets_from_db])
     tweets_selected = tweets[['created_at', 'text', 'id_str']]
@@ -252,7 +228,6 @@ def main_loop(db, index):
         cluster_tweet_data = transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time,
                                                              end_time, micro_cluster_centers)
 
-
         # Cluster_tweet_data printen zur Kontrolle
         pd.set_option('display.max_rows', None)
         pd.set_option('display.max_columns', None)
@@ -261,7 +236,7 @@ def main_loop(db, index):
         print("Kontroll-Print:")
         print(cluster_tweet_data)
 
-        # Dataframe in Elasticsearch hochladen
+        # Upload dataframe to elasticsearch database
         try:
             global_lock.acquire(blocking=True)
             if db.es.indices.exists(index='cluster_tweet_data'):
@@ -269,17 +244,17 @@ def main_loop(db, index):
             db.upload_df('cluster_tweet_data', cluster_tweet_data)
         except Exception as e:
             print(f"An error occurred during upload: {e}")
-
         finally:
             global_lock.release()
 
-        if cluster_iterations >= 10:
-            main_local(cluster_tweet_data)
-            cluster_iterations = 0
+        # Eventually starting macro-clustering
+        if micro_cluster_iterations >= macro_cluster_iterations:
+            main_macro()
+            micro_cluster_iterations = 0
 
         # Zeitintervall erhöhen
         start_time += timedelta(minutes=1)
         end_time += timedelta(minutes=1)
 
         time.sleep(2)
-        cluster_iterations += 1
+        micro_cluster_iterations += 1
