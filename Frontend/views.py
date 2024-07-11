@@ -3,22 +3,28 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.forms import UserCreationForm
+from django.http import HttpResponse
 
 from Datamanagement.Database import Database
 from Datamanagement.mapping import map_data_to_json
 from .forms import CSVUploadForm
 from django.contrib.auth.hashers import make_password
+from Microclustering.micro_clustering import export_data
 import csv
 import json
 import os
+import io
+import pandas as pd
+
+from .models import UploadedData
+
 
 # LoginPage (Detects if Login or Signup. User database call)
 def loginPage(request):
     page = request.GET.get('page', 'login')
     
     if request.user.is_authenticated:
-        return redirect('Realtime')
+        return redirect('realtime')
     
     if request.method == 'POST':
         if page == 'login':
@@ -35,7 +41,7 @@ def loginPage(request):
             
             if user is not None:
                 login(request, user)
-                return redirect('Realtime')
+                return redirect('realtime')
             else:
                 messages.error(request, 'Password does not exist!')
         else:
@@ -74,22 +80,24 @@ def documentation(request):
     return render(request, 'Frontend/docu.html')
 
 # Functions returns df uploaded as CSV
+@login_required(login_url='login')
 def upload(request):
     data = []
+    message = ""
     if request.method == "POST":
         form = CSVUploadForm(request.POST, request.FILES)
         if form.is_valid():
             csv_file = request.FILES['csv_file']
-            file_name = os.path.splitext(csv_file.name)[0]  # Extrahieren des Dateinamens ohne Erweiterung
+            file_name = os.path.splitext(csv_file.name)[0]
+            username = request.user.username
+            index_name = f"{username}_{file_name}"
 
-            # Extrahieren der benutzerdefinierten Attribute
             timestamp_key = request.POST['timestamp_key']
             username_key = request.POST['username_key']
             user_id_key = request.POST['user_id_key']
             post_id_key = request.POST['post_id_key']
             text_key = request.POST['text_key']
 
-            # Überprüfen des Dateiformats
             file_extension = os.path.splitext(csv_file.name)[1].lower()
             if file_extension == '.csv':
                 decoded_file = csv_file.read().decode('utf-8').splitlines()
@@ -99,16 +107,49 @@ def upload(request):
             elif file_extension == '.json':
                 data = json.load(csv_file)
             else:
-                raise ValueError("Unsupported file format. Only JSON and CSV are supported.")
+                message = "Unsupported file format. Only JSON and CSV are supported."
+                return render(request, 'Frontend/upload.html', {'form': form, 'data': data, 'message': message})
 
-            # Daten mapping
-            mapped_data = map_data_to_json(data, timestamp_key, username_key, user_id_key, post_id_key, text_key)
+            # Data Mapping
+            mapped_data = map_data_to_json(
+                data,
+                timestamp_key,
+                username_key,
+                user_id_key,
+                post_id_key,
+                text_key
+            )
 
-            # Speichern der gemappten Daten in der Datenbank
+            # Save Data to ES
             db = Database()
-            db.upload(index=file_name, data=json.loads(mapped_data))  # Verwenden des Dateinamens als Index
+            db.upload(index=index_name, data=json.loads(mapped_data))
 
-            return redirect('Realtime')
+            # Speichern der Metadaten in der Django-Datenbank
+            UploadedData.objects.create(
+                user=request.user,
+                file_name=file_name,
+                index_name=index_name
+            )
+
+            message = "Ihr Datensatz wurde erfolgreich hochgeladen!"
     else:
         form = CSVUploadForm()
-    return render(request, 'Frontend/upload.html', {'form': form, 'data': data})
+    return render(request, 'Frontend/upload.html', {'form': form, 'data': data, 'message': message})
+
+
+def dataExport(request):
+    data = export_data()
+
+    # Erstellt einen Pandas DataFrame aus den Daten
+    df = pd.DataFrame(data)
+    
+    # Generiert die CSV-Datei in einem StringIO-Objekt
+    csv_buffer = io.StringIO()
+    df.to_csv(csv_buffer, index=False, sep=';')
+    csv_buffer.seek(0)
+
+    # Erstellt einen HttpResponse mit dem CSV-Inhalt
+    response = HttpResponse(csv_buffer, content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="data-export.csv"'
+
+    return response

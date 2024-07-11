@@ -83,20 +83,12 @@ body {
 /* --- CSS related to widgets --- */
 .widget {
     font-family: "Inter",sans-serif;
-    background-color: #fff;
+    background-color:var(--white);
     border-radius: 10px;
     padding: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     grid-column: span 6;
     grid-row: span 3;
-}
-.widget-pop-up {
-    grid-column: span 3;
-}
-.widget-pop-up-default {
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 .widget h2 {
     margin: 10px 0 10px 10px;
@@ -116,20 +108,98 @@ body {
     font-size: 14px;
 }
 
+/* --- CSS for popup widget --- */
+.widget-pop-up {
+    grid-column: span 3;
+}
+.widget-pop-up-default {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.popup-widget-info {
+    margin-top: 20px;
+}
+.popup-widget-info div {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+.popup-widget-info .label {
+    display: inline-block;
+    width: fit-content;
+}
+.popup-widget-info .value {
+     display: inline-block;
+    text-align: right;
+    flex-grow: 1;
+    font-weight: 600;
+    margin-right: 20px;
+}
+.popup-widget-info .keywords {
+    display: flex;
+    flex-wrap: wrap;
+}
+.popup-widget-info .keywords .value {
+    flex: 1;
+}
+.popup-widget-info .threshold-bar-inner {
+    position: relative;
+    background-color: var(--bg-blue);
+    margin: 0;
+}
+.popup-widget-info .threshold-bar {
+    width: 60%;
+    background-color: var(--bg-color);
+    height: 20px;
+    border-radius: 5px;
+    margin: 0 20px 0 0;
+}
+
+
 
 /* --- CSS for upload page --- */
+.upload_form {
+    padding: 20px;
+    margin: auto;
+}
+.upload_form h2 {
+    text-align: center;
+    color: var(--font-color);
+}
+.upload_form input[type="text"],
+.upload_form input[type="file"] {
+    flex: 1;
+    max-width: 300px;
+}
+.upload_form div {
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 .upload_form button {
     background-color: var(--bg-blue);
     border: none;
-    color: #fff;
+    color: var(--white);
     padding: 10px 20px;
     border-radius: 5px;
+    cursor: pointer;
+    margin: auto;
 }
 .upload_form form {
+    display: flex;
+    flex-direction: column;
     margin: 10px;
 }
-
-
+.upload_form .input-row {
+    margin-bottom: 20px;
+}
+.status_message {
+    text-align: center;
+    margin-top: 20px;
+    color: var(--font-color);
+}
 
 /* --- CSS for login page --- */
 .login-div {
@@ -211,6 +281,6 @@ body {
     background-color: var(--ms-yellow);
     width: fit-content;
     padding: 10px 20px;
-    color: #fff;
+    color: var(--white);
     border-radius: 10px;
 }

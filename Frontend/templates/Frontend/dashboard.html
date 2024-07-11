@@ -4,15 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infocamp</title>
+    <title>INFOCAMP Dashboard - Realtime</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'styles/style.css' %}">
     {% load plotly_dash %}
     
 </head>
 <body>
+    {% include 'Frontend/header.html' %}
     
     {% plotly_header %}
-    {% comment %} {% include 'infocampboard/header.html' %} {% endcomment %}
     
     <div id="dashboard" >
         {% plotly_direct name="dashboard" %}

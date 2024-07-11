@@ -11,7 +11,6 @@ from dash import dcc, html
 from dash.dependencies import Output, Input
 import plotly.graph_objs as go
 import pandas as pd
-from Frontend.header import get_header
 from Microclustering.micro_clustering import convert_date
 from Macroclustering.macro_clustering_using_database import convert_macro_cluster_visualization
 from django_plotly_dash import DjangoDash
@@ -117,12 +116,14 @@ def update_graph_live(n):
         traces = []
         for i, cluster_id in enumerate(cluster_tweet_data['cluster_id'].unique()):
             cluster_data = cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id]
+
             traces.append(go.Scatter(
                 x=cluster_data['timestamp'],
                 y=cluster_data['tweet_count'],
                 mode='lines+markers',
                 name=f'Cluster {cluster_id}',
-                line=dict(color=line_colors_list[i % len(line_colors_list)])  # Assign color from predefined list
+                line=dict(color=line_colors_list[i % len(line_colors_list)]), # Assign color from predefined list
+                customdata=list(zip(cluster_data['center'],cluster_data['lower_threshold'],cluster_data['upper_threshold'],cluster_data['std_dev_tweet_count'])),
             ))
 
         layout = go.Layout(
@@ -174,11 +175,8 @@ def micro_cluster_pop_up(clickData):
     if cluster_std_dev != None and cluster_lower_threshold != None and cluster_upper_threshold != None:
         lower_bound = cluster_tweet_count - cluster_std_dev
         upper_bound = cluster_tweet_count + cluster_std_dev
-
-        lower_bound_percentage = 100 * (lower_bound - cluster_lower_threshold) / (
-                    cluster_upper_threshold - cluster_lower_threshold)
-        upper_bound_percentage = 100 * (upper_bound - cluster_lower_threshold) / (
-                    cluster_upper_threshold - cluster_lower_threshold)
+        lower_bound_percentage = 100 * (lower_bound - cluster_lower_threshold) / (cluster_upper_threshold - cluster_lower_threshold)
+        upper_bound_percentage = 100 * (upper_bound - cluster_lower_threshold) / (cluster_upper_threshold - cluster_lower_threshold)
         width_percentage = upper_bound_percentage - lower_bound_percentage
     else:
         width_percentage = 100
@@ -192,44 +190,43 @@ def micro_cluster_pop_up(clickData):
     return html.Div(children=[
         html.H3('Cluster Information'),
         html.Span('Analytics for selected cluster'),
-        html.Div(className="popup-widget-info", children=[
+        html.Div(className="popup-widget-info",children=[
             html.Div(children=[
-                html.Span(f'Cluster Index:', className="label"),
-                html.Span(f'{cluster_index}', className="value"),
+                html.Span(f'Cluster Index:',className="label"),
+                html.Span(f'{cluster_index}',className="value"),
             ]),
             html.Div(children=[
-                html.Span(f'Cluster Color:', className="label"),
-                html.Span(f'{cluster_color}', style={'color': cluster_color}, className="value"),
+                html.Span(f'Cluster Color:',className="label"),
+                html.Span(f'{cluster_color}',style={'color': cluster_color},className="value"),
             ]),
-            html.Div(className="keywords", children=[  # Extra CSS class for larger width handling
-                html.Span(f'Cluster Keywords:', className="label"),
-                html.Span(f'{cluster_key_words_string}', className="value"),
-            ]),
-            html.Div(children=[
-                html.Span(f'Timestamp:', className="label"),
-                html.Span(f'{cluster_timestamp}', className="value"),
+            html.Div(className="keywords",children=[ # Extra CSS class for larger width handling
+                html.Span(f'Cluster Keywords:',className="label"),
+                html.Span(f'{cluster_key_words_string}',className="value"),
             ]),
             html.Div(children=[
-                html.Span(f'Tweet Count:', className="label"),
-                html.Span(f'{cluster_tweet_count}', className="value"),
+                html.Span(f'Timestamp:',className="label"),
+                html.Span(f'{cluster_timestamp}',className="value"),
             ]),
             html.Div(children=[
-                html.Span(f'Lower Threshold:', className="label"),
-                html.Span(f'{round(cluster_lower_threshold, 2)}', className="value"),
+                html.Span(f'Tweet Count:',className="label"),
+                html.Span(f'{cluster_tweet_count}',className="value"),
             ]),
             html.Div(children=[
-                html.Span(f'Upper Threshold:', className="label"),
-                html.Span(f'{round(cluster_upper_threshold, 2)}', className="value"),
+                html.Span(f'Lower Threshold:',className="label"),
+                html.Span(f'{round(cluster_lower_threshold,2)}',className="value"),
             ]),
             html.Div(children=[
-                html.Span(f'Standard Deviation:', className="label"),
-                html.Span(f'{round(cluster_std_dev, 2)}', className="value"),
+                html.Span(f'Upper Threshold:',className="label"),
+                html.Span(f'{round(cluster_upper_threshold,2)}',className="value"),
+            ]),
+            html.Div(children=[
+                html.Span(f'Standard Deviation:',className="label"),
+                html.Span(f'{round(cluster_std_dev,2)}', className="value"),
             ]),
             html.Div(children=[
                 html.Span(f'Position in Cluster:', className="label"),
                 html.Div(className="threshold-bar", children=[
-                    html.Div(className="threshold-bar-inner", style={'width': f'{round(width_percentage, 0)}%',
-                                                                     'left': f'{round(lower_bound_percentage)}%'}),
+                        html.Div(className="threshold-bar-inner",style={'width': f'{round(width_percentage,0)}%','left': f'{round(lower_bound_percentage)}%'}),
                 ])
             ]),
         ]),

@@ -1,36 +1,39 @@
-{% load static %}
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infocamp</title>
+    <title>INFOCAMP Dashboard - Documentation</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'styles/style.css' %}">
 </head>
 <body>
-    <div class="outer-header-sticky">
-        <header class="header">
-            <a href="/realtime">
-                <img src="{% static 'images/misdoom_logo.png' %}" alt="Misdoom Logo", style="filter: brightness(0) invert(1);">
-                <h1>INFOCAMP Dashboard</h1>
-            </a>
-            <div class="header-right">
-                <div class="header-documentation">
-                    <img src="{% static 'images/file-solid.png' %}" alt="File Solid", style="width: 15px;">
-                    <a href="#">Documentation</span>
-                </div>
-                <div class="header-upload">
-                    <img src="{% static 'images/upload-solid.png' %}" alt="Upload Solid", style="width: 15px;">
-                    <a href="/upload/">Upload Data</span>
-                </div>
-                <div class="header-settings">
-                    <img src="{% static 'images/user-solid.png' %}" alt="User Solid", style="width: 15px;">
-                    <a href="/logout/">Logout</a>
-                </div>
-            </div>
-        </header>
-    </div>
+  
+    {% include 'Frontend/header.html' %}
+    
     <div class="main-body">
         <div class="widget" style="grid-column: span 12;grid-row: span 5;">
-            <h2>Documentation pending!</h1>
+            <h2>Documentation pending!</h2>
+            <h3>Anleitung zum Hochladen von Datensätzen</h3>
+            <p>Folgen Sie diesen Schritten, um Ihre eigenen Datensätze hochzuladen:</p>
+            <ol>
+                <li><strong>Seite aufrufen:</strong> Besuchen Sie die Upload-Seite über das Dashboard, indem Sie auf "Upload Data" in der Kopfzeile klicken.</li>
+                <li><strong>Dateiauswahl:</strong> Stellen Sie sicher, dass Ihre Datei im CSV- oder JSON-Format vorliegt. Klicken Sie auf das Feld neben "CSV or JSON File" und wählen Sie die Datei von Ihrem Computer aus.</li>
+                <li><strong>Schlüssel eingeben:</strong> Füllen Sie die folgenden Felder aus:
+                    <ul>
+                        <li><strong>Timestamp Key:</strong> Geben Sie den Schlüssel für den Zeitstempel ein.</li>
+                        <li><strong>Username Key:</strong> Geben Sie den Schlüssel für den Benutzernamen ein.</li>
+                        <li><strong>User ID Key:</strong> Geben Sie den Schlüssel für die Benutzer-ID ein.</li>
+                        <li><strong>Post ID Key:</strong> Geben Sie den Schlüssel für die Post-ID ein.</li>
+                        <li><strong>Text Key:</strong> Geben Sie den Schlüssel für den Textinhalt ein.</li>
+                    </ul>
+                </li>
+                <li><strong>Datei hochladen:</strong> Überprüfen Sie alle eingegebenen Informationen auf Richtigkeit. Klicken Sie auf die Schaltfläche „Upload“, um den Hochladevorgang zu starten.</li>
+                <li><strong>Bestätigung:</strong> Warten Sie auf eine Bestätigungsmeldung. Nach erfolgreichem Hochladen wird eine entsprechende Nachricht angezeigt.</li>
+                <li><strong>Fehlerbehebung:</strong> Falls eine Fehlermeldung angezeigt wird, überprüfen Sie die Datei und die eingegebenen Schlüssel auf Korrektheit und wiederholen Sie den Vorgang.</li>
+            </ol>
         </div>
     </div>
 </body>
+</html>

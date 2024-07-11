@@ -11,6 +11,8 @@ import numpy as np
 from Macroclustering.macro_clustering_using_database import main_macro
 from Infodash.globals import global_lock
 
+data_for_export = []
+
 # Funktionen
 from datetime import datetime
 
@@ -177,7 +179,15 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
     return cluster_tweet_data
 
 
+def export_data():
+    global data_for_export
+    return data_for_export
+
+
 def main_loop(db, index):
+    global all_tweets_from_db
+    global data_for_export
+    
     print("Starting micro_clustering main loop...")
 
     try:
@@ -211,6 +221,8 @@ def main_loop(db, index):
     # Zuordnungsliste Cluster id zu Tweet id
     tweet_cluster_mapping = []
 
+    data_for_export = tweet_cluster_mapping
+
     # Dictionary zum Speichern der Mikro-Cluster-Zentren
     micro_cluster_centers = {}
 
@@ -220,7 +232,8 @@ def main_loop(db, index):
         if not tweets.empty:
             print(f"Tweets von {start_time} bis {end_time}:")
             print(tweets[['created_at', 'text', 'id_str']])
-            process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words, micro_cluster_centers)
+            process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words,
+                           micro_cluster_centers)
 
         # Informationen der Microcluster speichern (Zentrum usw.)
 

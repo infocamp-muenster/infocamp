@@ -5,12 +5,13 @@ urlpatterns = [
     path('', views.loginPage, name="login"),
     path('logout/', views.logoutPage, name="logout"),
     
-    path('documentation/', views.documentation, name="Docu"),
+    path('documentation/', views.documentation, name="documentation"),
     
-    path('realtime', views.realTime, name="Realtime"),
+    path('realtime', views.realTime, name="realtime"),
     
     path('django_plotly_dash/', include('django_plotly_dash.urls')),
 
-    path('upload/', views.upload, name='upload'),
+    path('upload/', views.upload, name="upload"),
+    path('export/', views.dataExport, name="export"),
    
 ]
