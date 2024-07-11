@@ -247,11 +247,27 @@ def update_chart(n):
             df = get_micro_macro_data(db, 'macro_micro_dict')
 
             grouped_df = convert_macro_cluster_visualization(df)
-            last_chart = px.bar(grouped_df, x='macro_cluster', y='micro_cluster_tweet_sum',
-                                title='Summe der Tweets pro Macro-Cluster',
-                                labels={'macro_cluster': 'Macro Cluster',
-                                        'micro_cluster_tweet_sum': 'Summe der Tweets'},
-                                text='micro_cluster_tweet_sum')
+            last_chart = px.bar(
+                grouped_df,
+                y='macro_cluster',
+                x='micro_cluster_tweet_sum',
+                title='Tweet Sum per Macro Cluster',
+                labels={'macro_cluster': 'Macro Cluster', 'micro_cluster_tweet_sum': 'Tweet Sum'},
+                text='micro_cluster_tweet_sum',
+                orientation='h'
+            )
+
+            # Update layout for transparency and bar color
+            last_chart.update_traces(marker_color='#07368C')
+            last_chart.update_layout(
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                yaxis=dict(
+                    tickmode='linear',
+                    dtick=1  # Set the tick interval to 1
+                )
+            )
+
             return last_chart
 
         except Exception as e:
