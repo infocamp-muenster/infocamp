@@ -1,6 +1,6 @@
 # micro_clustering.py
 import pandas as pd
-from datetime import timedelta
+from datetime import timedelta, datetime
 import time
 from river import cluster, feature_extraction
 import re
@@ -10,6 +10,61 @@ from nltk.stem import PorterStemmer
 import numpy as np
 from Macroclustering.macro_clustering_using_database import main_macro
 from Infodash.globals import global_lock
+from textClustPy import textclust
+from textClustPy import Preprocessor
+from textClustPy import InMemInput
+import requests, zipfile, io
+import pandas as pd
+
+# TODO Macro-Clustering noch implementieren
+
+
+
+'''
+def cluster_data(file_name, excluded_token, column_time, path_to_data, path_to_save):
+    # TextClust Objekt mit den Standard-Parametern für Twitter-Daten
+    clust = textclust(radius=0.2, _lambda=0.001, tgap=100, termfading=True, realtimefading=True, num_macro=10,
+                      minWeight=0, micro_distance="tfidf_cosine_distance", macro_distance="tfidf_cosine_distance",
+                      idf=True, auto_merge=True, auto_r=True, verbose=False)
+
+    # Einstellen des Preprocessors
+    preprocessor = Preprocessor(language='english', max_grams=2, stemming=False, hashtag=True, stopword_removal=True,
+                                username=True, punctuation=True, url=True, exclude_tokens=excluded_token)
+
+    df = pd.read_json(path_to_data + file_name + ".json", lines=True)
+
+    # Manchmal ist die Timestamp-Spalte falsch definiert
+    if isinstance(df[column_time][0], (int, np.integer)):
+        df[column_time] = [datetime.fromtimestamp(t / 1e3) for t in df[column_time]]
+    elif isinstance(df[column_time][0], str):
+        df[column_time] = [datetime.strptime(i, "%Y-%m-%d %H:%M:%S") for i in df['column_time']]
+    df = df.sort_values(by=column_time)
+
+    # Define empty dataframes to store the results 
+    clusters = pd.DataFrame(data={'timestamp': [], 'clusterID': [], 'weight': []})
+    textids = pd.DataFrame(columns=['clusterID', 'textIDs'])
+
+    # Definiere den Input: Hier In-Memory-Input, da ich den DF schon vorher via Pandas geladen habe 
+    # Wichtig ist es hier die IDS der Columns anzugeben, in denen die Tweet-IDs, die Zeit und der Text stehen
+    input = InMemInput(textclust=clust, preprocessor=preprocessor, pdframe=df, col_id=2, col_time=0, col_text=1)
+
+    # Give textClust only tgap observations to be able to store the results inbetween 
+    for start in range(0, len(df), clust.tgap):
+        input.update(len(df[start:start + clust.tgap]))
+        microclusters = clust.microclusters
+        clusters = store_result(clusters=clusters, microclusters=microclusters)
+        textids = store_textids(textids=textids, microclusters=microclusters)
+
+    # Store the final clustering output
+    clusters.to_json(path_to_save + "mc_" + file_name + ".json", lines=True, orient="records")
+    textids.to_json(path_to_save + "textids_" + file_name + ".json", lines=True, orient="records")
+
+
+cluster_data(file_name="test", excluded_token=excluded_tokens, column_time="timestamp",
+             path_to_data="/Users/janina/Documents/Forschung/algorithms/textClust_alt/", path_to_save="/Users/janina/Desktop/")
+'''
+
+
 
 data_for_export = []
 
@@ -53,25 +108,64 @@ def preprocess_tweet(tweet, stemmer, nlp, stop_words):
 
 # Funktion die das eigentliche Clustern pro Tweet inkrementell durchführt; tweet_cluster_mapping ist dabei Zuordnung
 # von jedem Tweet zu einem Micro-Cluster
-def process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words,
-                   micro_cluster_centers):
-    for _, tweet in tweets.iterrows():
-        processed_tweet = preprocess_tweet(tweet['text'], stemmer, nlp, stop_words)
-        features = vectorizer.transform_one(processed_tweet)
-        try:
-            clustream.learn_one(features)
-            cluster_id = clustream.predict_one(features)
-            # get center for each micro-cluster
-            center = clustream.micro_clusters[cluster_id].center
-            micro_cluster_centers[cluster_id] = center
+def process_tweets(tweets, tweet_cluster_mapping, db):
+    # cluster_tweet_data Dataframe initialisieren
+    columns = ['cluster_id', 'timestamp', 'tweet_count']
+    cluster_tweet_data = pd.DataFrame(columns=columns)
 
-            tweet_cluster_mapping.append({
-                'tweet_id': tweet['id_str'],
-                'cluster_id': cluster_id,
-                'timestamp': str(tweet['created_at'])
-            })
-        except KeyError as e:
-            print(f"4. KeyError bei CluStream.learn_one: {e}, tweet: {tweet['text']}, features: {features}")
+
+    # TextClust Objekt mit den Standard-Parametern für Twitter-Daten
+    clust = textclust(radius=0.2, _lambda=0.001, tgap=100, termfading=True, realtimefading=True, num_macro=10,
+                      minWeight=0, micro_distance="tfidf_cosine_distance", macro_distance="tfidf_cosine_distance",
+                      idf=True, auto_merge=True, auto_r=True, verbose=False)
+
+    # Einstellen des Preprocessors
+    preprocessor = Preprocessor(language='english', max_grams=2, stemming=False, hashtag=True, stopword_removal=True,
+                                username=True, punctuation=True, url=True)
+
+    # Definiere den Input: Hier In-Memory-Input, da ich den DF schon vorher via Pandas geladen habe
+    # Wichtig ist es hier die IDS der Columns anzugeben, in denen die Tweet-IDs, die Zeit und der Text stehen
+    input = InMemInput(textclust=clust, preprocessor=preprocessor, pdframe=tweets, col_id=2, col_time=0, col_text=1)
+
+    # Give textClust only tgap observations to be able to store the results in between
+    for start in range(0, len(tweets), clust.tgap):
+        start_time = tweets.iloc[start]['created_at']
+        end_time = tweets.iloc[min(start + clust.tgap, len(tweets) - 1)]['created_at']  # Ensure we don't go out of bounds
+        input.update(len(tweets[start:start + clust.tgap]))
+        microclusters = clust.microclusters
+
+        for cluster_id, microcluster in microclusters.items():
+            for textid in microcluster.textids:
+                tweet = tweets.loc[tweets['id_str'] == textid].iloc[0]
+                tweet_cluster_mapping.append({
+                    'tweet_id': tweet['id_str'],
+                    'cluster_id': cluster_id,
+                    'timestamp': str(tweet['created_at'])
+                })
+
+        cluster_center = []
+        cluster_tweet_data = transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time,
+                                                             end_time, cluster_center)
+
+        # TODO Upload dataframe to elasticsearch database
+        # Upload dataframe to elasticsearch database
+        print(cluster_tweet_data)
+        print('#####################')
+        print("jetzt db upload")
+        print('#####################')
+        try:
+            print("jetzt im try catch!!!!!!!!!!!!!")
+
+            global_lock.acquire(blocking=True)
+            if db.es.indices.exists(index='cluster_tweet_data'):
+                db.es.indices.delete(index='cluster_tweet_data')
+            db.upload_df('cluster_tweet_data', cluster_tweet_data)
+        except Exception as e:
+            print(f"An error occurred during upload: {e}")
+        finally:
+            global_lock.release()
+
+    return cluster_tweet_data
 
 
 # Funktion die das cluster_tweet_data Dataframe nach jedem Zeitintervall updated und sämtliche Kennzahlen berechnet
@@ -122,7 +216,8 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
         upper_threshold = tweet_count + 6 * prev_std_dev_tweet_count
 
         # Hinzufügen des Clusterzentrums
-        center = micro_cluster_centers.get(cluster_id, None)
+        #center = micro_cluster_centers.get(cluster_id, None)
+        center = 0
 
         rows_to_add.append({
             'cluster_id': cluster_id,
@@ -159,7 +254,8 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
             upper_threshold = 0 + 6 * prev_std_dev_tweet_count
 
             # Hinzufügen des Clusterzentrums
-            center = micro_cluster_centers.get(cluster_id, None)
+            #center = micro_cluster_centers.get(cluster_id, None)
+            center = 0
 
             rows_to_add.append({
                 'cluster_id': cluster_id,
@@ -206,17 +302,21 @@ def main_loop(db, index):
     tweets_selected = tweets[['created_at', 'text', 'id_str']]
     tweets_selected.loc[:, 'created_at'] = pd.to_datetime(tweets_selected['created_at'],
                                                           format='%a %b %d %H:%M:%S %z %Y')
+
+    # Sorting dataframe ascending via 'created_at'
+    tweets_selected = tweets_selected.sort_values(by='created_at', ascending=True)
+
     # Initialisierungen
-    start_time, end_time = initialize_time_window(tweets_selected, 'created_at')
-    vectorizer = feature_extraction.BagOfWords()
-    clustream = cluster.CluStream()
-    stop_words = set(stopwords.words('english'))  # TODO: Add stopwords for german and other languages
-    nlp = spacy.load('en_core_web_sm')
-    stemmer = PorterStemmer()
+    #start_time, end_time = initialize_time_window(tweets_selected, 'created_at')
+    #vectorizer = feature_extraction.BagOfWords()
+    #clustream = cluster.CluStream()
+    #stop_words = set(stopwords.words('english'))  # TODO: Add stopwords for german and other languages
+    #nlp = spacy.load('en_core_web_sm')
+    #stemmer = PorterStemmer()
 
     # cluster_tweet_data Dataframe initialisieren
-    columns = ['cluster_id', 'timestamp', 'tweet_count']
-    cluster_tweet_data = pd.DataFrame(columns=columns)
+    #columns = ['cluster_id', 'timestamp', 'tweet_count']
+    #cluster_tweet_data = pd.DataFrame(columns=columns)
 
     # Zuordnungsliste Cluster id zu Tweet id
     tweet_cluster_mapping = []
@@ -227,6 +327,9 @@ def main_loop(db, index):
     micro_cluster_centers = {}
 
     # Schleife die jeden Tweet des Zeitintervalls behandelt
+
+    process_tweets(tweets_selected, tweet_cluster_mapping, db)
+    '''
     while True:
         tweets = fetch_tweets_in_time_window(tweets_selected, start_time, end_time, 'created_at')
         if not tweets.empty:
@@ -271,3 +374,4 @@ def main_loop(db, index):
 
         time.sleep(2)
         micro_cluster_iterations += 1
+    '''
