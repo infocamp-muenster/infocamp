@@ -27,8 +27,6 @@ empty_figure = {
     )
 }
 
-last_chart = go.Figure()
-
 # Initialize the app
 app = DjangoDash('dashboard')
 
@@ -53,9 +51,9 @@ def initialize_dash_app():
                     n_intervals=0
                 )
             ]),
-            html.Div(className='widget widget-pop-up', children=[
-                    html.H3('AI-Generation'),    
-            ]),
+            # Pop Up Widget. Gets activated by clicking on data point of ai prob data point
+            # HTML Output of widget is defined below
+            html.Div(className='widget widget-pop-up', id='popup-ai-prob'),
             # Main Micro Cluster Widget
             html.Div(className='widget', style={'grid-column':'span 9'}, children=[
                 html.H3('Micro Cluster'),
@@ -73,19 +71,18 @@ def initialize_dash_app():
             ]),
             # Pop Up Widget. Gets activated by clicking on data point of micro cluster widget
             # HTML Output of widget is defined below
-            html.Div(className='widget widget-pop-up', id='popup-micro-cluster', children=[
-                    html.Span('Micro Cluster Pop Up'),
-            ]),
+            html.Div(className='widget widget-pop-up', id='popup-micro-cluster'),
             # Main Macro Cluster Widget
             html.Div(className='widget', style={'grid-column': 'span 6'}, children=[
                 html.H3('Macro Cluster'),
                 html.Span('Bar Chart'),
                 dcc.Graph(
-                    id='bar-chart',
+                    id='macro-cluster-live-update-graph',
                     config={'displayModeBar': False},
+                    figure=empty_figure  # Set initial empty figure
                 ),
                 dcc.Interval(
-                    id='interval-component',
+                    id='macro-cluster-interval-component',
                     interval=1 * 10000,  # in milliseconds (10 seconds)
                     n_intervals=0
                 )
@@ -95,26 +92,16 @@ def initialize_dash_app():
                 html.Span('Post Analysis'),
                     # Widget can be embedded here!
             ]),
-            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
-                html.H3('Topic Focus'),
-                html.Span('Cluster Analysis'),
-                    # Widget can be embedded here!
-            ]),
-            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
-                html.H3('Topic Focus'),
-                html.Span('Cluster Analysis'),
-                    # Widget can be embedded here!
-            ]),
         ]),
     ])
 
-# Callback function for updating the realtime ai prob chart
-@app.callback(
-        Output('ai-prob-live-update-graph', 'figure'),
-        [Input('ai-prob-interval-component', 'n_intervals')]
-)
+# Callback and calculation functions for all widgets
 
-# Function inclduing necessary code for updating ai prob chart in realtime
+# -- AI PROBABILITY WIDGET --
+@app.callback(
+Output('ai-prob-live-update-graph', 'figure'),
+    [Input('ai-prob-interval-component', 'n_intervals')]
+)
 def ai_prob_update_graph_live(n):
 
     try:
@@ -156,13 +143,57 @@ def ai_prob_update_graph_live(n):
 
     return ai_prop_last_figure
 
-# Callback function for updating the realtime micro cluster chart
+# -- AI PROBABILITY WIDGET POP UP --
+@app.callback(
+        Output('popup-ai-prob', 'children'),
+        [Input('ai-prob-live-update-graph', 'clickData')]
+)
+def ai_prob_pop_up(clickData):
+    # Default HTML Output of Widget
+    if clickData is None:
+        return html.Div(className='widget-pop-up-default', children=[
+            html.H4('Click on a data point in AI Probabilty widget for more detailed information')
+        ])
+
+    point = clickData['points'][0]
+    cluster_number = point['curveNumber']
+    cluster_index = point['pointNumber']
+    cluster_timestamp = convert_date(point['x'])
+    cluster_tweet_count = point['y']
+
+    # Get cluster keywords
+    cluster_key_words_string = ", ".join(point['customdata'][0].keys()) if point['customdata'][0] else ""
+
+    # HTML Output of Pop Up Widgets
+    return html.Div(children=[
+        html.H3('AI Probability Information'),
+        html.Span('Analytics for selected data point'),
+        html.Div(className="popup-widget-info",children=[
+            html.Div(children=[
+                html.Span(f'Cluster Index:',className="label"),
+                html.Span(f'{cluster_index}',className="value"),
+            ]),
+            html.Div(className="keywords",children=[
+                html.Span(f'Cluster Keywords:',className="label"),
+                html.Span(f'{cluster_key_words_string}',className="value"),
+            ]),
+            html.Div(children=[
+                html.Span(f'Timestamp:',className="label"),
+                html.Span(f'{cluster_timestamp}',className="value"),
+            ]),
+            html.Div(children=[
+                html.Span(f'Tweet Count:',className="label"),
+                html.Span(f'{cluster_tweet_count}',className="value"),
+            ]),
+        ]),
+    ])
+
+
+# -- MICRO CLUSTER WIDGET --
 @app.callback(
         Output('micro-cluster-live-update-graph', 'figure'),
         [Input('micro-cluster-interval-component', 'n_intervals')]
 )
-
-# Function inclduing necessary code for updating micro cluster chart in realtime
 def micro_cluster_update_graph_live(n):
 
     try:
@@ -204,18 +235,16 @@ def micro_cluster_update_graph_live(n):
 
     return micro_cluster_last_figure
 
-# Callback for Micro Cluster Pop Up Widget Information of Datapoints will be shown in widget with id #popup-micro-cluster
+# -- MICRO CLUSTER WIDGET POP UP --
 @app.callback(
         Output('popup-micro-cluster', 'children'),
         [Input('micro-cluster-live-update-graph', 'clickData')]
 )
-
-# Function including HTML Output for micro cluster pop up information
 def micro_cluster_pop_up(clickData):
     # Default HTML Output of Widget
     if clickData is None:
         return html.Div(className='widget-pop-up-default', children=[
-            html.H4('Click on cluster for detailed information')
+            html.H4('Click on a data point in Micro Cluster widget for more detailed information')
         ])
 
     point = clickData['points'][0]
@@ -296,13 +325,16 @@ def micro_cluster_pop_up(clickData):
     ])
 
 
-# Callback for updating macro-cluster chart
+# -- MACRO CLUSTER WIDGET --
 @app.callback(
-    Output('bar-chart', 'figure'),
-    [Input('interval-component', 'n_intervals')]
+    Output('macro-cluster-live-update-graph', 'figure'),
+    [Input('macro-cluster-interval-component', 'n_intervals')]
 )
-def update_chart(n):
-    global last_chart
+def macro_cluster_update_graph_live(n):
+
+    # var macro_cluster_update_graph_live needs to be none as long as there is no data available
+    if not hasattr(macro_cluster_update_graph_live, "macro_cluster_last_figure"):
+        macro_cluster_update_graph_live.macro_cluster_last_figure = None
 
     if glob.macro_df:
         try:
@@ -310,7 +342,7 @@ def update_chart(n):
             df = get_micro_macro_data(db, 'macro_micro_dict')
 
             grouped_df = convert_macro_cluster_visualization(df)
-            last_chart = px.bar(
+            macro_cluster_last_figure = px.bar(
                 grouped_df,
                 y='macro_cluster',
                 x='micro_cluster_tweet_sum',
@@ -321,8 +353,8 @@ def update_chart(n):
             )
 
             # Update layout for transparency and bar color
-            last_chart.update_traces(marker_color='#07368C')
-            last_chart.update_layout(
+            macro_cluster_last_figure.update_traces(marker_color='#07368C')
+            macro_cluster_last_figure.update_layout(
                 plot_bgcolor='rgba(0,0,0,0)',
                 paper_bgcolor='rgba(0,0,0,0)',
                 yaxis=dict(
@@ -331,12 +363,16 @@ def update_chart(n):
                 )
             )
 
-            return last_chart
+            return macro_cluster_last_figure
 
         except Exception as e:
             print(f"An error occurred: {e}")
 
-    return last_chart
+    # var macro_cluster_update_graph_live needs to be none as long as there is no data available
+    if macro_cluster_update_graph_live.macro_cluster_last_figure is None:
+        macro_cluster_update_graph_live.macro_cluster_last_figure = empty_figure
+
+    return macro_cluster_update_graph_live.macro_cluster_last_figure
 
 
 # Run App
