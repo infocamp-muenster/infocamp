@@ -17,11 +17,15 @@ from django_plotly_dash import DjangoDash
 from Datamanagement.Database import Database, get_cluster_tweet_data, get_micro_macro_data
 import Infodash.globals as glob
 
-# Setting global variable for last successful generated micro-clustering figure
-last_figure = {'data': [], 'layout': go.Layout(title='Number of Tweets per Cluster Over Time',
-                                               xaxis=dict(title='Time'),
-                                               yaxis=dict(title='Number of Tweets'))}
-last_chart = go.Figure()
+# Define initial empty figures
+empty_figure = {
+    'data': [],
+    'layout': go.Layout(
+        title='Loading...',
+        xaxis=dict(title=''),
+        yaxis=dict(title='')
+    )
+}
 
 # Initialize the app
 app = DjangoDash('dashboard')
@@ -32,22 +36,32 @@ def initialize_dash_app():
 
         # Main Div element named 'main-body' contains import style information and all widgets are childs of it
         html.Div(className='main-body', children=[
-
-            html.Div(className='widget', style={'grid-column': 'span 9'}, children=[
-                html.H3('KI-Probability'),
+            # AI Probability Widget / Graph
+            html.Div(className='widget', style={'grid-column':'span 9'}, children=[
+                html.H3('AI Probability'),
                 html.Span('Of Text based Content'),
-                # Widget can be embedded here!
+                dcc.Graph(
+                    id='ai-prob-live-update-graph',
+                    config={'displayModeBar': False},
+                    figure=empty_figure  # Set initial empty figure
+                ),
+                dcc.Interval(
+                    id='interval-component',
+                    interval=1 * 3000,  # in milliseconds (3 seconds)
+                    n_intervals=0
+                )
             ]),
-            html.Div(className='widget widget-pop-up', children=[
-                html.H3('AI-Generation'),
-            ]),
+            # Pop Up Widget. Gets activated by clicking on data point of ai prob data point
+            # HTML Output of widget is defined below
+            html.Div(className='widget widget-pop-up', id='popup-ai-prob'),
             # Main Micro Cluster Widget
-            html.Div(className='widget', style={'grid-column': 'span 9'}, children=[
+            html.Div(className='widget', style={'grid-column':'span 9'}, children=[
                 html.H3('Micro Cluster'),
                 html.Span('Emerging Trends'),
                 dcc.Graph(
-                    id='live-update-graph',
+                    id='micro-cluster-live-update-graph',
                     config={'displayModeBar': False},
+                    figure=empty_figure  # Set initial empty figure
                 ),
                 dcc.Interval(
                     id='interval-component',
@@ -57,50 +71,38 @@ def initialize_dash_app():
             ]),
             # Pop Up Widget. Gets activated by clicking on data point of micro cluster widget
             # HTML Output of widget is defined below
-            html.Div(className='widget widget-pop-up', id='popup-micro-cluster', children=[
-                html.Span('Micro Cluster Pop Up'),
-            ]),
+            html.Div(className='widget widget-pop-up', id='popup-micro-cluster'),
             # Main Macro Cluster Widget
             html.Div(className='widget', style={'grid-column': 'span 6'}, children=[
                 html.H3('Macro Cluster'),
                 html.Span('Bar Chart'),
                 dcc.Graph(
-                    id='bar-chart',
+                    id='macro-cluster-live-update-graph',
                     config={'displayModeBar': False},
+                    figure=empty_figure  # Set initial empty figure
                 ),
                 dcc.Interval(
-                    id='interval-component',
+                    id='macro-cluster-interval-component',
                     interval=1 * 10000,  # in milliseconds (10 seconds)
                     n_intervals=0
                 )
             ]),
-            html.Div(className='widget', style={'grid-column': 'span 6'}, children=[
+            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
                 html.H3('Most Recent Posts'),
                 html.Span('Post Analysis'),
-                # Widget can be embedded here!
-            ]),
-            html.Div(className='widget', style={'grid-column': 'span 6'}, children=[
-                html.H3('Topic Focus'),
-                html.Span('Cluster Analysis'),
-                # Widget can be embedded here!
-            ]),
-            html.Div(className='widget', style={'grid-column': 'span 6'}, children=[
-                html.H3('Topic Focus'),
-                html.Span('Cluster Analysis'),
-                # Widget can be embedded here!
+                    # Widget can be embedded here!
             ]),
         ]),
     ])
 
+# Callback and calculation functions for all widgets
 
-# Callback function for updating the realtime micro cluster chart
+# -- AI PROBABILITY WIDGET --
 @app.callback(
-    Output('live-update-graph', 'figure'),
+Output('ai-prob-live-update-graph', 'figure'),
     [Input('interval-component', 'n_intervals')]
 )
-# Function inclduing necessary code for updating micro cluster chart in realtime
-def update_graph_live(n):
-    global last_figure
+def ai_prob_update_graph_live(n):
 
     try:
         # Trying to get cluster data from db
@@ -113,11 +115,11 @@ def update_graph_live(n):
         line_colors_list = ['#07368C', '#707FDD', '#BBC4FD', '#455BE7', '#F1F2FC']
 
         # Plotting
-        traces = []
+        ai_prob_traces = []
         for i, cluster_id in enumerate(cluster_tweet_data['cluster_id'].unique()):
             cluster_data = cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id]
 
-            traces.append(go.Scatter(
+            ai_prob_traces.append(go.Scatter(
                 x=cluster_data['timestamp'],
                 y=cluster_data['tweet_count'],
                 mode='lines+markers',
@@ -126,7 +128,99 @@ def update_graph_live(n):
                 customdata=list(zip(cluster_data['center'],cluster_data['lower_threshold'],cluster_data['upper_threshold'],cluster_data['std_dev_tweet_count'])),
             ))
 
-        layout = go.Layout(
+        ai_prob_layout = go.Layout(
+            title='Number of Tweets >99% AI Probability',
+            xaxis=dict(title='Time'),
+            yaxis=dict(title='Number of Tweets'),
+            height=360,  # Höhe des Diagramms in Pixel
+        )
+
+        # Update last_figure only if there were no issues while fetching data
+        ai_prop_last_figure = {'data': ai_prob_traces, 'layout': ai_prob_layout}
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+    return ai_prop_last_figure
+
+# -- AI PROBABILITY WIDGET POP UP --
+@app.callback(
+        Output('popup-ai-prob', 'children'),
+        [Input('ai-prob-live-update-graph', 'clickData')]
+)
+def ai_prob_pop_up(clickData):
+    # Default HTML Output of Widget
+    if clickData is None:
+        return html.Div(className='widget-pop-up-default', children=[
+            html.H4('Click on a data point in AI Probabilty widget for more detailed information')
+        ])
+
+    point = clickData['points'][0]
+    cluster_number = point['curveNumber']
+    cluster_index = point['pointNumber']
+    cluster_timestamp = convert_date(point['x'])
+    cluster_tweet_count = point['y']
+
+    # Get cluster keywords
+    cluster_key_words_string = ", ".join(point['customdata'][0].keys()) if point['customdata'][0] else ""
+
+    # HTML Output of Pop Up Widgets
+    return html.Div(children=[
+        html.H3('AI Probability Information'),
+        html.Span('Analytics for selected data point'),
+        html.Div(className="popup-widget-info",children=[
+            html.Div(children=[
+                html.Span(f'Cluster Index:',className="label"),
+                html.Span(f'{cluster_index}',className="value"),
+            ]),
+            html.Div(className="keywords",children=[
+                html.Span(f'Cluster Keywords:',className="label"),
+                html.Span(f'{cluster_key_words_string}',className="value"),
+            ]),
+            html.Div(children=[
+                html.Span(f'Timestamp:',className="label"),
+                html.Span(f'{cluster_timestamp}',className="value"),
+            ]),
+            html.Div(children=[
+                html.Span(f'Tweet Count:',className="label"),
+                html.Span(f'{cluster_tweet_count}',className="value"),
+            ]),
+        ]),
+    ])
+
+
+# -- MICRO CLUSTER WIDGET --
+@app.callback(
+        Output('micro-cluster-live-update-graph', 'figure'),
+        [Input('interval-component', 'n_intervals')]
+)
+def micro_cluster_update_graph_live(n):
+
+    try:
+        # Trying to get cluster data from db
+        cluster_tweet_data = get_cluster_tweet_data(db, 'cluster_tweet_data')
+
+        # Ensure 'timestamp' is in datetime format
+        cluster_tweet_data['timestamp'] = pd.to_datetime(cluster_tweet_data['timestamp'])
+
+        # Predefined line colors
+        line_colors_list = ['#07368C', '#707FDD', '#BBC4FD', '#455BE7', '#F1F2FC']
+
+        # Plotting
+        micro_cluster_traces = []
+        for i, cluster_id in enumerate(cluster_tweet_data['cluster_id'].unique()):
+            cluster_data = cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id]
+
+            micro_cluster_traces.append(go.Scatter(
+                x=cluster_data['timestamp'],
+                y=cluster_data['tweet_count'],
+                mode='lines+markers',
+                name=f'Cluster {cluster_id}',
+                line=dict(color=line_colors_list[i % len(line_colors_list)]), # Assign color from predefined list
+                customdata=list(zip(cluster_data['center'],cluster_data['lower_threshold'],cluster_data['upper_threshold'],cluster_data['std_dev_tweet_count'])),
+            ))
+
+        micro_cluster_layout = go.Layout(
             title='Number of Tweets per Cluster Over Time',
             xaxis=dict(title='Time'),
             yaxis=dict(title='Number of Tweets'),
@@ -134,25 +228,23 @@ def update_graph_live(n):
         )
 
         # Update last_figure only if there were no issues while fetching data
-        last_figure = {'data': traces, 'layout': layout}
+        micro_cluster_last_figure = {'data': micro_cluster_traces, 'layout': micro_cluster_layout}
 
     except Exception as e:
         print(f"An error occurred: {e}")
 
-    return last_figure
+    return micro_cluster_last_figure
 
-
-# Callback for Micro Cluster Pop Up Widget Information of Datapoints will be shown in widget with id #popup-micro-cluster
+# -- MICRO CLUSTER WIDGET POP UP --
 @app.callback(
-    Output('popup-micro-cluster', 'children'),
-    [Input('live-update-graph', 'clickData')]
+        Output('popup-micro-cluster', 'children'),
+        [Input('micro-cluster-live-update-graph', 'clickData')]
 )
-# Function including HTML Output for micro cluster pop up information
 def micro_cluster_pop_up(clickData):
     # Default HTML Output of Widget
     if clickData is None:
         return html.Div(className='widget-pop-up-default', children=[
-            html.H4('Click on cluster for detailed information')
+            html.H4('Click on a data point in Micro Cluster widget for more detailed information')
         ])
 
     point = clickData['points'][0]
@@ -233,13 +325,16 @@ def micro_cluster_pop_up(clickData):
     ])
 
 
-# Callback for updating macro-cluster chart
+# -- MACRO CLUSTER WIDGET --
 @app.callback(
-    Output('bar-chart', 'figure'),
-    [Input('interval-component', 'n_intervals')]
+    Output('macro-cluster-live-update-graph', 'figure'),
+    [Input('macro-cluster-interval-component', 'n_intervals')]
 )
-def update_chart(n):
-    global last_chart
+def macro_cluster_update_graph_live(n):
+
+    # var macro_cluster_update_graph_live needs to be none as long as there is no data available
+    if not hasattr(macro_cluster_update_graph_live, "macro_cluster_last_figure"):
+        macro_cluster_update_graph_live.macro_cluster_last_figure = None
 
     if glob.macro_df:
         try:
@@ -247,7 +342,7 @@ def update_chart(n):
             df = get_micro_macro_data(db, 'macro_micro_dict')
 
             grouped_df = convert_macro_cluster_visualization(df)
-            last_chart = px.bar(
+            macro_cluster_last_figure = px.bar(
                 grouped_df,
                 y='macro_cluster',
                 x='micro_cluster_tweet_sum',
@@ -258,8 +353,8 @@ def update_chart(n):
             )
 
             # Update layout for transparency and bar color
-            last_chart.update_traces(marker_color='#07368C')
-            last_chart.update_layout(
+            macro_cluster_last_figure.update_traces(marker_color='#07368C')
+            macro_cluster_last_figure.update_layout(
                 plot_bgcolor='rgba(0,0,0,0)',
                 paper_bgcolor='rgba(0,0,0,0)',
                 yaxis=dict(
@@ -268,12 +363,16 @@ def update_chart(n):
                 )
             )
 
-            return last_chart
+            return macro_cluster_last_figure
 
         except Exception as e:
             print(f"An error occurred: {e}")
 
-    return last_chart
+    # var macro_cluster_update_graph_live needs to be none as long as there is no data available
+    if macro_cluster_update_graph_live.macro_cluster_last_figure is None:
+        macro_cluster_update_graph_live.macro_cluster_last_figure = empty_figure
+
+    return macro_cluster_update_graph_live.macro_cluster_last_figure
 
 
 # Run App

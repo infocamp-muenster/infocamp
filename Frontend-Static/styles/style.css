@@ -140,6 +140,11 @@ body {
     justify-content: center;
     align-items: center;
 }
+.widget-pop-up-default h4 {
+    font-weight: 500;
+    padding: 50px;
+    text-align: center;
+}
 .popup-widget-info {
     margin-top: 20px;
 }
