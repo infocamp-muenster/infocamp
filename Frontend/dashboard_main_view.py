@@ -46,7 +46,7 @@ def initialize_dash_app():
                     figure=empty_figure  # Set initial empty figure
                 ),
                 dcc.Interval(
-                    id='ai-prob-interval-component',
+                    id='interval-component',
                     interval=1 * 3000,  # in milliseconds (3 seconds)
                     n_intervals=0
                 )
@@ -64,7 +64,7 @@ def initialize_dash_app():
                     figure=empty_figure  # Set initial empty figure
                 ),
                 dcc.Interval(
-                    id='micro-cluster-interval-component',
+                    id='interval-component',
                     interval=1 * 3000,  # in milliseconds (3 seconds)
                     n_intervals=0
                 )
@@ -100,7 +100,7 @@ def initialize_dash_app():
 # -- AI PROBABILITY WIDGET --
 @app.callback(
 Output('ai-prob-live-update-graph', 'figure'),
-    [Input('ai-prob-interval-component', 'n_intervals')]
+    [Input('interval-component', 'n_intervals')]
 )
 def ai_prob_update_graph_live(n):
 
@@ -192,7 +192,7 @@ def ai_prob_pop_up(clickData):
 # -- MICRO CLUSTER WIDGET --
 @app.callback(
         Output('micro-cluster-live-update-graph', 'figure'),
-        [Input('micro-cluster-interval-component', 'n_intervals')]
+        [Input('interval-component', 'n_intervals')]
 )
 def micro_cluster_update_graph_live(n):
 
