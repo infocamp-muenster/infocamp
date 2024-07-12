@@ -13,64 +13,13 @@ from Infodash.globals import global_lock
 from textClustPy import textclust
 from textClustPy import Preprocessor
 from textClustPy import InMemInput
-import requests, zipfile, io
 import pandas as pd
+from datetime import datetime
+
 
 # TODO Macro-Clustering noch implementieren
 
-
-
-'''
-def cluster_data(file_name, excluded_token, column_time, path_to_data, path_to_save):
-    # TextClust Objekt mit den Standard-Parametern für Twitter-Daten
-    clust = textclust(radius=0.2, _lambda=0.001, tgap=100, termfading=True, realtimefading=True, num_macro=10,
-                      minWeight=0, micro_distance="tfidf_cosine_distance", macro_distance="tfidf_cosine_distance",
-                      idf=True, auto_merge=True, auto_r=True, verbose=False)
-
-    # Einstellen des Preprocessors
-    preprocessor = Preprocessor(language='english', max_grams=2, stemming=False, hashtag=True, stopword_removal=True,
-                                username=True, punctuation=True, url=True, exclude_tokens=excluded_token)
-
-    df = pd.read_json(path_to_data + file_name + ".json", lines=True)
-
-    # Manchmal ist die Timestamp-Spalte falsch definiert
-    if isinstance(df[column_time][0], (int, np.integer)):
-        df[column_time] = [datetime.fromtimestamp(t / 1e3) for t in df[column_time]]
-    elif isinstance(df[column_time][0], str):
-        df[column_time] = [datetime.strptime(i, "%Y-%m-%d %H:%M:%S") for i in df['column_time']]
-    df = df.sort_values(by=column_time)
-
-    # Define empty dataframes to store the results 
-    clusters = pd.DataFrame(data={'timestamp': [], 'clusterID': [], 'weight': []})
-    textids = pd.DataFrame(columns=['clusterID', 'textIDs'])
-
-    # Definiere den Input: Hier In-Memory-Input, da ich den DF schon vorher via Pandas geladen habe 
-    # Wichtig ist es hier die IDS der Columns anzugeben, in denen die Tweet-IDs, die Zeit und der Text stehen
-    input = InMemInput(textclust=clust, preprocessor=preprocessor, pdframe=df, col_id=2, col_time=0, col_text=1)
-
-    # Give textClust only tgap observations to be able to store the results inbetween 
-    for start in range(0, len(df), clust.tgap):
-        input.update(len(df[start:start + clust.tgap]))
-        microclusters = clust.microclusters
-        clusters = store_result(clusters=clusters, microclusters=microclusters)
-        textids = store_textids(textids=textids, microclusters=microclusters)
-
-    # Store the final clustering output
-    clusters.to_json(path_to_save + "mc_" + file_name + ".json", lines=True, orient="records")
-    textids.to_json(path_to_save + "textids_" + file_name + ".json", lines=True, orient="records")
-
-
-cluster_data(file_name="test", excluded_token=excluded_tokens, column_time="timestamp",
-             path_to_data="/Users/janina/Documents/Forschung/algorithms/textClust_alt/", path_to_save="/Users/janina/Desktop/")
-'''
-
-
-
 data_for_export = []
-
-# Funktionen
-from datetime import datetime
-
 
 def convert_date(date_str):
     # Parse the input date string to a datetime object
@@ -114,24 +63,22 @@ def process_tweets(tweets, tweet_cluster_mapping, db):
     cluster_tweet_data = pd.DataFrame(columns=columns)
 
 
-    # TextClust Objekt mit den Standard-Parametern für Twitter-Daten
+    # Configuration of TextClust object and Preprocessor with standard parameters for twitter data
     clust = textclust(radius=0.2, _lambda=0.001, tgap=100, termfading=True, realtimefading=True, num_macro=10,
                       minWeight=0, micro_distance="tfidf_cosine_distance", macro_distance="tfidf_cosine_distance",
                       idf=True, auto_merge=True, auto_r=True, verbose=False)
 
-    # Einstellen des Preprocessors
     preprocessor = Preprocessor(language='english', max_grams=2, stemming=False, hashtag=True, stopword_removal=True,
                                 username=True, punctuation=True, url=True)
 
-    # Definiere den Input: Hier In-Memory-Input, da ich den DF schon vorher via Pandas geladen habe
-    # Wichtig ist es hier die IDS der Columns anzugeben, in denen die Tweet-IDs, die Zeit und der Text stehen
-    input = InMemInput(textclust=clust, preprocessor=preprocessor, pdframe=tweets, col_id=2, col_time=0, col_text=1)
+    # Set column IDs of tweet-IDs, timestamp and text
+    clust_input = InMemInput(textclust=clust, preprocessor=preprocessor, pdframe=tweets, col_id=2, col_time=0, col_text=1)
 
     # Give textClust only tgap observations to be able to store the results in between
     for start in range(0, len(tweets), clust.tgap):
         start_time = tweets.iloc[start]['created_at']
         end_time = tweets.iloc[min(start + clust.tgap, len(tweets) - 1)]['created_at']  # Ensure we don't go out of bounds
-        input.update(len(tweets[start:start + clust.tgap]))
+        clust_input.update(len(tweets[start:start + clust.tgap]))
         microclusters = clust.microclusters
 
         for cluster_id, microcluster in microclusters.items():
@@ -147,15 +94,9 @@ def process_tweets(tweets, tweet_cluster_mapping, db):
         cluster_tweet_data = transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time,
                                                              end_time, cluster_center)
 
-        # TODO Upload dataframe to elasticsearch database
         # Upload dataframe to elasticsearch database
         print(cluster_tweet_data)
-        print('#####################')
-        print("jetzt db upload")
-        print('#####################')
         try:
-            print("jetzt im try catch!!!!!!!!!!!!!")
-
             global_lock.acquire(blocking=True)
             if db.es.indices.exists(index='cluster_tweet_data'):
                 db.es.indices.delete(index='cluster_tweet_data')
@@ -164,6 +105,7 @@ def process_tweets(tweets, tweet_cluster_mapping, db):
             print(f"An error occurred during upload: {e}")
         finally:
             global_lock.release()
+        time.sleep(20)
 
     return cluster_tweet_data
 
