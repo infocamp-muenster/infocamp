@@ -181,6 +181,7 @@ def get_cluster_tweet_data(db, index):
 
             except Exception as e:
                 print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
+                raise FatalError("Error in get_cluster_tweet_data(db, index)")
 
             finally:
                 global_lock.release()  # Make sure to release lock
@@ -206,3 +207,7 @@ def get_micro_macro_data(db, index):
 
         except Exception as e:
             print("Fehler bei der Durchführung der Abfragen auf Elasticsearch (Getting Macro-Data):", e)
+            raise FatalError("Error in get_micro_macro_data(db, index)")
+
+class FatalError(Exception):
+    pass
