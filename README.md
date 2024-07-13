@@ -12,9 +12,8 @@ There are no hard requirements, but there are a few signs that the project semin
 ```bash
 pip install -r requirements.txt
 ```
-2. adjust the user information in Microclustering/thread_micro_clustering.py line 7 and line 8
+2. adjust the user information in Microclustering/ssh_tunnel.py line 12 and line 13
 3. run ```python manage.py runserver ``` or ```python3 manage.py runserver ``` depending on your environment
-
 # Access via Django
 - Username: admin
 - Passwort: infocamp2024
