@@ -21,9 +21,19 @@ import Infodash.globals as glob
 empty_figure = {
     'data': [],
     'layout': go.Layout(
-        title='Loading...',
-        xaxis=dict(title=''),
-        yaxis=dict(title='')
+        title={
+            'text': 'Loading...',
+            'font': {
+                'family': 'Inter, sans-serif',
+                'size': 18,
+                'color': '#1F384C'
+            }
+        },
+        xaxis=dict(visible=False),
+        yaxis=dict(visible=False),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        height=360,
     )
 }
 
@@ -129,10 +139,22 @@ def ai_prob_update_graph_live(n):
             ))
 
         ai_prob_layout = go.Layout(
-            title='Number of Tweets >99% AI Probability',
+            title={
+                'text': 'Number of Tweets >99% AI Probability',
+                'font': {
+                    'family': 'Inter, sans-serif',
+                    'size': 18,
+                    'color': '#1F384C'
+                }
+            },
             xaxis=dict(title='Time'),
             yaxis=dict(title='Number of Tweets'),
-            height=360,  # Höhe des Diagramms in Pixel
+            height=360,
+            font=dict(
+                family="Inter, sans-serif",
+                size=14,
+                color="#1F384C"
+            )
         )
 
         # Update last_figure only if there were no issues while fetching data
@@ -221,10 +243,22 @@ def micro_cluster_update_graph_live(n):
             ))
 
         micro_cluster_layout = go.Layout(
-            title='Number of Tweets per Cluster Over Time',
+            title={
+                'text': 'Number of Tweets per Cluster Over Time',
+                'font': {
+                    'family': 'Inter, sans-serif',
+                    'size': 18,
+                    'color': '#1F384C'
+                }
+            },
             xaxis=dict(title='Time'),
             yaxis=dict(title='Number of Tweets'),
-            height=360,  # Höhe des Diagramms in Pixel
+            height=360,
+            font=dict(
+                family="Inter, sans-serif",
+                size=14,
+                color="#1F384C"
+            )
         )
 
         # Update last_figure only if there were no issues while fetching data
@@ -346,20 +380,31 @@ def macro_cluster_update_graph_live(n):
                 grouped_df,
                 y='macro_cluster',
                 x='micro_cluster_tweet_sum',
-                title='Tweet Sum per Macro Cluster',
+                title={
+                    'text': 'Tweet Sum per Macro Cluster',
+                    'font': {
+                        'family': 'Inter, sans-serif',
+                        'size': 18,
+                        'color': '#1F384C'
+                    }
+                },
                 labels={'macro_cluster': 'Macro Cluster', 'micro_cluster_tweet_sum': 'Tweet Sum'},
                 text='micro_cluster_tweet_sum',
                 orientation='h'
             )
 
-            # Update layout for transparency and bar color
             macro_cluster_last_figure.update_traces(marker_color='#07368C')
             macro_cluster_last_figure.update_layout(
                 plot_bgcolor='rgba(0,0,0,0)',
                 paper_bgcolor='rgba(0,0,0,0)',
                 yaxis=dict(
                     tickmode='linear',
-                    dtick=1  # Set the tick interval to 1
+                    dtick=1
+                ),
+                font=dict(
+                    family="Inter, sans-serif",
+                    size=14,
+                    color="#1F384C"
                 )
             )
 
