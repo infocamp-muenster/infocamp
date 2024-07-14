@@ -4,10 +4,10 @@ import numpy as np
 import Infodash.globals as glob
 from Datamanagement.Database import Database, get_cluster_tweet_data
 import ast
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 def macro_clustering(db, index):
-    print("Macro Clustering starten....")
     micro_clusters = get_cluster_tweet_data(db, index)
 
     # Only apply macro-clustering in case there are any micro-clusters
@@ -37,6 +37,8 @@ def macro_clustering(db, index):
 
         # Convert list into NumPy-Array
         micro_cluster_centers = np.array(micro_cluster_centers)
+        print("------micro cluster centers np array------")
+        print(micro_cluster_centers)
 
         # Initialize KMeans from Scikit-learn and train it on the micro-cluster centers
         kmeans = KMeans(n_clusters=3)
@@ -47,10 +49,24 @@ def macro_clustering(db, index):
 
         # Create a dataframe to store macro-clusters and their belonging micro-clusters
         macro_micro_dict = {}
-        for macro_cluster, micro_cluster in zip(macro_clusters, latest_micro_clusters.iterrows()):
+        macro_cluster_centers = {}
+        for macro_cluster, micro_cluster, center in zip(macro_clusters, latest_micro_clusters.iterrows(), micro_cluster_centers):
             if macro_cluster not in macro_micro_dict:
                 macro_micro_dict[macro_cluster] = []
+                macro_cluster_centers[macro_cluster] = []
             macro_micro_dict[macro_cluster].append(micro_cluster[1]['cluster_id'])
+            macro_cluster_centers[macro_cluster].append(center)
+
+        # Compute the center of each macro cluster
+        for macro_cluster, centers in macro_cluster_centers.items():
+            macro_cluster_centers[macro_cluster] = np.mean(centers, axis=0)
+        print("------macro cluster centers------")
+        print(macro_cluster_centers)
+
+        # Compute cosine similarity matrix
+        similarity_matrix = cosine_similarity(micro_cluster_centers)
+        print("------cosine similarity matrix------")
+        print(similarity_matrix)
 
         # Converting dictionary in dataframe
         data = []
@@ -86,7 +102,6 @@ def store_macro_micro_dict_in_database(db, macro_micro_dict):
         glob.macro_df = True
     except Exception as e:
         print(f"An error occurred during upload: {e}")
-    return
 
 
 def delete_macro_micro_dict_in_database(db):
@@ -100,7 +115,7 @@ def convert_macro_cluster_visualization(micro_macro_df):
 
 
 def main_macro():
-    print("Started main_macro....")
+    print("-------------------Started Macro Clustering-------------------")
     db = Database()
     macro_micro_dict = macro_clustering(db, 'cluster_tweet_data')
 

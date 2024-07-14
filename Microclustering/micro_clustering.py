@@ -17,16 +17,6 @@ data_for_export = []
 from datetime import datetime
 
 
-def convert_date(date_str):
-    # Parse the input date string to a datetime object
-    dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M')
-
-    # Format the datetime object to the desired output format
-    european_format_date_str = dt.strftime('%d.%m.%Y %H:%M')
-
-    return european_format_date_str
-
-
 def initialize_time_window(df, time_column):
     """
     Diese Funktion initialisiert das Start- und Endzeitfenster basierend auf dem frühesten Zeitstempel.
@@ -230,8 +220,8 @@ def main_loop(db, index):
     while True:
         tweets = fetch_tweets_in_time_window(tweets_selected, start_time, end_time, 'created_at')
         if not tweets.empty:
-            print(f"Tweets von {start_time} bis {end_time}:")
-            print(tweets[['created_at', 'text', 'id_str']])
+            print(f"Process tweets from {start_time} to {end_time}:")
+            # print(tweets[['created_at', 'text', 'id_str']])
             process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words,
                            micro_cluster_centers)
 
@@ -246,8 +236,8 @@ def main_loop(db, index):
         pd.set_option('display.max_columns', None)
         pd.set_option('display.width', None)
         pd.set_option('display.max_colwidth', None)
-        print("Kontroll-Print:")
-        print(cluster_tweet_data)
+        print("Control-Print cluster_tweet_data got transformed successfully and is ready for upload!")
+        # print(cluster_tweet_data)
 
         # Upload dataframe to elasticsearch database
         try:
