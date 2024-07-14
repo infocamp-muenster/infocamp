@@ -5,13 +5,12 @@
 - Each widget is defined by a Div with CSS class 'widget'
 '''
 
-# Import of function ToDo: Check if all imports are needed
+from datetime import datetime
 import plotly.express as px
 from dash import dcc, html
 from dash.dependencies import Output, Input
 import plotly.graph_objs as go
 import pandas as pd
-from Microclustering.micro_clustering import convert_date
 from Macroclustering.macro_clustering_using_database import convert_macro_cluster_visualization
 from django_plotly_dash import DjangoDash
 from Datamanagement.Database import Database, get_cluster_tweet_data, get_micro_macro_data
@@ -104,6 +103,15 @@ def initialize_dash_app():
             ]),
         ]),
     ])
+
+def convert_date(date_str):
+    # Parse the input date string to a datetime object
+    dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M')
+
+    # Format the datetime object to the desired output format
+    european_format_date_str = dt.strftime('%d.%m.%Y %H:%M')
+
+    return european_format_date_str
 
 # Callback and calculation functions for all widgets
 
