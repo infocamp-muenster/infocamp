@@ -96,10 +96,19 @@ def initialize_dash_app():
                     n_intervals=0
                 )
             ]),
-            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
-                html.H3('Most Recent Posts'),
-                html.Span('Post Analysis'),
-                    # Widget can be embedded here!
+            html.Div(className='widget', style={'grid-column': 'span 6'}, children=[
+                html.H3('Macro Cluster'),
+                html.Span('Heatmap'),
+                dcc.Graph(
+                    id='macro-cluster-live-update-heatmap',
+                    config={'displayModeBar': False},
+                    figure=empty_figure  # Set initial empty figure
+                ),
+                dcc.Interval(
+                    id='macro-cluster-interval-component',
+                    interval=1 * 10000,  # in milliseconds (10 seconds)
+                    n_intervals=0
+                )
             ]),
         ]),
     ])
@@ -427,6 +436,46 @@ def macro_cluster_update_graph_live(n):
 
     return macro_cluster_update_graph_live.macro_cluster_last_figure
 
+# -- MACRO CLUSTER HEATMAP --
+@app.callback(
+    Output('macro-cluster-live-update-heatmap', 'figure'),
+    [Input('macro-cluster-interval-component', 'n_intervals')]
+)
+def macro_cluster_update_heatmap_live(n):
+
+    # var macro_cluster_update_heatmap_live needs to be none as long as there is no data available
+    if not hasattr(macro_cluster_update_heatmap_live, "macro_cluster_last_heatmap"):
+        macro_cluster_update_heatmap_live.macro_cluster_last_heatmap = None
+
+    if glob.macro_df:
+        try:
+            # Create dataframe and bar chart
+            df = get_micro_macro_data(db, 'macro_micro_dict')
+
+            # TODO: Jan oder Basti korrekt Matrix einbinden!
+            z = [[.1, .3, .5, .7, .9],
+                 [1, .8, .6, .4, .2],
+                 [.2, 0, .5, .7, .9],
+                 [.9, .8, .4, .2, 0],
+                 [.3, .4, .5, .7, 1]]
+            macro_matrix = z
+            macro_cluster_last_heatmap = px.imshow(
+                macro_matrix,
+                # labels=dict(x="Day of Week", y="Time of Day", color="Productivity"),
+            )
+
+            macro_cluster_last_heatmap.update_layout(coloraxis = {'colorscale':'Plotly3'})
+
+            return macro_cluster_last_heatmap
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+    # var macro_cluster_update_heatmap_live needs to be none as long as there is no data available
+    if macro_cluster_update_heatmap_live.macro_cluster_last_heatmap is None:
+        macro_cluster_update_heatmap_live.macro_cluster_last_heatmap = empty_figure
+
+    return macro_cluster_update_heatmap_live.macro_cluster_last_heatmap
 
 # Run App
 # TODO: db Instanz aus dem Thread anders anbindbar, sodass keine neue erzeugt werden musss?
