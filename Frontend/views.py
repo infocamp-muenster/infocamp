@@ -102,7 +102,16 @@ def upload(request, upload_complete_event):
             file_extension = os.path.splitext(csv_file.name)[1].lower()
             if file_extension == '.csv':
                 decoded_file = csv_file.read().decode('utf-8').splitlines()
-                reader = csv.DictReader(decoded_file, delimiter=';')
+                # Sniffer to detect delimiter
+                sample = '\n'.join(decoded_file[:10])  # Use the first 10 lines as a sample
+                sniffer = csv.Sniffer()
+                try:
+                    dialect = sniffer.sniff(sample)
+                    delimiter = dialect.delimiter
+                except csv.Error:
+                    delimiter = ';'  # Fallback delimiter
+
+                reader = csv.DictReader(decoded_file, delimiter=delimiter)
                 for row in reader:
                     data.append(row)
                 tweet_count = len(data)  # Anzahl der Tweets zählen
@@ -150,6 +159,7 @@ def upload(request, upload_complete_event):
         form = CSVUploadForm()
 
     return render(request, 'Frontend/upload.html', {'form': form, 'data': data, 'message': message})
+
 
 
 def dataExport(request):
