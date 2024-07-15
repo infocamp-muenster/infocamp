@@ -390,7 +390,8 @@ def macro_cluster_update_graph_live(n):
     if glob.macro_df:
         try:
             # Create dataframe and bar chart
-            df = get_micro_macro_data(db, 'macro_micro_dict')
+            index = 'macro_micro_dict'
+            df = get_micro_macro_data(db, index)
 
             grouped_df = convert_macro_cluster_visualization(df)
             macro_cluster_last_figure = px.bar(
@@ -447,20 +448,14 @@ def macro_cluster_update_heatmap_live(n):
     if not hasattr(macro_cluster_update_heatmap_live, "macro_cluster_last_heatmap"):
         macro_cluster_update_heatmap_live.macro_cluster_last_heatmap = None
 
-    if glob.macro_df:
+    if glob.macro_similarity_df:
         try:
             # Create dataframe and bar chart
-            df = get_micro_macro_data(db, 'macro_micro_dict')
+            index = 'macro_similarity_matrix'
+            macro_similarity_matrix = get_micro_macro_data(db, index)
 
-            # TODO: Jan oder Basti korrekt Matrix einbinden!
-            z = [[.1, .3, .5, .7, .9],
-                 [1, .8, .6, .4, .2],
-                 [.2, 0, .5, .7, .9],
-                 [.9, .8, .4, .2, 0],
-                 [.3, .4, .5, .7, 1]]
-            macro_matrix = z
             macro_cluster_last_heatmap = px.imshow(
-                macro_matrix,
+                macro_similarity_matrix,
                 # labels=dict(x="Day of Week", y="Time of Day", color="Productivity"),
             )
 

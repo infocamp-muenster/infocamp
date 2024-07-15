@@ -60,13 +60,22 @@ def macro_clustering(db, index):
         # Compute the center of each macro cluster
         for macro_cluster, centers in macro_cluster_centers.items():
             macro_cluster_centers[macro_cluster] = np.mean(centers, axis=0)
+        macro_centers_list = list(macro_cluster_centers.values())
         print("------macro cluster centers------")
         print(macro_cluster_centers)
+        print("------macro centers list------")
+        print(macro_centers_list)
 
         # Compute cosine similarity matrix
-        similarity_matrix = cosine_similarity(micro_cluster_centers)
+        macro_similarity_matrix_ndarray = cosine_similarity(macro_centers_list)
+        print("------cosine similarity matrix ndarray------")
+        print(macro_similarity_matrix_ndarray)
+        
+        # Convert numpy ndarray to pandas DataFrame
+        macro_similarity_matrix = pd.DataFrame(macro_similarity_matrix_ndarray)
         print("------cosine similarity matrix------")
-        print(similarity_matrix)
+        print(macro_similarity_matrix) # TODO: format z = [[1, .2, .3], [.4, 1, .6], [.7, .8, 1]]
+
 
         # Converting dictionary in dataframe
         data = []
@@ -88,24 +97,25 @@ def macro_clustering(db, index):
 
         macro_micro_df['micro_cluster_tweet_sum'] = macro_micro_df['micro_cluster'].map(tweet_sums)
 
-        return macro_micro_df
+        return macro_micro_df, macro_similarity_matrix
 
 
-def store_macro_micro_dict_in_database(db, macro_micro_dict):
-    index_name = 'macro_micro_dict'
+def store_macro_micro_dict_in_database(db, macro_micro_dict, index_name):
 
     # Dataupload
     try:
         if db.es.indices.exists(index=index_name):
             db.es.indices.delete(index=index_name)
         db.upload_df(index_name, macro_micro_dict)
-        glob.macro_df = True
+        if index_name == 'macro_micro_dict':
+            glob.macro_df = True
+        elif index_name == 'macro_similarity_matrix':
+            glob.macro_similarity_df = True
     except Exception as e:
         print(f"An error occurred during upload: {e}")
 
 
-# TODO: Store macro cluster similarity matrix in database?
-
+# TODO: unused method?
 def delete_macro_micro_dict_in_database(db):
     index_name = 'macro_micro_dict'
     db.es.indices.delete(index=index_name)
@@ -119,6 +129,10 @@ def convert_macro_cluster_visualization(micro_macro_df):
 def main_macro():
     print("-------------------Started Macro Clustering-------------------")
     db = Database()
-    macro_micro_dict = macro_clustering(db, 'cluster_tweet_data')
+    macro_micro_dict, macro_similarity_matrix = macro_clustering(db, 'cluster_tweet_data')
 
-    store_macro_micro_dict_in_database(db, macro_micro_dict)
+    store_macro_micro_dict_in_database(db, macro_micro_dict, index_name='macro_micro_dict')
+    print("------stored macro_micro_dict------")
+    store_macro_micro_dict_in_database(db, macro_similarity_matrix, index_name='macro_similarity_matrix')
+    print("------stored macro_similarity_matrix------")
+
