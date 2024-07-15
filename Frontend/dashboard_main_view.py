@@ -37,6 +37,9 @@ empty_figure = {
     )
 }
 
+ai_prop_last_figure = empty_figure
+micro_cluster_last_figure = empty_figure
+
 # Initialize the app
 app = DjangoDash('dashboard')
 
@@ -113,7 +116,7 @@ Output('ai-prob-live-update-graph', 'figure'),
     [Input('interval-component', 'n_intervals')]
 )
 def ai_prob_update_graph_live(n):
-
+    global ai_prop_last_figure
     try:
         # Trying to get cluster data from db
         cluster_tweet_data = get_cluster_tweet_data(db, 'cluster_tweet_data')
@@ -217,7 +220,7 @@ def ai_prob_pop_up(clickData):
         [Input('interval-component', 'n_intervals')]
 )
 def micro_cluster_update_graph_live(n):
-
+    global micro_cluster_last_figure
     try:
         # Trying to get cluster data from db
         cluster_tweet_data = get_cluster_tweet_data(db, 'cluster_tweet_data')
