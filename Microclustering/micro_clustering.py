@@ -23,10 +23,10 @@ data_for_export = []
 
 def convert_date(date_str):
     # Parse the input date string to a datetime object
-    dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M')
+    dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
 
     # Format the datetime object to the desired output format
-    european_format_date_str = dt.strftime('%d.%m.%Y %H:%M')
+    european_format_date_str = dt.strftime('%d.%m.%Y %H:%M:%S')
 
     return european_format_date_str
 
@@ -61,6 +61,10 @@ def process_tweets(tweets, tweet_cluster_mapping, db):
     # cluster_tweet_data Dataframe initialisieren
     columns = ['cluster_id', 'timestamp', 'tweet_count']
     cluster_tweet_data = pd.DataFrame(columns=columns)
+
+    # Initializing macro-cluster call
+    macro_cluster_iterations = 3  # Counter after how many micro-clustering iterations macro clustering starts
+    micro_cluster_iterations = 0  # Setting micro-cluster iterations initially on 0
 
 
     # Configuration of TextClust object and Preprocessor with standard parameters for twitter data
@@ -105,7 +109,19 @@ def process_tweets(tweets, tweet_cluster_mapping, db):
             print(f"An error occurred during upload: {e}")
         finally:
             global_lock.release()
-        time.sleep(20)
+
+        # Eventually starting macro-clustering with distance-matrix
+        if micro_cluster_iterations >= macro_cluster_iterations:
+            dm = clust.get_distance_matrix(clust.getmicroclusters())
+            main_macro('Textclust', dm)
+            micro_cluster_iterations = 0
+
+        # Zeitintervall erhöhen
+        start_time += timedelta(minutes=1)
+        end_time += timedelta(minutes=1)
+
+        micro_cluster_iterations += 1
+        time.sleep(15)
 
     return cluster_tweet_data
 

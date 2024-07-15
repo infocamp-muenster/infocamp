@@ -4,10 +4,51 @@ import numpy as np
 import Infodash.globals as glob
 from Datamanagement.Database import Database, get_cluster_tweet_data
 import ast
+from sklearn.manifold import MDS
 
 
-def macro_clustering(db, index):
-    print("Macro Clustering starten....")
+def macro_clustering_textclust(db, index, dist_matrix, n_clusters):
+    print("Macro Clustering starten (Textclust)....")
+    micro_clusters = get_cluster_tweet_data(db, index)
+
+    # Multidimensional scaling (MDS) for embedding the distance matrix in Euclidean space with more dimensions
+    n_dimensions = 3  # Number of dimensions
+    mds = MDS(n_components=n_dimensions, dissimilarity="precomputed", random_state=42)
+    embedded_data = mds.fit_transform(dist_matrix)
+
+    # K-Means-Algorithmus auf den eingebetteten Daten ausführen
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+    kmeans.fit(embedded_data)
+
+    macro_clusters = kmeans.predict(embedded_data)
+
+    # Create a dataframe to store macro-clusters and their belonging micro-clusters
+    data = []
+    for macro_cluster, micro_cluster in zip(macro_clusters, dist_matrix.index):
+        print("Macro Cluster:", macro_cluster, "Micro Cluster:", micro_cluster)  # Debugging
+        data.append({'macro_cluster': macro_cluster, 'micro_cluster': micro_cluster})
+
+    macro_micro_df = pd.DataFrame(data)
+    print("Macro_Micro_DF:")
+    print(macro_micro_df)
+
+    # Adding tweet_count of every micro-cluster for future visualizing of macro-cluster tweet_count
+    micro_cluster_data = pd.DataFrame(micro_clusters)
+
+    tweet_sums = {}
+    for micro_cluster in micro_cluster_data['cluster_id'].unique():
+        filtered_df = micro_cluster_data[micro_cluster_data['cluster_id'] == micro_cluster]
+        tweet_sum = filtered_df['tweet_count'].sum()
+        tweet_sums[micro_cluster] = tweet_sum
+
+    macro_micro_df['micro_cluster_tweet_sum'] = macro_micro_df['micro_cluster'].map(tweet_sums)
+
+    return macro_micro_df
+
+
+
+def macro_clustering_clustream(db, index, n_clusters):
+    print("Macro Clustering starten (Clustream)....")
     micro_clusters = get_cluster_tweet_data(db, index)
 
     # Only apply macro-clustering in case there are any micro-clusters
@@ -39,7 +80,7 @@ def macro_clustering(db, index):
         micro_cluster_centers = np.array(micro_cluster_centers)
 
         # Initialize KMeans from Scikit-learn and train it on the micro-cluster centers
-        kmeans = KMeans(n_clusters=3)
+        kmeans = KMeans(n_clusters=n_clusters)
         kmeans.fit(micro_cluster_centers)
 
         # Predict the macro-clusters
@@ -99,9 +140,12 @@ def convert_macro_cluster_visualization(micro_macro_df):
     return grouped_df
 
 
-def main_macro():
+def main_macro(micro_algo, dist_matrix):
     print("Started main_macro....")
     db = Database()
-    macro_micro_dict = macro_clustering(db, 'cluster_tweet_data')
+    if micro_algo == 'Clustream':
+        macro_micro_dict = macro_clustering_clustream(db, 'cluster_tweet_data', 3)
+    if micro_algo == 'Textclust':
+        macro_micro_dict = macro_clustering_textclust(db, 'cluster_tweet_data', dist_matrix, 3)
 
     store_macro_micro_dict_in_database(db, macro_micro_dict)
