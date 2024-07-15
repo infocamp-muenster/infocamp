@@ -104,6 +104,8 @@ def store_macro_micro_dict_in_database(db, macro_micro_dict):
         print(f"An error occurred during upload: {e}")
 
 
+# TODO: Store macro cluster similarity matrix in database?
+
 def delete_macro_micro_dict_in_database(db):
     index_name = 'macro_micro_dict'
     db.es.indices.delete(index=index_name)
