@@ -13,7 +13,7 @@ import pandas as pd
 
 from Frontend.OpenAI_API import summarize_tweets
 from Frontend.header import get_header
-from Microclustering.micro_clustering import get_cluster_tweet_data, convert_date
+from Microclustering.micro_clustering import get_cluster_tweet_data, convert_date, export_data
 from django_plotly_dash import DjangoDash
 from Datamanagement.Database import Database
 
@@ -257,24 +257,10 @@ def micro_cluster_pop_up(clickData):
 )
 def update_summary(n_clicks):
     if n_clicks > 0:
-        # Pfad zur SQLite-Datenbankdatei
-        #database_path = 'infocamp/db.sqlite3'
-
-        # Verbindung zur SQLite-Datenbank herstellen
-        #conn = sqlite3.connect(database_path)
-
-        # Tweets aus der Datenbank abfragen
-        #tweets_query = "SELECT text FROM your_tweets_table"
-        #tweets_df = pd.read_sql_query(tweets_query, conn)
-
-        # Verbindung zur Datenbank schließen
-        #conn.close()
-
-        # Texte der Tweets extrahieren
-        #tweets = tweets_df['text'].tolist()
+        tweets = export_data()
 
         # Zusammenfassung der Tweets erhalten
-        summary = summarize_tweets()
+        summary = summarize_tweets(tweets)
 
         return html.Div([
             html.H3('Zusammenfassung der Tweets:'),
