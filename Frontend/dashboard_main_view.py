@@ -36,6 +36,9 @@ empty_figure = {
     )
 }
 
+ai_prop_last_figure = empty_figure
+micro_cluster_last_figure = empty_figure
+
 # Initialize the app
 app = DjangoDash('dashboard')
 
@@ -130,7 +133,7 @@ Output('ai-prob-live-update-graph', 'figure'),
     [Input('interval-component', 'n_intervals')]
 )
 def ai_prob_update_graph_live(n):
-
+    global ai_prop_last_figure
     try:
         # Trying to get cluster data from db
         cluster_tweet_data = get_cluster_tweet_data(db, 'cluster_tweet_data')
@@ -234,7 +237,7 @@ def ai_prob_pop_up(clickData):
         [Input('interval-component', 'n_intervals')]
 )
 def micro_cluster_update_graph_live(n):
-
+    global micro_cluster_last_figure
     try:
         # Trying to get cluster data from db
         cluster_tweet_data = get_cluster_tweet_data(db, 'cluster_tweet_data')
@@ -314,16 +317,29 @@ def micro_cluster_pop_up(clickData):
     # Get std_dev_tweet_count
     cluster_std_dev = int(point['customdata'][3]) if point['customdata'][3] else ""
 
-    # Calculation of CSS-Width-vlaues
-    if cluster_std_dev != None and cluster_lower_threshold != None and cluster_upper_threshold != None:
-        lower_bound = cluster_tweet_count - cluster_std_dev
-        upper_bound = cluster_tweet_count + cluster_std_dev
-        lower_bound_percentage = 100 * (lower_bound - cluster_lower_threshold) / (cluster_upper_threshold - cluster_lower_threshold)
-        upper_bound_percentage = 100 * (upper_bound - cluster_lower_threshold) / (cluster_upper_threshold - cluster_lower_threshold)
-        width_percentage = upper_bound_percentage - lower_bound_percentage
-    else:
-        width_percentage = 100
-        lower_bound_percentage = 0
+    width_percentage = 0
+    lower_bound_percentage = 0
+
+    if cluster_std_dev is not None:
+        try:
+            lower_bound = int(cluster_tweet_count) - int(cluster_std_dev)
+            upper_bound = int(cluster_tweet_count) + int(cluster_std_dev)
+            cluster_std_dev_frontend = round(cluster_std_dev,2)
+        except (TypeError, ValueError):
+            lower_bound = None
+            upper_bound = None
+            cluster_std_dev_frontend = cluster_std_dev
+
+        if None not in (lower_bound, upper_bound, cluster_lower_threshold, cluster_upper_threshold):
+            try:
+                lower_bound_percentage = 100 * (lower_bound - cluster_lower_threshold) / (
+                            cluster_upper_threshold - cluster_lower_threshold)
+                upper_bound_percentage = 100 * (upper_bound - cluster_lower_threshold) / (
+                            cluster_upper_threshold - cluster_lower_threshold)
+                width_percentage = upper_bound_percentage - lower_bound_percentage
+            except ZeroDivisionError:
+                width_percentage = 0
+                lower_bound_percentage = 0
 
     # Predefined line colors
     line_colors_list = ['#07368C', '#707FDD', '#BBC4FD', '#455BE7', '#F1F2FC']
@@ -364,7 +380,7 @@ def micro_cluster_pop_up(clickData):
             ]),
             html.Div(children=[
                 html.Span(f'Standard Deviation:',className="label"),
-                html.Span(f'{round(cluster_std_dev,2)}', className="value"),
+                html.Span(f'{cluster_std_dev_frontend}', className="value"),
             ]),
             html.Div(children=[
                 html.Span(f'Position in Cluster:', className="label"),
@@ -398,20 +414,13 @@ def macro_cluster_update_graph_live(n):
                 grouped_df,
                 y='macro_cluster',
                 x='micro_cluster_tweet_sum',
-                title={
-                    'text': 'Tweet Sum per Macro Cluster',
-                    'font': {
-                        'family': 'Inter, sans-serif',
-                        'size': 18,
-                        'color': '#1F384C'
-                    }
-                },
+                title='Tweet Sum per Macro Cluster',
                 labels={'macro_cluster': 'Macro Cluster', 'micro_cluster_tweet_sum': 'Tweet Sum'},
                 text='micro_cluster_tweet_sum',
                 orientation='h'
             )
 
-            macro_cluster_last_figure.update_traces(marker_color='#07368C')
+            macro_cluster_last_figure.update_traces(marker_color='#5A6ACF')
             macro_cluster_last_figure.update_layout(
                 plot_bgcolor='rgba(0,0,0,0)',
                 paper_bgcolor='rgba(0,0,0,0)',
