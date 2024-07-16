@@ -1,8 +1,5 @@
 # INFOCAMP - Board
 
-# hier bild einfügen vom Dashboard
-
-
 ## Motivation
 Social media platforms are becoming the dominant source of information for a significant proportion of the global population. With the deliberate dissemination of false and harmful information, it is crucial that individuals are made aware and that public discourse in online media can continue without malicious intent. We are therefore developing a dashboard to visualize disinformation campaigns in social media posts in real time, utilizing emerging technologies such as word embedding methods like Word2vec and stream clustering. The dashboard will allow users to upload their own social media data and analyse it for anomalies in the activity patterns of related users. Furthermore, it will enable the integration of the probability of AI-generated content to detect disinformation campaigns. Our goal is to aid e.g. computational social scientists to detect and combat disinformation in online media.
 
@@ -38,10 +35,10 @@ pip install -r requirements.txt
    - Passwort: infocamp2024
 9. Play around and analyze some data!
 
-## Short explanation of different widges
+## Short explanation of different widgets
 - AI-Probality Graph: Plots the number of tweets which have likely been created by AI over time. We use an AI-detector by developed by Christian Grimme. The model analyses for each tweet how likely it is that it is AI-generated. We take into account all tweets which have a probability of >99% of being AI-generated. You can click on the peaks of the graph and after that the widget on the right shows recent posts. We aim to detect peaks in AI-generated tweets to see parallels in time and content in this group of tweets.
-- Micro Cluster Graph: We aim to detect peaks in fake news campaigns and hopefully find common topics in order to make conclusions about a possible group behind the campaign.
-- Macro Cluster Graph: 
+- Micro Cluster Graph: We aim to detect peaks in specific topics. You can see different topics trending and evolving over time and by clicking on a peak the user can label the cluster to have another look at it later.
+- Macro Cluster Graph: Based on the Micro Clusters we develop Macro Clusters, which are the most discussed topics. Via a heat map the differences and similarities between the Macro Clusters are shown.
 
 ## Contribution
 
