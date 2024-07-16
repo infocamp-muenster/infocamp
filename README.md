@@ -1,5 +1,8 @@
 # INFOCAMP - Board
 
+# hier bild einfügen vom Dashboard
+
+
 ## Motivation
 Social media platforms are becoming the dominant source of information for a significant proportion of the global population. With the deliberate dissemination of false and harmful information, it is crucial that individuals are made aware and that public discourse in online media can continue without malicious intent. We are therefore developing a dashboard to visualize disinformation campaigns in social media posts in real time, utilizing emerging technologies such as word embedding methods like Word2vec and stream clustering. The dashboard will allow users to upload their own social media data and analyse it for anomalies in the activity patterns of related users. Furthermore, it will enable the integration of the probability of AI-generated content to detect disinformation campaigns. Our goal is to aid e.g. computational social scientists to detect and combat disinformation in online media.
 
@@ -35,6 +38,10 @@ pip install -r requirements.txt
    - Passwort: infocamp2024
 9. Play around and analyze some data!
 
+## Short explanation of different widges
+- AI-Probality Graph: Plots the number of tweets which have likely been created by AI over time. We use an AI-detector by developed by Christian Grimme. The model analyses for each tweet how likely it is that it is AI-generated. We take into account all tweets which have a probability of >99% of being AI-generated. You can click on the peaks of the graph and after that the widget on the right shows recent posts. We aim to detect peaks in AI-generated tweets to see parallels in time and content in this group of tweets.
+- Micro Cluster Graph: We aim to detect peaks in fake news campaigns and hopefully find common topics in order to make conclusions about a possible group behind the campaign.
+- Macro Cluster Graph: 
 
 ## Contribution
 
@@ -78,6 +85,6 @@ Only admins have permission to push to the `master` branch to ensure stability a
 ## Further exciting things to do with the Dashboard
 We were able to create a first running application of the dashboard and have a couple of analyses. If you like our approach and want to enhance the dashboard even further, we listed some possible next steps:
 1. Run the dashboard on a public server so that anyone (with proper authentification) can access the dashboard and must not be a part of the University of Muenster
-2. Implement user roles so that several people can work with the dashboard simultaneously
+2. Implement user roles and extend the data base so that several people with different data can work with the dashboard simultaneously. 
 
 
