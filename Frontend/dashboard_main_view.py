@@ -8,7 +8,7 @@
 # Import of function ToDo: Check if all imports are needed
 import plotly.express as px
 from dash import dcc, html
-from dash.dependencies import Output, Input
+from dash.dependencies import Output, Input, State
 import plotly.graph_objs as go
 import pandas as pd
 from Microclustering.micro_clustering import convert_date
@@ -372,8 +372,79 @@ def micro_cluster_pop_up(clickData):
                 ])
             ]),
         ]),
+
+        # Display Comments
+        html.Div(id='submitted-data', style={'display': 'none'}, children=[
+            html.H3('Comment Section'),
+            html.Div(children=[
+                html.Span('Comment:', className="label"),
+                html.Span(id='display-comment', className="value"),
+            ]),
+            html.Div(children=[
+                html.Span('Category:', className="label"),
+                html.Span(id='display-category', className="value"),
+            ]),
+            html.Div(children=[
+                html.Span('Timestamp:', className="label"),
+                html.Span(id='display-timestamp', className="value"),
+            ]),
+        ]),
+
+        html.H3('Comment Form', style={'margin-bottom': '10px'}),
+        html.Div(className="comment-form", children=[
+            dcc.Textarea(id='comment', className="value", style={'width': '100%', 'height': 60}),
+        ]),
+        html.Div(className="comment-form", children=[
+            html.Label('Category', className="label"),
+            dcc.RadioItems(
+                id='category',
+                options=[
+                    {'label': 'Misinformation', 'value': 'Misinformation'},
+                    {'label': 'Desinformation', 'value': 'Desinformation'},
+                    {'label': 'Malinformation', 'value': 'Malinformation'},
+                ],
+                value='Misinformation',  # Default value
+                labelStyle={'display': 'block'}
+            ),
+        ]),
+        #html.Div([
+         #   html.Input(type='hidden', id='cluster-timestamp', value=cluster_timestamp),
+        #]),
+        html.Button('Submit', id='submit-button', n_clicks=0, className="comment-form-button"),
     ])
 
+# empty list for comments
+comments_list = []
+
+@app.callback(
+    Output('comments-section', 'children'),
+    Output('submitted-data', 'style'),
+    Input('comment-form-button', 'n_clicks'),
+    State('comment', 'value'),
+    State('category', 'value')
+)
+def update_display(n_clicks, comment, category):
+    if n_clicks == 0:
+        return "", {'display': 'none'}
+
+    # Kommentar und Kategorie der Liste hinzufügen
+    comments_list.append((comment, category))
+
+    # Alle Kommentare anzeigen
+    comments_list_display = []
+    for i, (comment, category) in enumerate(comments_list):
+        comments_list_display.extend([
+            html.Div(children=[
+                html.Span(f'Comment {i + 1}:', className="label"),
+                html.Span(comment, className="value"),
+            ]),
+            html.Div(children=[
+                html.Span('Category:', className="label"),
+                html.Span(category, className="value"),
+            ]),
+        ])
+
+    return comments_list_display, {'display': 'block'}
 
 # -- MACRO CLUSTER WIDGET --
 @app.callback(
