@@ -5,13 +5,12 @@
 - Each widget is defined by a Div with CSS class 'widget'
 '''
 
-# Import of function ToDo: Check if all imports are needed
+from datetime import datetime
 import plotly.express as px
 from dash import dcc, html
 from dash.dependencies import Output, Input
 import plotly.graph_objs as go
 import pandas as pd
-from Microclustering.micro_clustering import convert_date
 from Macroclustering.macro_clustering_using_database import convert_macro_cluster_visualization
 from django_plotly_dash import DjangoDash
 from Datamanagement.Database import Database, get_cluster_tweet_data, get_micro_macro_data
@@ -21,9 +20,19 @@ import Infodash.globals as glob
 empty_figure = {
     'data': [],
     'layout': go.Layout(
-        title='Loading...',
-        xaxis=dict(title=''),
-        yaxis=dict(title='')
+        title={
+            'text': 'Loading...',
+            'font': {
+                'family': 'Inter, sans-serif',
+                'size': 18,
+                'color': '#1F384C'
+            }
+        },
+        xaxis=dict(visible=False),
+        yaxis=dict(visible=False),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        height=360,
     )
 }
 
@@ -90,13 +99,31 @@ def initialize_dash_app():
                     n_intervals=0
                 )
             ]),
-            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
-                html.H3('Most Recent Posts'),
-                html.Span('Post Analysis'),
-                    # Widget can be embedded here!
+            html.Div(className='widget', style={'grid-column': 'span 6'}, children=[
+                html.H3('Macro Cluster'),
+                html.Span('Heatmap'),
+                dcc.Graph(
+                    id='macro-cluster-live-update-heatmap',
+                    config={'displayModeBar': False},
+                    figure=empty_figure  # Set initial empty figure
+                ),
+                dcc.Interval(
+                    id='macro-cluster-interval-component',
+                    interval=1 * 10000,  # in milliseconds (10 seconds)
+                    n_intervals=0
+                )
             ]),
         ]),
     ])
+
+def convert_date(date_str):
+    # Parse the input date string to a datetime object
+    dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+
+    # Format the datetime object to the desired output format
+    european_format_date_str = dt.strftime('%d.%m.%Y %H:%M:%S')
+
+    return european_format_date_str
 
 # Callback and calculation functions for all widgets
 
@@ -106,7 +133,6 @@ Output('ai-prob-live-update-graph', 'figure'),
     [Input('interval-component', 'n_intervals')]
 )
 def ai_prob_update_graph_live(n):
-
     global ai_prop_last_figure
     try:
         # Trying to get cluster data from db
@@ -133,10 +159,22 @@ def ai_prob_update_graph_live(n):
             ))
 
         ai_prob_layout = go.Layout(
-            title='Number of Tweets >99% AI Probability',
+            title={
+                'text': 'Number of Tweets >99% AI Probability',
+                'font': {
+                    'family': 'Inter, sans-serif',
+                    'size': 18,
+                    'color': '#1F384C'
+                }
+            },
             xaxis=dict(title='Time'),
             yaxis=dict(title='Number of Tweets'),
-            height=360,  # Höhe des Diagramms in Pixel
+            height=360,
+            font=dict(
+                family="Inter, sans-serif",
+                size=14,
+                color="#1F384C"
+            )
         )
 
         # Update last_figure only if there were no issues while fetching data
@@ -199,7 +237,6 @@ def ai_prob_pop_up(clickData):
         [Input('interval-component', 'n_intervals')]
 )
 def micro_cluster_update_graph_live(n):
-
     global micro_cluster_last_figure
     try:
         # Trying to get cluster data from db
@@ -226,10 +263,22 @@ def micro_cluster_update_graph_live(n):
             ))
 
         micro_cluster_layout = go.Layout(
-            title='Number of Tweets per Cluster Over Time',
+            title={
+                'text': 'Number of Tweets per Cluster Over Time',
+                'font': {
+                    'family': 'Inter, sans-serif',
+                    'size': 18,
+                    'color': '#1F384C'
+                }
+            },
             xaxis=dict(title='Time'),
             yaxis=dict(title='Number of Tweets'),
-            height=360,  # Höhe des Diagramms in Pixel
+            height=360,
+            font=dict(
+                family="Inter, sans-serif",
+                size=14,
+                color="#1F384C"
+            )
         )
 
         # Update last_figure only if there were no issues while fetching data
@@ -268,16 +317,29 @@ def micro_cluster_pop_up(clickData):
     # Get std_dev_tweet_count
     cluster_std_dev = int(point['customdata'][3]) if point['customdata'][3] else ""
 
-    # Calculation of CSS-Width-vlaues
-    if cluster_std_dev != None and cluster_lower_threshold != None and cluster_upper_threshold != None:
-        lower_bound = cluster_tweet_count - cluster_std_dev
-        upper_bound = cluster_tweet_count + cluster_std_dev
-        lower_bound_percentage = 100 * (lower_bound - cluster_lower_threshold) / (cluster_upper_threshold - cluster_lower_threshold)
-        upper_bound_percentage = 100 * (upper_bound - cluster_lower_threshold) / (cluster_upper_threshold - cluster_lower_threshold)
-        width_percentage = upper_bound_percentage - lower_bound_percentage
-    else:
-        width_percentage = 100
-        lower_bound_percentage = 0
+    width_percentage = 0
+    lower_bound_percentage = 0
+
+    if cluster_std_dev is not None:
+        try:
+            lower_bound = int(cluster_tweet_count) - int(cluster_std_dev)
+            upper_bound = int(cluster_tweet_count) + int(cluster_std_dev)
+            cluster_std_dev_frontend = round(cluster_std_dev,2)
+        except (TypeError, ValueError):
+            lower_bound = None
+            upper_bound = None
+            cluster_std_dev_frontend = cluster_std_dev
+
+        if None not in (lower_bound, upper_bound, cluster_lower_threshold, cluster_upper_threshold):
+            try:
+                lower_bound_percentage = 100 * (lower_bound - cluster_lower_threshold) / (
+                            cluster_upper_threshold - cluster_lower_threshold)
+                upper_bound_percentage = 100 * (upper_bound - cluster_lower_threshold) / (
+                            cluster_upper_threshold - cluster_lower_threshold)
+                width_percentage = upper_bound_percentage - lower_bound_percentage
+            except ZeroDivisionError:
+                width_percentage = 0
+                lower_bound_percentage = 0
 
     # Predefined line colors
     line_colors_list = ['#07368C', '#707FDD', '#BBC4FD', '#455BE7', '#F1F2FC']
@@ -319,7 +381,7 @@ def micro_cluster_pop_up(clickData):
             ]),
             html.Div(children=[
                 html.Span(f'Standard Deviation:',className="label"),
-                html.Span(f'{round(cluster_std_dev,2)}', className="value"),
+                html.Span(f'{cluster_std_dev_frontend}', className="value"),
             ]),
             html.Div(children=[
                 html.Span(f'Position in Cluster:', className="label"),
@@ -345,7 +407,8 @@ def macro_cluster_update_graph_live(n):
     if glob.macro_df:
         try:
             # Create dataframe and bar chart
-            df = get_micro_macro_data(db, 'macro_micro_dict')
+            index = 'macro_micro_dict'
+            df = get_micro_macro_data(db, index)
 
             grouped_df = convert_macro_cluster_visualization(df)
             macro_cluster_last_figure = px.bar(
@@ -358,14 +421,18 @@ def macro_cluster_update_graph_live(n):
                 orientation='h'
             )
 
-            # Update layout for transparency and bar color
-            macro_cluster_last_figure.update_traces(marker_color='#07368C')
+            macro_cluster_last_figure.update_traces(marker_color='#5A6ACF')
             macro_cluster_last_figure.update_layout(
                 plot_bgcolor='rgba(0,0,0,0)',
                 paper_bgcolor='rgba(0,0,0,0)',
                 yaxis=dict(
                     tickmode='linear',
-                    dtick=1  # Set the tick interval to 1
+                    dtick=1
+                ),
+                font=dict(
+                    family="Inter, sans-serif",
+                    size=14,
+                    color="#1F384C"
                 )
             )
 
@@ -379,6 +446,41 @@ def macro_cluster_update_graph_live(n):
         macro_cluster_update_graph_live.macro_cluster_last_figure = empty_figure
 
     return macro_cluster_update_graph_live.macro_cluster_last_figure
+
+# -- MACRO CLUSTER HEATMAP --
+@app.callback(
+    Output('macro-cluster-live-update-heatmap', 'figure'),
+    [Input('macro-cluster-interval-component', 'n_intervals')]
+)
+def macro_cluster_update_heatmap_live(n):
+
+    # var macro_cluster_update_heatmap_live needs to be none as long as there is no data available
+    if not hasattr(macro_cluster_update_heatmap_live, "macro_cluster_last_heatmap"):
+        macro_cluster_update_heatmap_live.macro_cluster_last_heatmap = None
+
+    if glob.macro_similarity_df:
+        try:
+            # Create dataframe and bar chart
+            index = 'macro_similarity_matrix'
+            macro_similarity_matrix = get_micro_macro_data(db, index)
+
+            macro_cluster_last_heatmap = px.imshow(
+                macro_similarity_matrix,
+                # labels=dict(x="Day of Week", y="Time of Day", color="Productivity"),
+            )
+
+            macro_cluster_last_heatmap.update_layout(coloraxis = {'colorscale':'Plotly3'})
+
+            return macro_cluster_last_heatmap
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+    # var macro_cluster_update_heatmap_live needs to be none as long as there is no data available
+    if macro_cluster_update_heatmap_live.macro_cluster_last_heatmap is None:
+        macro_cluster_update_heatmap_live.macro_cluster_last_heatmap = empty_figure
+
+    return macro_cluster_update_heatmap_live.macro_cluster_last_heatmap
 
 
 # Run App

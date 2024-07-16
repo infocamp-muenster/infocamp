@@ -1,22 +1,20 @@
 # micro_clustering.py
-from datetime import timedelta
-import re
-import numpy as np
-from Infodash.globals import global_lock
 import pandas as pd
-from datetime import datetime
-from Microclustering.textclust import process_tweets
+from datetime import timedelta
+import time
+from river import cluster, feature_extraction
+import re
+import spacy
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+import numpy as np
+from Macroclustering.macro_clustering_using_database import main_macro
+from Infodash.globals import global_lock
 
 data_for_export = []
 
-def convert_date(date_str):
-    # Parse the input date string to a datetime object
-    dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
-
-    # Format the datetime object to the desired output format
-    european_format_date_str = dt.strftime('%d.%m.%Y %H:%M:%S')
-
-    return european_format_date_str
+# Funktionen
+from datetime import datetime
 
 
 def initialize_time_window(df, time_column):
@@ -45,6 +43,25 @@ def preprocess_tweet(tweet, stemmer, nlp, stop_words):
 
 # Funktion die das eigentliche Clustern pro Tweet inkrementell durchführt; tweet_cluster_mapping ist dabei Zuordnung
 # von jedem Tweet zu einem Micro-Cluster
+def process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words,
+                   micro_cluster_centers):
+    for _, tweet in tweets.iterrows():
+        processed_tweet = preprocess_tweet(tweet['text'], stemmer, nlp, stop_words)
+        features = vectorizer.transform_one(processed_tweet)
+        try:
+            clustream.learn_one(features)
+            cluster_id = clustream.predict_one(features)
+            # get center for each micro-cluster
+            center = clustream.micro_clusters[cluster_id].center
+            micro_cluster_centers[cluster_id] = center
+
+            tweet_cluster_mapping.append({
+                'tweet_id': tweet['id_str'],
+                'cluster_id': cluster_id,
+                'timestamp': str(tweet['created_at'])
+            })
+        except KeyError as e:
+            print(f"4. KeyError bei CluStream.learn_one: {e}, tweet: {tweet['text']}, features: {features}")
 
 
 # Funktion die das cluster_tweet_data Dataframe nach jedem Zeitintervall updated und sämtliche Kennzahlen berechnet
@@ -95,8 +112,7 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
         upper_threshold = tweet_count + 6 * prev_std_dev_tweet_count
 
         # Hinzufügen des Clusterzentrums
-        #center = micro_cluster_centers.get(cluster_id, None)
-        center = 0
+        center = micro_cluster_centers.get(cluster_id, None)
 
         rows_to_add.append({
             'cluster_id': cluster_id,
@@ -133,8 +149,7 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
             upper_threshold = 0 + 6 * prev_std_dev_tweet_count
 
             # Hinzufügen des Clusterzentrums
-            #center = micro_cluster_centers.get(cluster_id, None)
-            center = 0
+            center = micro_cluster_centers.get(cluster_id, None)
 
             rows_to_add.append({
                 'cluster_id': cluster_id,
@@ -181,21 +196,17 @@ def main_loop(db, index):
     tweets_selected = tweets[['created_at', 'text', 'id_str']]
     tweets_selected.loc[:, 'created_at'] = pd.to_datetime(tweets_selected['created_at'],
                                                           format='%a %b %d %H:%M:%S %z %Y')
-
-    # Sorting dataframe ascending via 'created_at'
-    tweets_selected = tweets_selected.sort_values(by='created_at', ascending=True)
-
     # Initialisierungen
-    #start_time, end_time = initialize_time_window(tweets_selected, 'created_at')
-    #vectorizer = feature_extraction.BagOfWords()
-    #clustream = cluster.CluStream()
-    #stop_words = set(stopwords.words('english'))  # TODO: Add stopwords for german and other languages
-    #nlp = spacy.load('en_core_web_sm')
-    #stemmer = PorterStemmer()
+    start_time, end_time = initialize_time_window(tweets_selected, 'created_at')
+    vectorizer = feature_extraction.BagOfWords()
+    clustream = cluster.CluStream()
+    stop_words = set(stopwords.words('english'))  # TODO: Add stopwords for german and other languages
+    nlp = spacy.load('en_core_web_sm')
+    stemmer = PorterStemmer()
 
     # cluster_tweet_data Dataframe initialisieren
-    #columns = ['cluster_id', 'timestamp', 'tweet_count']
-    #cluster_tweet_data = pd.DataFrame(columns=columns)
+    columns = ['cluster_id', 'timestamp', 'tweet_count']
+    cluster_tweet_data = pd.DataFrame(columns=columns)
 
     # Zuordnungsliste Cluster id zu Tweet id
     tweet_cluster_mapping = []
@@ -206,14 +217,11 @@ def main_loop(db, index):
     micro_cluster_centers = {}
 
     # Schleife die jeden Tweet des Zeitintervalls behandelt
-
-    process_tweets(tweets_selected, tweet_cluster_mapping, db)
-    '''
     while True:
         tweets = fetch_tweets_in_time_window(tweets_selected, start_time, end_time, 'created_at')
         if not tweets.empty:
-            print(f"Tweets von {start_time} bis {end_time}:")
-            print(tweets[['created_at', 'text', 'id_str']])
+            print(f"Process tweets from {start_time} to {end_time}:")
+            # print(tweets[['created_at', 'text', 'id_str']])
             process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words,
                            micro_cluster_centers)
 
@@ -228,8 +236,8 @@ def main_loop(db, index):
         pd.set_option('display.max_columns', None)
         pd.set_option('display.width', None)
         pd.set_option('display.max_colwidth', None)
-        print("Kontroll-Print:")
-        print(cluster_tweet_data)
+        print("Control-Print cluster_tweet_data got transformed successfully and is ready for upload!")
+        # print(cluster_tweet_data)
 
         # Upload dataframe to elasticsearch database
         try:
@@ -253,4 +261,3 @@ def main_loop(db, index):
 
         time.sleep(2)
         micro_cluster_iterations += 1
-    '''
