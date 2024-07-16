@@ -66,28 +66,7 @@ def initialize_dash_app():
             html.Div(className='widget widget-pop-up', id='popup-micro-cluster', children=[
                     html.Span('Micro Cluster Pop Up'),
             ]),
-
-            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
-                html.H3('Topic Focus'),
-                html.Span('Cluster Analysis'),
-                # Widget can be embedded here!
-            ]),
-            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
-                html.H3('Most Recent Posts'),
-                html.Span('Post Analysis'),
-                    # Widget can be embedded here!
-            ]),
-            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
-                html.H3('Topic Focus'),
-                html.Span('Cluster Analysis'),
-                    # Widget can be embedded here!
-            ]),
-            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
-                html.H3('Topic Focus'),
-                html.Span('Cluster Analysis'),
-                    # Widget can be embedded here!
-            ]),
-            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
+            html.Div(className='widget', style={'grid-column': 'span 6'}, children=[
                 html.H3('KI-Summary Widget', style={'text-align': 'center', 'padding': '20px 0'}),
                 html.Div([
                     html.Button('Get Summary', id='summary-button', n_clicks=0, style={
@@ -110,6 +89,21 @@ def initialize_dash_app():
                         'margin': 'auto'  # Zentriert das Widget
                     })
                 ], style={'text-align': 'center'})
+            ]),
+            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
+                html.H3('Most Recent Posts'),
+                html.Span('Post Analysis'),
+                    # Widget can be embedded here!
+            ]),
+            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
+                html.H3('Topic Focus'),
+                html.Span('Cluster Analysis'),
+                    # Widget can be embedded here!
+            ]),
+            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
+                html.H3('Topic Focus'),
+                html.Span('Cluster Analysis'),
+                    # Widget can be embedded here!
             ]),
         ]),
     ])
