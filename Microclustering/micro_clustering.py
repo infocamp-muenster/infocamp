@@ -1,23 +1,11 @@
 # micro_clustering.py
-import pandas as pd
-from datetime import timedelta, datetime
-import time
-from river import cluster, feature_extraction
+from datetime import timedelta
 import re
-import spacy
-from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer
 import numpy as np
-from Macroclustering.macro_clustering_using_database import main_macro
 from Infodash.globals import global_lock
-from textClustPy import textclust
-from textClustPy import Preprocessor
-from textClustPy import InMemInput
 import pandas as pd
 from datetime import datetime
-
-
-# TODO Macro-Clustering noch implementieren
+from Microclustering.textclust import process_tweets
 
 data_for_export = []
 
@@ -57,73 +45,6 @@ def preprocess_tweet(tweet, stemmer, nlp, stop_words):
 
 # Funktion die das eigentliche Clustern pro Tweet inkrementell durchführt; tweet_cluster_mapping ist dabei Zuordnung
 # von jedem Tweet zu einem Micro-Cluster
-def process_tweets(tweets, tweet_cluster_mapping, db):
-    # cluster_tweet_data Dataframe initialisieren
-    columns = ['cluster_id', 'timestamp', 'tweet_count']
-    cluster_tweet_data = pd.DataFrame(columns=columns)
-
-    # Initializing macro-cluster call
-    macro_cluster_iterations = 3  # Counter after how many micro-clustering iterations macro clustering starts
-    micro_cluster_iterations = 0  # Setting micro-cluster iterations initially on 0
-
-
-    # Configuration of TextClust object and Preprocessor with standard parameters for twitter data
-    clust = textclust(radius=0.2, _lambda=0.001, tgap=100, termfading=True, realtimefading=True, num_macro=10,
-                      minWeight=0, micro_distance="tfidf_cosine_distance", macro_distance="tfidf_cosine_distance",
-                      idf=True, auto_merge=True, auto_r=True, verbose=False)
-
-    preprocessor = Preprocessor(language='english', max_grams=2, stemming=False, hashtag=True, stopword_removal=True,
-                                username=True, punctuation=True, url=True)
-
-    # Set column IDs of tweet-IDs, timestamp and text
-    clust_input = InMemInput(textclust=clust, preprocessor=preprocessor, pdframe=tweets, col_id=2, col_time=0, col_text=1)
-
-    # Give textClust only tgap observations to be able to store the results in between
-    for start in range(0, len(tweets), clust.tgap):
-        start_time = tweets.iloc[start]['created_at']
-        end_time = tweets.iloc[min(start + clust.tgap, len(tweets) - 1)]['created_at']  # Ensure we don't go out of bounds
-        clust_input.update(len(tweets[start:start + clust.tgap]))
-        microclusters = clust.microclusters
-
-        for cluster_id, microcluster in microclusters.items():
-            for textid in microcluster.textids:
-                tweet = tweets.loc[tweets['id_str'] == textid].iloc[0]
-                tweet_cluster_mapping.append({
-                    'tweet_id': tweet['id_str'],
-                    'cluster_id': cluster_id,
-                    'timestamp': str(tweet['created_at'])
-                })
-
-        cluster_center = []
-        cluster_tweet_data = transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time,
-                                                             end_time, cluster_center)
-
-        # Upload dataframe to elasticsearch database
-        print(cluster_tweet_data)
-        try:
-            global_lock.acquire(blocking=True)
-            if db.es.indices.exists(index='cluster_tweet_data'):
-                db.es.indices.delete(index='cluster_tweet_data')
-            db.upload_df('cluster_tweet_data', cluster_tweet_data)
-        except Exception as e:
-            print(f"An error occurred during upload: {e}")
-        finally:
-            global_lock.release()
-
-        # Eventually starting macro-clustering with distance-matrix
-        if micro_cluster_iterations >= macro_cluster_iterations:
-            dm = clust.get_distance_matrix(clust.getmicroclusters())
-            main_macro('Textclust', dm)
-            micro_cluster_iterations = 0
-
-        # Zeitintervall erhöhen
-        start_time += timedelta(minutes=1)
-        end_time += timedelta(minutes=1)
-
-        micro_cluster_iterations += 1
-        time.sleep(15)
-
-    return cluster_tweet_data
 
 
 # Funktion die das cluster_tweet_data Dataframe nach jedem Zeitintervall updated und sämtliche Kennzahlen berechnet
