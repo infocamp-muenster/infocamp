@@ -61,7 +61,8 @@ def process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer
                 'timestamp': str(tweet['created_at'])
             })
         except KeyError as e:
-            print(f"4. KeyError bei CluStream.learn_one: {e}, tweet: {tweet['text']}, features: {features}")
+            pass
+            # print(f"4. KeyError bei CluStream.learn_one: {e}, tweet: {tweet['text']}, features: {features}")
 
 
 # Funktion die das cluster_tweet_data Dataframe nach jedem Zeitintervall updated und sämtliche Kennzahlen berechnet
