@@ -68,27 +68,15 @@ def initialize_dash_app():
             ]),
             html.Div(className='widget', style={'grid-column': 'span 6'}, children=[
                 html.H3('KI-Summary Widget', style={'text-align': 'center', 'padding': '20px 0'}),
-                html.Div([
-                    html.Button('Get Summary', id='summary-button', n_clicks=0, style={
-                        'background-color': '#4B72B0',  # Farbe des Headers
-                        'color': 'white',
-                        'font-size': '20px',
-                        'padding': '15px 30px',  # Größerer Button mit mehr Padding
-                        'border-radius': '10px',  # Abgerundete Ecken
-                        'border': 'none',
-                        'cursor': 'pointer',
-                        'margin': '20px 0'  # Abstand zum nächsten Element
-                    }),
-                    html.Div(id='summary-output', style={
-                        'padding': '20px',
-                        'border': '1px solid #ddd',
-                        'border-radius': '10px',
-                        'background-color': '#f9f9f9',
-                        'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
-                        'max-width': '800px',
-                        'margin': 'auto'  # Zentriert das Widget
-                    })
-                ], style={'text-align': 'center'})
+                html.Div(id='summary-output', style={
+                    'padding': '20px',
+                    'border': '1px solid #ddd',
+                    'border-radius': '10px',
+                    'background-color': '#f9f9f9',
+                    'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
+                    'max-width': '800px',
+                    'margin': 'auto'  # Zentriert das Widget
+                })
             ]),
             html.Div(className='widget', style={'grid-column':'span 6'}, children=[
                 html.H3('Most Recent Posts'),
@@ -253,21 +241,16 @@ def micro_cluster_pop_up(clickData):
 # Callback für den Button-Klick
 @app.callback(
     Output('summary-output', 'children'),
-    Input('summary-button', 'n_clicks')
+    Input('live-update-graph', 'clickData')
 )
-def update_summary(n_clicks):
-    if n_clicks > 0:
-        tweets = export_data()
-
-        # Zusammenfassung der Tweets erhalten
-        summary = summarize_tweets(tweets)
-
-        return html.Div([
-            html.H3('Zusammenfassung der Tweets:'),
-            html.P(summary)
-        ])
-    return ""
-
+def update_summary(clickData):
+    if clickData is None:
+        return []
+    point = clickData['points'][0]
+    # Get cluster keywords
+    cluster_key_words_string = ", ".join(point['customdata'][0].keys()) if point['customdata'][0] else ""
+    summary = summarize_tweets(cluster_key_words_string)
+    return summary
 
 if __name__ == '__main__':
     app.run_server(debug=True)
