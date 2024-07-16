@@ -30,9 +30,7 @@ pip install -r requirements.txt
 ```
 6. Run ```python manage.py runserver``` or ```python3 manage.py runserver``` depending on your environment
 7. Open link ```http://127.0.0.1:8000/``` in any browser to open the Dashboard
-8. Use this data to log in:
-   - Username: admin
-   - Passwort: infocamp2024
+8. Register or log in
 9. Play around and analyze some data!
 
 ## Short explanation of different widgets
@@ -82,6 +80,6 @@ Only admins have permission to push to the `master` branch to ensure stability a
 ## Further exciting things to do with the Dashboard
 We were able to create a first running application of the dashboard and have a couple of analyses. If you like our approach and want to enhance the dashboard even further, we listed some possible next steps:
 1. Run the dashboard on a public server so that anyone (with proper authentification) can access the dashboard and must not be a part of the University of Muenster
-2. Implement user roles and extend the data base so that several people with different data can work with the dashboard simultaneously. 
+2. Implement user roles and extend the data base. With that several people with different data can work with the dashboard simultaneously.  
 
 
