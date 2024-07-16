@@ -1,6 +1,5 @@
-# micro_clustering.py
 import pandas as pd
-from datetime import timedelta
+from datetime import timedelta, datetime
 import time
 from river import cluster, feature_extraction
 import re
@@ -10,26 +9,29 @@ from nltk.stem import PorterStemmer
 import numpy as np
 from Macroclustering.macro_clustering_using_database import main_macro
 from Infodash.globals import global_lock
+import Datamanagement.BlueskyFirehose as BF
+import sys
+import io
+
+# Set the default encoding to UTF-8 for standard output and error streams
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
 data_for_export = []
-
-# Funktionen
-from datetime import datetime
-
+start_time = None
+end_time = None
 
 def initialize_time_window(df, time_column):
     """
     Diese Funktion initialisiert das Start- und Endzeitfenster basierend auf dem frühesten Zeitstempel.
     """
-    start_time = df[time_column].min().floor('min')
+    start_time = df[time_column].min().floor('min').tz_localize('UTC')
     end_time = start_time + timedelta(minutes=1)
     return start_time, end_time
-
 
 def fetch_tweets_in_time_window(df, start_time, end_time, time_column):
     mask = (df[time_column] >= start_time) & (df[time_column] < end_time)
     return df[mask]
-
 
 def preprocess_tweet(tweet, stemmer, nlp, stop_words):
     tweet = re.sub(r'http\S+|www\S+|https\S+', '', tweet, flags=re.MULTILINE)
@@ -40,11 +42,7 @@ def preprocess_tweet(tweet, stemmer, nlp, stop_words):
     stemmed_tokens = [stemmer.stem(token) for token in lemmatized_tokens]
     return ' '.join(stemmed_tokens)
 
-
-# Funktion die das eigentliche Clustern pro Tweet inkrementell durchführt; tweet_cluster_mapping ist dabei Zuordnung
-# von jedem Tweet zu einem Micro-Cluster
-def process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words,
-                   micro_cluster_centers):
+def process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words, micro_cluster_centers):
     for _, tweet in tweets.iterrows():
         processed_tweet = preprocess_tweet(tweet['text'], stemmer, nlp, stop_words)
         features = vectorizer.transform_one(processed_tweet)
@@ -63,20 +61,20 @@ def process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer
         except KeyError as e:
             print(f"4. KeyError bei CluStream.learn_one: {e}, tweet: {tweet['text']}, features: {features}")
 
-
-# Funktion die das cluster_tweet_data Dataframe nach jedem Zeitintervall updated und sämtliche Kennzahlen berechnet
-def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time, end_time,
-                                    micro_cluster_centers):
+def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time, end_time, micro_cluster_centers):
     """
     Diese Funktion transformiert die tweet_cluster_mapping (Update nach jedem tweet) Liste in eine
     Liste mit sieben Spalten: cluster_id, timestamp, Anzahl der Tweets, durchschnittlicher tweet_count,
     Standardabweichung der tweet_count-Werte, lower_threshold und upper_threshold.
     """
     df = pd.DataFrame(tweet_cluster_mapping)
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce').dt.tz_convert('UTC')
+
     df['timestamp'] = df['timestamp'].dt.floor('min')  # Auf Minutenebene runden
 
     # Filtern der Daten nach dem gegebenen Zeitintervall
+    start_time = pd.to_datetime(start_time).tz_localize('UTC')
+    end_time = pd.to_datetime(end_time).tz_localize('UTC')
     mask = (df['timestamp'] >= start_time) & (df['timestamp'] < end_time)
     df_filtered = df[mask]
 
@@ -168,36 +166,64 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
     cluster_tweet_data = pd.concat([cluster_tweet_data, new_cluster_tweet_data], ignore_index=True)
     return cluster_tweet_data
 
-
 def export_data():
     global data_for_export
     return data_for_export
 
+def collect_tweets_from_stream(client, collection_interval=5):
+    global start_time, end_time
+    start_time = datetime.utcnow().replace(tzinfo=None)
+    end_time = start_time + timedelta(seconds=collection_interval)
+    print(f"Collecting tweets from {start_time} to {end_time}")
 
-def main_loop(db, index):
-    global all_tweets_from_db
-    global data_for_export
-    
-    print("Starting micro_clustering main loop...")
+    tweets = pd.DataFrame(columns=['created_at', 'text', 'id_str'])
 
     try:
-        global_lock.acquire(blocking=True)
-        all_tweets_from_db = db.search_get_all(index)
+        for post in client.stream():
+            if all(key in post for key in ('Timestamp', 'Text', 'User')):
+                tweet = pd.DataFrame([{
+                    'created_at': pd.to_datetime(post['Timestamp'], errors='coerce'),
+                    'text': str(post['Text']),
+                    'id_str': str(post['CID'])
+                }])
+                tweets = pd.concat([tweets, tweet])
+            if datetime.utcnow() >= end_time:
+                return tweets
     except Exception as e:
-        print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
-    finally:
-        global_lock.release()
+        print(f"An error occurred during collect tweets: {e}")
+
+def main_loop(db, index, bluesky_bool):
+    global all_tweets_from_db, data_for_export, start_time, end_time
+
+    print("Starting micro_clustering main loop...")
+
+    if bluesky_bool:
+        try:
+            client = BF.BlueskyFirehose(filters=['en'])  # Beispielhafte Filter
+            client.run()
+            tweets_selected = pd.DataFrame(columns=['created_at', 'text', 'id_str'])
+            print("Bluesky Firehose started")
+        except Exception as e:
+            print("Bluesky Firehose exception:", e)
+            return  # Beenden der Funktion bei einem Fehler
+    else:
+        try:
+            global_lock.acquire(blocking=True)
+            all_tweets_from_db = db.search_get_all(index)
+        except Exception as e:
+            print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
+        finally:
+            global_lock.release()
+
+        tweets = pd.DataFrame([hit["_source"] for hit in all_tweets_from_db])
+        tweets_selected = tweets[['created_at', 'text', 'id_str']]
+        tweets_selected.loc[:, 'created_at'] = pd.to_datetime(tweets_selected['created_at'], format='%a %b %d %H:%M:%S %z %Y', errors='coerce').dt.tz_convert('UTC')
+        # Initialisierungen
+        start_time, end_time = initialize_time_window(tweets_selected, 'created_at')
 
     # Initializing macro-cluster call
     macro_cluster_iterations = 8  # Counter after how many micro-clustering iterations macro clustering starts
     micro_cluster_iterations = 0  # Setting micro-cluster iterations initially on 0
-
-    tweets = pd.DataFrame([hit["_source"] for hit in all_tweets_from_db])
-    tweets_selected = tweets[['created_at', 'text', 'id_str']]
-    tweets_selected.loc[:, 'created_at'] = pd.to_datetime(tweets_selected['created_at'],
-                                                          format='%a %b %d %H:%M:%S %z %Y')
-    # Initialisierungen
-    start_time, end_time = initialize_time_window(tweets_selected, 'created_at')
     vectorizer = feature_extraction.BagOfWords()
     clustream = cluster.CluStream()
     stop_words = set(stopwords.words('english'))  # TODO: Add stopwords for german and other languages
@@ -218,18 +244,23 @@ def main_loop(db, index):
 
     # Schleife die jeden Tweet des Zeitintervalls behandelt
     while True:
-        tweets = fetch_tweets_in_time_window(tweets_selected, start_time, end_time, 'created_at')
-        if not tweets.empty:
+        if bluesky_bool:
+            tweets = collect_tweets_from_stream(client)
+            if tweets is not None and not tweets.empty:
+                tweets['created_at'] = pd.to_datetime(tweets['created_at'], errors='coerce').dt.tz_convert('UTC')
+                tweets.dropna(subset=['created_at'], inplace=True)
+                tweets_selected = pd.concat([tweets_selected, tweets])
+        else:
+            tweets = fetch_tweets_in_time_window(tweets_selected, start_time, end_time, 'created_at')
+
+        if tweets is not None and not tweets.empty:
             print(f"Process tweets from {start_time} to {end_time}:")
-            # print(tweets[['created_at', 'text', 'id_str']])
-            process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words,
-                           micro_cluster_centers)
+            process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words, micro_cluster_centers)
 
         # Informationen der Microcluster speichern (Zentrum usw.)
 
         # Cluster_tweet_data Dataframe nach dem Durchlauf des Zeitintervalls aktualisieren
-        cluster_tweet_data = transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time,
-                                                             end_time, micro_cluster_centers)
+        cluster_tweet_data = transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time, end_time, micro_cluster_centers)
 
         # Cluster_tweet_data printen zur Kontrolle
         pd.set_option('display.max_rows', None)
@@ -237,7 +268,6 @@ def main_loop(db, index):
         pd.set_option('display.width', None)
         pd.set_option('display.max_colwidth', None)
         print("Control-Print cluster_tweet_data got transformed successfully and is ready for upload!")
-        # print(cluster_tweet_data)
 
         # Upload dataframe to elasticsearch database
         try:
@@ -256,8 +286,9 @@ def main_loop(db, index):
             micro_cluster_iterations = 0
 
         # Zeitintervall erhöhen
-        start_time += timedelta(minutes=1)
-        end_time += timedelta(minutes=1)
+        if not bluesky_bool:
+            start_time += timedelta(minutes=1)
+            end_time += timedelta(minutes=1)
 
         time.sleep(2)
         micro_cluster_iterations += 1
