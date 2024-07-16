@@ -405,7 +405,6 @@ def macro_cluster_update_graph_live(n):
                     }
                 },
                 labels={'macro_cluster': 'Macro Cluster', 'micro_cluster_tweet_sum': 'Tweet Sum'},
-                text='micro_cluster_tweet_sum',
                 orientation='h'
             )
 
