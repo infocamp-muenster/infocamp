@@ -183,7 +183,18 @@ body {
     border-radius: 5px;
     margin: 0 20px 0 0;
 }
-
+.comment-form {
+    padding: 10px;
+}
+.comment-form-button {
+    background-color: var(--bg-blue);
+    border: none;
+    color: var(--white);
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: auto;
+}
 
 
 /* --- CSS for upload page --- */
