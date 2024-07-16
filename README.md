@@ -21,7 +21,7 @@ git clone https://github.com/MattisSipp/infocamp.git
 ```
 2. Log in via your user name and personal access token
 3. Change your working directory to the location of the cloned repository
-4. In the file Microclustering/thread_micro_clustering.py change lines 7 & 8 to your personal information:
+4. In the file Microclustering/ssh_tunnel.py change lines 12 & 13 to your personal information:
 ```bash
 ssh_user = # 'uni-id'
 ssh_private_key = # 'path of your SSH-Key'

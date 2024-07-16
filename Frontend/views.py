@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
 
 from Datamanagement.Database import Database
-from Datamanagement.mapping import map_data_to_json
+from Datamanagement.mapping import map_data_to_dataframe
 from .forms import CSVUploadForm
 from django.contrib.auth.hashers import make_password
 from Microclustering.micro_clustering import export_data
@@ -14,6 +14,7 @@ import csv
 import json
 import os
 import io
+import time
 import pandas as pd
 
 from .models import UploadedData
@@ -81,16 +82,16 @@ def documentation(request):
 
 # Functions returns df uploaded as CSV
 @login_required(login_url='login')
-def upload(request):
+def upload(request, upload_complete_event):
     data = []
     message = ""
+    tweet_count = 0
     if request.method == "POST":
         form = CSVUploadForm(request.POST, request.FILES)
         if form.is_valid():
             csv_file = request.FILES['csv_file']
             file_name = os.path.splitext(csv_file.name)[0]
-            username = request.user.username
-            index_name = f"{username}_{file_name}"
+            index_name = "data_import"
 
             timestamp_key = request.POST['timestamp_key']
             username_key = request.POST['username_key']
@@ -101,17 +102,28 @@ def upload(request):
             file_extension = os.path.splitext(csv_file.name)[1].lower()
             if file_extension == '.csv':
                 decoded_file = csv_file.read().decode('utf-8').splitlines()
-                reader = csv.DictReader(decoded_file, delimiter=';')
+                # Sniffer to detect delimiter
+                sample = '\n'.join(decoded_file[:10])  # Use the first 10 lines as a sample
+                sniffer = csv.Sniffer()
+                try:
+                    dialect = sniffer.sniff(sample)
+                    delimiter = dialect.delimiter
+                except csv.Error:
+                    delimiter = ';'  # Fallback delimiter
+
+                reader = csv.DictReader(decoded_file, delimiter=delimiter)
                 for row in reader:
                     data.append(row)
+                tweet_count = len(data)  # Anzahl der Tweets zählen
             elif file_extension == '.json':
                 data = json.load(csv_file)
+                tweet_count = len(data)  # Anzahl der Tweets zählen
             else:
                 message = "Unsupported file format. Only JSON and CSV are supported."
                 return render(request, 'Frontend/upload.html', {'form': form, 'data': data, 'message': message})
 
-            # Data Mapping
-            mapped_data = map_data_to_json(
+            # Data Mapping to DataFrame
+            df = map_data_to_dataframe(
                 data,
                 timestamp_key,
                 username_key,
@@ -120,21 +132,34 @@ def upload(request):
                 text_key
             )
 
-            # Save Data to ES
+            # Save Data to ES using DataFrame
             db = Database()
-            db.upload(index=index_name, data=json.loads(mapped_data))
+            if db.es.indices.exists(index=index_name):
+                db.es.indices.delete(index=index_name)
+            db.upload_df(index=index_name, dataframe=df)
 
-            # Speichern der Metadaten in der Django-Datenbank
-            UploadedData.objects.create(
-                user=request.user,
-                file_name=file_name,
-                index_name=index_name
-            )
+            # Warten bis Elasticsearch die korrekte Anzahl von Dokumenten hat
+            while True:
+                es_count = db.es.count(index=index_name)['count']
+                print(f"Current document count in '{index_name}': {es_count}")
+                if es_count >= tweet_count:
+                    break
+                time.sleep(1)  # Warte 1 Sekunde bevor erneut geprüft wird
+
+            # Abrufen einiger Dokumente zur Überprüfung
+            results = db.es.search(index=index_name, body={"query": {"match_all": {}}}, size=10)
+            for doc in results['hits']['hits']:
+                print(doc['_source'])
 
             message = "Ihr Datensatz wurde erfolgreich hochgeladen!"
+
+            # Set the upload complete event
+            upload_complete_event.set()
     else:
         form = CSVUploadForm()
+
     return render(request, 'Frontend/upload.html', {'form': form, 'data': data, 'message': message})
+
 
 
 def dataExport(request):

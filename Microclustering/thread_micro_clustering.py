@@ -1,26 +1,27 @@
 import threading
-from Datamanagement.Database import Database
 from Microclustering.micro_clustering import main_loop
- 
-class Micro_Clustering_Thread(threading.Thread):
+from Datamanagement.Database import Database
+
+class MicroClusteringThread(threading.Thread):
+    def __init__(self, ssh_event, upload_event):
+        super().__init__()
+        self.ssh_event = ssh_event
+        self.upload_event = upload_event
+
     def run(self):
-        ssh_user = 'okamps' # 'bwulf'
-        ssh_private_key = '/home/ssh-keys/database_connection' # '/Users/bastianwulf/.ssh/id_rsa_uni'
-        tunnel1, tunnel2 = Database.create_ssh_tunnel(ssh_user, ssh_private_key)
-        tunnel1.start()
-        tunnel2.start()
- 
         try:
+            # Wait for the SSH tunnel to be established
+            self.ssh_event.wait()
+
+            # Wait for the upload to be complete
+            self.upload_event.wait()
+
             # Create Database instance
             db = Database()
- 
-            # Start the data fetching in a separate thread
-            index_name = "tweets-2022-02-17"
+
+            # Start the data fetching and clustering
+            index_name = "data_import"
             main_loop(db, index_name)
- 
+
         except KeyboardInterrupt:
             print("Terminating the program...")
- 
-        finally:
-            tunnel1.stop()
-            tunnel2.stop()
