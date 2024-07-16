@@ -1,29 +1,54 @@
 # INFOCAMP - Board
 
-![INFOCAMP - Board](Readme/figma_draft.png)
+# hier bild einfügen vom Dashboard
+
 
 ## Motivation
-The presidential election in the United States is coming up and even before the campaign has really started, things are already in full swing online: Inauthentic, coordinated behaviour is eroding trust in (social) media, no matter what the topic, from the conflicts between Russia and Ukraine and Israel and Palestine, to elections at home and abroad. Too many opinions and too much information - and on top of that, it is becoming increasingly difficult to decide what is true and what is fake. And as if that wasn't enough, the immense progress of AI-driven language models such as ChatGPT means that the possibilities of using social bots for your own dark purposes are becoming ever more diverse. The project seminar is for those interested in technology and data science as well as those who want to deal with social issues. The aim is to create a hybrid dashboard for the real-time visualisation and analysis of (dis)information campaigns. Hybrid means a division into two phases: The real-time visualisation should include live tracking of posts that are automatically grouped by content, which enables the recognition of patterns that indicate coordination in posting behaviour. The analysis phase consists of a content analysis of identified clusters as well as a comparison of clusters over time, as these can indicate renewed coordination but also thematic changes in the respective context. 
-There are no hard requirements, but there are a few signs that the project seminar is the right one for you: If you are interested in the social media cosmos, enjoy programming, especially with Python, want to design a conceptual and user-friendly dashboard, want to deal with the visual design of (web) applications or already have experience with Dash (really only by chance😉). Or you simply want to try out familiar approaches to data science and discover new ones. Then you've come to the right place!
+Social media platforms are becoming the dominant source of information for a significant proportion of the global population. With the deliberate dissemination of false and harmful information, it is crucial that individuals are made aware and that public discourse in online media can continue without malicious intent. We are therefore developing a dashboard to visualize disinformation campaigns in social media posts in real time, utilizing emerging technologies such as word embedding methods like Word2vec and stream clustering. The dashboard will allow users to upload their own social media data and analyse it for anomalies in the activity patterns of related users. Furthermore, it will enable the integration of the probability of AI-generated content to detect disinformation campaigns. Our goal is to aid e.g. computational social scientists to detect and combat disinformation in online media.
 
-# Run the Application locally
-0. install all necessary packages: see the file 'necessary_packages.txt.'
-1. you can use the requirements.txt with pip (for much quicker pip package installation)
+## Installation
+The dashboard runs via a private server of the University of Muenster. This means that additional authentication must be carried out at the University of Muenster. After that you can run the application locally.
+You have to be part of the University of Muenster and have an account at the University in order to use the Dashboard.
+
+### Connecting to Server
+1. Create SSH-Key locally
+2. Store the SSH-Key in the IT portal of the University of Muenster (https://it-portal.uni-muenster.de/index.php)
+
+### Run the Dashboard locally
+1. Clone the repository:
+```bash
+git clone https://github.com/MattisSipp/infocamp.git
+```
+2. Log in via your user name and personal access token
+3. Change your working directory to the location of the cloned repository
+4. In the file Microclustering/ssh_tunnel.py change lines 12 & 13 to your personal information:
+```bash
+ssh_user = # 'uni-id'
+ssh_private_key = # 'path of your SSH-Key'
+```
+5. install all necessary packages: see the file 'necessary_packages.txt.'
+You can use the requirements.txt with pip (for much quicker pip package installation)
 ```bash
 pip install -r requirements.txt
 ```
-2. adjust the user information in Microclustering/ssh_tunnel.py line 12 and line 13
-3. run ```python manage.py runserver ``` or ```python3 manage.py runserver ``` depending on your environment
-# Access via Django
-- Username: admin
-- Passwort: infocamp2024
+6. Run ```python manage.py runserver``` or ```python3 manage.py runserver``` depending on your environment
+7. Open link ```http://127.0.0.1:8000/``` in any browser to open the Dashboard
+8. Use this data to log in:
+   - Username: admin
+   - Passwort: infocamp2024
+9. Play around and analyze some data!
 
-# Content
+## Short explanation of different widges
+- AI-Probality Graph: Plots the number of tweets which have likely been created by AI over time. We use an AI-detector by developed by Christian Grimme. The model analyses for each tweet how likely it is that it is AI-generated. We take into account all tweets which have a probability of >99% of being AI-generated. You can click on the peaks of the graph and after that the widget on the right shows recent posts. We aim to detect peaks in AI-generated tweets to see parallels in time and content in this group of tweets.
+- Micro Cluster Graph: We aim to detect peaks in fake news campaigns and hopefully find common topics in order to make conclusions about a possible group behind the campaign.
+- Macro Cluster Graph: 
+
+## Contribution
 
 - [Installation via GitHub](#Installation-via-GitHub)
 - [Contribution](#Contribution)
 
-## Installation via GitHub
+### Installation via GitHub
 
 To install INFOCAMP - Board, follow these steps:
 
@@ -36,7 +61,7 @@ git clone https://github.com/MattisSipp/infocamp.git
 git checkout your-branch-name
 ```
 
-## Contribution
+### Contribute to the Dashboard
 
 To contribute, follow these guidelines:
 
@@ -54,8 +79,12 @@ git push origin your-branch-name
 
 Only admins have permission to push to the `master` branch to ensure stability and reliability of the main branch.
 
-# Info for Developers 
+## Info for Developers 
 ![INFOCAMP - Board](Readme/Micro-Clustering_Sequenzdiagramm.pdf)
 
+## Further exciting things to do with the Dashboard
+We were able to create a first running application of the dashboard and have a couple of analyses. If you like our approach and want to enhance the dashboard even further, we listed some possible next steps:
+1. Run the dashboard on a public server so that anyone (with proper authentification) can access the dashboard and must not be a part of the University of Muenster
+2. Implement user roles and extend the data base so that several people with different data can work with the dashboard simultaneously. 
 
 
