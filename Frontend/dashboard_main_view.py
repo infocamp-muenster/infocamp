@@ -396,19 +396,13 @@ def macro_cluster_update_graph_live(n):
                 grouped_df,
                 y='macro_cluster',
                 x='micro_cluster_tweet_sum',
-                title={
-                    'text': 'Tweet Sum per Macro Cluster',
-                    'font': {
-                        'family': 'Inter, sans-serif',
-                        'size': 18,
-                        'color': '#1F384C'
-                    }
-                },
+                title='Tweet Sum per Macro Cluster',
                 labels={'macro_cluster': 'Macro Cluster', 'micro_cluster_tweet_sum': 'Tweet Sum'},
+                text='micro_cluster_tweet_sum',
                 orientation='h'
             )
 
-            macro_cluster_last_figure.update_traces(marker_color='#07368C')
+            macro_cluster_last_figure.update_traces(marker_color='#5A6ACF')
             macro_cluster_last_figure.update_layout(
                 plot_bgcolor='rgba(0,0,0,0)',
                 paper_bgcolor='rgba(0,0,0,0)',
