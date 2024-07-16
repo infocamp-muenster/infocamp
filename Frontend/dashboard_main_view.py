@@ -391,22 +391,12 @@ def micro_cluster_pop_up(clickData):
         ]),
 
         # Display Comments
-        html.Div(id='submitted-data', style={'display': 'none'}, children=[
+        html.Div(id='submitted-data', children=[
             html.H3('Comment Section'),
-            html.Div(children=[
-                html.Span('Comment:', className="label"),
-                html.Span(id='display-comment', className="value"),
-            ]),
-            html.Div(children=[
-                html.Span('Category:', className="label"),
-                html.Span(id='display-category', className="value"),
-            ]),
-            html.Div(children=[
-                html.Span('Timestamp:', className="label"),
-                html.Span(id='display-timestamp', className="value"),
-            ]),
-        ]),
+            html.Div(id='comment-list'),
+        ], style={'display': 'none'}),
 
+        # Comment Form
         html.H3('Comment Form', style={'margin-bottom': '10px'}),
         html.Div(className="comment-form", children=[
             dcc.Textarea(id='comment', className="value", style={'width': '100%', 'height': 60}),
@@ -424,44 +414,32 @@ def micro_cluster_pop_up(clickData):
                 labelStyle={'display': 'block'}
             ),
         ]),
-        #html.Div([
-         #   html.Input(type='hidden', id='cluster-timestamp', value=cluster_timestamp),
-        #]),
-        html.Button('Submit', id='submit-button', n_clicks=0, className="comment-form-button"),
+        html.Button('Submit', id='submit-button', n_clicks=0, className="submit-button"),
     ])
 
 # empty list for comments
 comments_list = []
 
+# Callback to update displayed comments
 @app.callback(
-    Output('comments-section', 'children'),
     Output('submitted-data', 'style'),
-    Input('comment-form-button', 'n_clicks'),
+    Output('comment-list', 'children'),
+    Input('submit-button', 'n_clicks'),
     State('comment', 'value'),
-    State('category', 'value')
+    State('category', 'value'),
+    State('comment-list', 'children')
 )
-def update_display(n_clicks, comment, category):
-    if n_clicks == 0:
-        return "", {'display': 'none'}
-
-    # Kommentar und Kategorie der Liste hinzufügen
-    comments_list.append((comment, category))
-
-    # Alle Kommentare anzeigen
-    comments_list_display = []
-    for i, (comment, category) in enumerate(comments_list):
-        comments_list_display.extend([
-            html.Div(children=[
-                html.Span(f'Comment {i + 1}:', className="label"),
-                html.Span(comment, className="value"),
-            ]),
-            html.Div(children=[
-                html.Span('Category:', className="label"),
-                html.Span(category, className="value"),
-            ]),
+def update_display(n_clicks, comment, category, current_children):
+    if n_clicks > 0:
+        new_comment = html.Div([
+            html.Span(f'Comment: {comment}'),
+            html.Span(f'Category: {category}'),
+            html.Span(f'Timestamp: {datetime.now()}')
         ])
-
-    return comments_list_display, {'display': 'block'}
+        current_children.append(new_comment)
+        return {'display': 'block'}, current_children
+    else:
+        return {'display': 'none'}, current_children
 
 # -- MACRO CLUSTER WIDGET --
 @app.callback(
