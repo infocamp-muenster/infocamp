@@ -118,10 +118,10 @@ def initialize_dash_app():
 
 def convert_date(date_str):
     # Parse the input date string to a datetime object
-    dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M')
+    dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
 
     # Format the datetime object to the desired output format
-    european_format_date_str = dt.strftime('%d.%m.%Y %H:%M')
+    european_format_date_str = dt.strftime('%d.%m.%Y %H:%M:%S')
 
     return european_format_date_str
 
