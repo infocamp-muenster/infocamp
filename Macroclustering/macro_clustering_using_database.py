@@ -7,6 +7,17 @@ import ast
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.manifold import MDS
 
+def compute_similarity_matrix(macro_centers):
+    # Compute cosine similarity matrix
+    macro_similarity_matrix_ndarray = cosine_similarity(macro_centers)
+    print("------cosine similarity matrix ndarray------")
+    print(macro_similarity_matrix_ndarray)
+
+    # Convert numpy ndarray to pandas DataFrame
+    macro_similarity_matrix = pd.DataFrame(macro_similarity_matrix_ndarray)
+    print("------cosine similarity matrix------")
+    print(macro_similarity_matrix)  # TODO: format z = [[1, .2, .3], [.4, 1, .6], [.7, .8, 1]]
+    return macro_similarity_matrix
 
 def macro_clustering_textclust(db, index, dist_matrix, n_clusters):
     print("Macro Clustering starten (Textclust)....")
@@ -20,6 +31,17 @@ def macro_clustering_textclust(db, index, dist_matrix, n_clusters):
     # K-Means-Algorithmus auf den eingebetteten Daten ausführen
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
     kmeans.fit(embedded_data)
+
+    print("KMEANS CENTER:")
+    print(kmeans.cluster_centers_)
+    macro_similarity_matrix_ndarray = cosine_similarity(kmeans.cluster_centers_)
+    print("------cosine similarity matrix ndarray------")
+    print(macro_similarity_matrix_ndarray)
+
+    # Convert numpy ndarray to pandas DataFrame
+    macro_similarity_matrix = pd.DataFrame(macro_similarity_matrix_ndarray)
+    print("------cosine similarity matrix------")
+    print(macro_similarity_matrix)
 
     macro_clusters = kmeans.predict(embedded_data)
 
@@ -44,7 +66,7 @@ def macro_clustering_textclust(db, index, dist_matrix, n_clusters):
 
     macro_micro_df['micro_cluster_tweet_sum'] = macro_micro_df['micro_cluster'].map(tweet_sums)
 
-    return macro_micro_df
+    return macro_micro_df, macro_similarity_matrix
 
 
 
@@ -88,6 +110,8 @@ def macro_clustering_clustream(db, index, n_clusters):
 
         # Predict the macro-clusters
         macro_clusters = kmeans.predict(micro_cluster_centers)
+        print("------macro clusters kmeans------")
+        print(macro_clusters)
 
         # Create a dataframe to store macro-clusters and their belonging micro-clusters
         macro_micro_dict = {}
@@ -103,20 +127,13 @@ def macro_clustering_clustream(db, index, n_clusters):
         for macro_cluster, centers in macro_cluster_centers.items():
             macro_cluster_centers[macro_cluster] = np.mean(centers, axis=0)
         macro_centers_list = list(macro_cluster_centers.values())
+
         print("------macro cluster centers------")
         print(macro_cluster_centers)
         print("------macro centers list------")
         print(macro_centers_list)
 
-        # Compute cosine similarity matrix
-        macro_similarity_matrix_ndarray = cosine_similarity(macro_centers_list)
-        print("------cosine similarity matrix ndarray------")
-        print(macro_similarity_matrix_ndarray)
-
-        # Convert numpy ndarray to pandas DataFrame
-        macro_similarity_matrix = pd.DataFrame(macro_similarity_matrix_ndarray)
-        print("------cosine similarity matrix------")
-        print(macro_similarity_matrix) # TODO: format z = [[1, .2, .3], [.4, 1, .6], [.7, .8, 1]]
+        macro_similarity_matrix = compute_similarity_matrix(macro_centers_list) # TODO: kmeans centers
 
 
         # Converting dictionary in dataframe
@@ -168,19 +185,20 @@ def convert_macro_cluster_visualization(micro_macro_df):
     return grouped_df
 
 
-def main_macro(micro_algo, dist_matrix):
+def main_macro(micro_algo, dist_matrix=None):
     print("-------------------Started Macro Clustering-------------------")
     db = Database()
     if micro_algo == 'Clustream':
         macro_micro_dict, macro_similarity_matrix = macro_clustering_clustream(db, 'cluster_tweet_data', 3)
     if micro_algo == 'Textclust':
         # TODO: add macro_similarity_matrix
-        macro_micro_dict = macro_clustering_textclust(db, 'cluster_tweet_data', dist_matrix, 3)
+        macro_micro_dict, macro_similarity_matrix = macro_clustering_textclust(db, 'cluster_tweet_data', dist_matrix, 3)
+        #macro_similarity_matrix = pd.DataFrame()
 
-    if macro_micro_dict != None:
+    if not macro_micro_dict.empty:
         store_macro_micro_dict_in_database(db, macro_micro_dict, index_name='macro_micro_dict')
     print("------stored macro_micro_dict------")
-    if macro_similarity_matrix != None:
+    if not macro_similarity_matrix.empty:
         store_macro_micro_dict_in_database(db, macro_similarity_matrix, index_name='macro_similarity_matrix')
     print("------stored macro_similarity_matrix------")
 

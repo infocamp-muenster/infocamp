@@ -8,7 +8,7 @@ import numpy as np
 
 
 
-def process_tweets(tweets, tweet_cluster_mapping, db):
+def process_tweets_textclust(tweets, tweet_cluster_mapping, db):
     # cluster_tweet_data Dataframe initialisieren
     columns = ['cluster_id', 'timestamp', 'tweet_count']
     cluster_tweet_data = pd.DataFrame(columns=columns)
@@ -45,8 +45,8 @@ def process_tweets(tweets, tweet_cluster_mapping, db):
                     'timestamp': str(tweet['created_at'])
                 })
 
-        cluster_tweet_data = transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time,
-                                                             end_time)
+        cluster_tweet_data = transform_to_cluster_tweet_data_textclust(tweet_cluster_mapping, cluster_tweet_data, start_time,
+                                                                       end_time)
 
         # Upload dataframe to elasticsearch database
         print(cluster_tweet_data)
@@ -76,7 +76,7 @@ def process_tweets(tweets, tweet_cluster_mapping, db):
     return cluster_tweet_data
 
 # TODO method similiar to transfrm_to_cluster_tweet_data in micro_clustering.py with small differences
-def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time, end_time):
+def transform_to_cluster_tweet_data_textclust(tweet_cluster_mapping, cluster_tweet_data, start_time, end_time):
     """
     Diese Funktion transformiert die tweet_cluster_mapping (Update nach jedem tweet) Liste in eine
     Liste mit sieben Spalten: cluster_id, timestamp, Anzahl der Tweets, durchschnittlicher tweet_count,
