@@ -4,8 +4,8 @@ from Microclustering.micro_clustering import main_loop
  
 class Micro_Clustering_Thread(threading.Thread):
     def run(self):
-        ssh_user = 'jthier' # 'bwulf'
-        ssh_private_key = '/Users/janthier/.ssh/id_rsa_uni_ps_server' # '/Users/bastianwulf/.ssh/id_rsa_uni'
+        ssh_user = 'okamps' # 'bwulf'
+        ssh_private_key = '/Users/oliverkamps/.ssh/dashboard' # '/Users/bastianwulf/.ssh/id_rsa_uni'
         tunnel1, tunnel2 = Database.create_ssh_tunnel(ssh_user, ssh_private_key)
         tunnel1.start()
         tunnel2.start()

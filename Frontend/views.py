@@ -138,18 +138,19 @@ def upload(request):
 
 
 def dataExport(request):
-    data = export_data()
+    export_data()
+    # data = export_data()
 
     # Erstellt einen Pandas DataFrame aus den Daten
-    df = pd.DataFrame(data)
+    # df = pd.DataFrame(data)
     
     # Generiert die CSV-Datei in einem StringIO-Objekt
-    csv_buffer = io.StringIO()
-    df.to_csv(csv_buffer, index=False, sep=';')
-    csv_buffer.seek(0)
+    # csv_buffer = io.StringIO()
+    # data.to_csv(csv_buffer, index=False, sep=';')
+    # csv_buffer.seek(0)
 
     # Erstellt einen HttpResponse mit dem CSV-Inhalt
-    response = HttpResponse(csv_buffer, content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="data-export.csv"'
+    # response = HttpResponse(csv_buffer, content_type='text/csv')
+    # response['Content-Disposition'] = 'attachment; filename="data-export.csv"'
 
-    return response
+    return redirect('realtime')
