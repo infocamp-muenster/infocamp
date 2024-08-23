@@ -139,6 +139,7 @@ def upload(request):
 
 def dataExport(request):
     export_data()
+    
     # data = export_data()
 
     # Erstellt einen Pandas DataFrame aus den Daten

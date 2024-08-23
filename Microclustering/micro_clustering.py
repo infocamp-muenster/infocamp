@@ -177,6 +177,7 @@ def export_data():
     mapping = pd.DataFrame(data_for_export)
     tweets = pd.DataFrame(all_tweets)
 
+    
     print(data_for_export)
     print(all_tweets)
 
