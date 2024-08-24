@@ -10,7 +10,7 @@ class Micro_Clustering_Thread(threading.Thread):
         tunnel1.start()
         tunnel2.start()
 
-        micro_algo = "Clustream"
+        micro_algo = "Textclust" # "Clustream"
  
         try:
             # Create Database instance

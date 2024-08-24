@@ -133,7 +133,7 @@ def macro_clustering_clustream(db, index, n_clusters):
         print("------macro centers list------")
         print(macro_centers_list)
 
-        macro_similarity_matrix = compute_similarity_matrix(macro_centers_list) # TODO: kmeans centers
+        macro_similarity_matrix = compute_similarity_matrix(macro_centers_list)
 
 
         # Converting dictionary in dataframe
@@ -191,9 +191,7 @@ def main_macro(micro_algo, dist_matrix=None):
     if micro_algo == 'Clustream':
         macro_micro_dict, macro_similarity_matrix = macro_clustering_clustream(db, 'cluster_tweet_data', 3)
     if micro_algo == 'Textclust':
-        # TODO: add macro_similarity_matrix
         macro_micro_dict, macro_similarity_matrix = macro_clustering_textclust(db, 'cluster_tweet_data', dist_matrix, 3)
-        #macro_similarity_matrix = pd.DataFrame()
 
     if not macro_micro_dict.empty:
         store_macro_micro_dict_in_database(db, macro_micro_dict, index_name='macro_micro_dict')

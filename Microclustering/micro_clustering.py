@@ -199,8 +199,6 @@ def main_loop(db, index, micro_algo):
 
     data_for_export = tweet_cluster_mapping
 
-    # TODO Fallunterscheidung
-
     if micro_algo == "Textclust":
         # Sorting dataframe ascending via 'created_at'
         tweets_selected = tweets_selected.sort_values(by='created_at', ascending=True)
