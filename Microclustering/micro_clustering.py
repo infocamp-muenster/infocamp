@@ -10,6 +10,7 @@ from nltk.stem import PorterStemmer
 import numpy as np
 from Macroclustering.macro_clustering_using_database import main_macro
 from Infodash.globals import global_lock
+from Microclustering.textclust import process_tweets_textclust
 
 data_for_export = []
 
@@ -175,10 +176,10 @@ def export_data():
     return data_for_export
 
 
-def main_loop(db, index):
+def main_loop(db, index, micro_algo):
     global all_tweets_from_db
     global data_for_export
-    
+
     print("Starting micro_clustering main loop...")
 
     try:
@@ -189,76 +190,84 @@ def main_loop(db, index):
     finally:
         global_lock.release()
 
-    # Initializing macro-cluster call
-    macro_cluster_iterations = 8  # Counter after how many micro-clustering iterations macro clustering starts
-    micro_cluster_iterations = 0  # Setting micro-cluster iterations initially on 0
-
     tweets = pd.DataFrame([hit["_source"] for hit in all_tweets_from_db])
     tweets_selected = tweets[['created_at', 'text', 'id_str']]
     tweets_selected.loc[:, 'created_at'] = pd.to_datetime(tweets_selected['created_at'],
                                                           format='%a %b %d %H:%M:%S %z %Y')
-    # Initialisierungen
-    start_time, end_time = initialize_time_window(tweets_selected, 'created_at')
-    vectorizer = feature_extraction.BagOfWords()
-    clustream = cluster.CluStream()
-    stop_words = set(stopwords.words('english'))  # TODO: Add stopwords for german and other languages
-    nlp = spacy.load('en_core_web_sm')
-    stemmer = PorterStemmer()
-
-    # cluster_tweet_data Dataframe initialisieren
-    columns = ['cluster_id', 'timestamp', 'tweet_count']
-    cluster_tweet_data = pd.DataFrame(columns=columns)
 
     # Zuordnungsliste Cluster id zu Tweet id
     tweet_cluster_mapping = []
 
     data_for_export = tweet_cluster_mapping
 
-    # Dictionary zum Speichern der Mikro-Cluster-Zentren
-    micro_cluster_centers = {}
+    if micro_algo == "Textclust":
+        # Sorting dataframe ascending via 'created_at'
+        tweets_selected = tweets_selected.sort_values(by='created_at', ascending=True)
+        process_tweets_textclust(tweets_selected, tweet_cluster_mapping, db)
 
-    # Schleife die jeden Tweet des Zeitintervalls behandelt
-    while True:
-        tweets = fetch_tweets_in_time_window(tweets_selected, start_time, end_time, 'created_at')
-        if not tweets.empty:
-            print(f"Process tweets from {start_time} to {end_time}:")
-            # print(tweets[['created_at', 'text', 'id_str']])
-            process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words,
-                           micro_cluster_centers)
+    if micro_algo == "Clustream":
 
-        # Informationen der Microcluster speichern (Zentrum usw.)
+        # Initialisierungen
+        start_time, end_time = initialize_time_window(tweets_selected, 'created_at')
+        vectorizer = feature_extraction.BagOfWords()
+        clustream = cluster.CluStream()
+        stop_words = set(stopwords.words('english'))  # TODO: Add stopwords for german and other languages
+        nlp = spacy.load('en_core_web_sm')
+        stemmer = PorterStemmer()
 
-        # Cluster_tweet_data Dataframe nach dem Durchlauf des Zeitintervalls aktualisieren
-        cluster_tweet_data = transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time,
-                                                             end_time, micro_cluster_centers)
+        # cluster_tweet_data Dataframe initialisieren
+        columns = ['cluster_id', 'timestamp', 'tweet_count']
+        cluster_tweet_data = pd.DataFrame(columns=columns)
 
-        # Cluster_tweet_data printen zur Kontrolle
-        pd.set_option('display.max_rows', None)
-        pd.set_option('display.max_columns', None)
-        pd.set_option('display.width', None)
-        pd.set_option('display.max_colwidth', None)
-        print("Control-Print cluster_tweet_data got transformed successfully and is ready for upload!")
-        # print(cluster_tweet_data)
+        # Initializing macro-cluster call
+        macro_cluster_iterations = 8  # Counter after how many micro-clustering iterations macro clustering starts
+        micro_cluster_iterations = 0  # Setting micro-cluster iterations initially on 0
 
-        # Upload dataframe to elasticsearch database
-        try:
-            global_lock.acquire(blocking=True)
-            if db.es.indices.exists(index='cluster_tweet_data'):
-                db.es.indices.delete(index='cluster_tweet_data')
-            db.upload_df('cluster_tweet_data', cluster_tweet_data)
-        except Exception as e:
-            print(f"An error occurred during upload: {e}")
-        finally:
-            global_lock.release()
+        # Dictionary zum Speichern der Mikro-Cluster-Zentren
+        micro_cluster_centers = {}
 
-        # Eventually starting macro-clustering
-        if micro_cluster_iterations >= macro_cluster_iterations:
-            main_macro()
-            micro_cluster_iterations = 0
+        # Schleife die jeden Tweet des Zeitintervalls behandelt
+        while True:
+            tweets = fetch_tweets_in_time_window(tweets_selected, start_time, end_time, 'created_at')
+            if not tweets.empty:
+                print(f"Process tweets from {start_time} to {end_time}:")
+                # print(tweets[['created_at', 'text', 'id_str']])
+                process_tweets(tweets, vectorizer, clustream, tweet_cluster_mapping, stemmer, nlp, stop_words,
+                               micro_cluster_centers)
 
-        # Zeitintervall erhöhen
-        start_time += timedelta(minutes=1)
-        end_time += timedelta(minutes=1)
+            # Informationen der Microcluster speichern (Zentrum usw.)
 
-        time.sleep(2)
-        micro_cluster_iterations += 1
+            # Cluster_tweet_data Dataframe nach dem Durchlauf des Zeitintervalls aktualisieren
+            cluster_tweet_data = transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, start_time,
+                                                                 end_time, micro_cluster_centers)
+
+            # Cluster_tweet_data printen zur Kontrolle
+            pd.set_option('display.max_rows', None)
+            pd.set_option('display.max_columns', None)
+            pd.set_option('display.width', None)
+            pd.set_option('display.max_colwidth', None)
+            print("Control-Print cluster_tweet_data got transformed successfully and is ready for upload!")
+            # print(cluster_tweet_data)
+
+            # Upload dataframe to elasticsearch database
+            try:
+                global_lock.acquire(blocking=True)
+                if db.es.indices.exists(index='cluster_tweet_data'):
+                    db.es.indices.delete(index='cluster_tweet_data')
+                db.upload_df('cluster_tweet_data', cluster_tweet_data)
+            except Exception as e:
+                print(f"An error occurred during upload: {e}")
+            finally:
+                global_lock.release()
+
+            # Eventually starting macro-clustering
+            if micro_cluster_iterations >= macro_cluster_iterations:
+                main_macro("Clustream")
+                micro_cluster_iterations = 0
+
+            # Zeitintervall erhöhen
+            start_time += timedelta(minutes=1)
+            end_time += timedelta(minutes=1)
+
+            time.sleep(2)
+            micro_cluster_iterations += 1

@@ -59,7 +59,7 @@ def initialize_dash_app():
                 ),
                 dcc.Interval(
                     id='interval-component',
-                    interval=1 * 3000,  # in milliseconds (3 seconds)
+                    interval=1 * 30000,  # in milliseconds (30 seconds)
                     n_intervals=0
                 )
             ]),
@@ -77,7 +77,7 @@ def initialize_dash_app():
                 ),
                 dcc.Interval(
                     id='interval-component',
-                    interval=1 * 3000,  # in milliseconds (3 seconds)
+                    interval=1 * 30000,  # in milliseconds (30 seconds)
                     n_intervals=0
                 )
             ]),
@@ -95,7 +95,7 @@ def initialize_dash_app():
                 ),
                 dcc.Interval(
                     id='macro-cluster-interval-component',
-                    interval=1 * 10000,  # in milliseconds (10 seconds)
+                    interval=1 * 30000,  # in milliseconds (30 seconds)
                     n_intervals=0
                 )
             ]),
@@ -343,7 +343,8 @@ def micro_cluster_pop_up(clickData):
 
     # Predefined line colors
     line_colors_list = ['#07368C', '#707FDD', '#BBC4FD', '#455BE7', '#F1F2FC']
-    cluster_color = line_colors_list[cluster_number]
+    #cluster_color = line_colors_list[cluster_number]
+    cluster_color = '#07368C'
 
     # HTML Output of Pop Up Widgets
     return html.Div(children=[

@@ -9,6 +9,8 @@ class Micro_Clustering_Thread(threading.Thread):
         tunnel1, tunnel2 = Database.create_ssh_tunnel(ssh_user, ssh_private_key)
         tunnel1.start()
         tunnel2.start()
+
+        micro_algo = "Textclust" # "Clustream"
  
         try:
             # Create Database instance
@@ -16,7 +18,7 @@ class Micro_Clustering_Thread(threading.Thread):
  
             # Start the data fetching in a separate thread
             index_name = "tweets-2022-02-17"
-            main_loop(db, index_name)
+            main_loop(db, index_name, micro_algo)
  
         except KeyboardInterrupt:
             print("Terminating the program...")
