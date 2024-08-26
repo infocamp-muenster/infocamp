@@ -69,7 +69,17 @@ def initialize_dash_app():
                         html.Div(id='tab-1-content')
                     ]),
                     dcc.Tab(label='KI-Summary', value='tab-2', children=[
-                        html.Button('Generate Summary', id='generate-summary-button', n_clicks=0),
+                        html.Button('Generate Summary', id='generate-summary-button', style={
+                            'background-color': '#007bff',  # Primary color
+                            'color': '#ffffff',  # Text color
+                            'border': 'none',
+                            'border-radius': '5px',  # Rounded edges
+                            'padding': '10px 20px',  # Padding
+                            'cursor': 'pointer',
+                            'font-size': '16px',  # Font size
+                            'box-shadow': '0 4px 6px rgba(0, 0, 0, 0.1)',  # Subtle shadow
+                            'transition': 'background-color 0.3s ease',  # Smooth transition
+                        }, n_clicks=0),
                         html.Div(id='tab-2-content')
                     ]),
                     dcc.Tab(label='Most Recent Posts', value='tab-3', children=[
@@ -155,8 +165,9 @@ def update_popup_content(selected_tab, clickData):
         # Update content for Cluster Information (tab-1)
         cluster_content = micro_cluster_pop_up(clickData)
 
-        # Example logic for posts content
-        posts_content = html.Div('Example of most recent posts')
+        # Example table for posts
+        tweets = export_data()
+        posts_content = dash_table.DataTable(tweets, page_size = 10)
 
     return cluster_content, posts_content
 
