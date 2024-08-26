@@ -8,7 +8,7 @@ import numpy as np
 
 
 
-def process_tweets_textclust(tweets, tweet_cluster_mapping, db):
+def process_tweets_textclust(tweets, tweet_cluster_mapping, db, ai_detector):
     # cluster_tweet_data Dataframe initialisieren
     columns = ['cluster_id', 'timestamp', 'tweet_count']
     cluster_tweet_data = pd.DataFrame(columns=columns)
@@ -36,13 +36,22 @@ def process_tweets_textclust(tweets, tweet_cluster_mapping, db):
         clust_input.update(len(tweets[start:start + clust.tgap]))
         microclusters = clust.microclusters
 
+
         for cluster_id, microcluster in microclusters.items():
             for textid in microcluster.textids:
                 tweet = tweets.loc[tweets['id_str'] == textid].iloc[0]
+
+                # AI detector
+                result = ai_detector.evaluate("SNNEval", [tweet['text']])
+                ai_score = 0
+                if result[0] > 0.99:
+                    ai_score = 1
+
                 tweet_cluster_mapping.append({
                     'tweet_id': tweet['id_str'],
                     'cluster_id': cluster_id,
-                    'timestamp': str(tweet['created_at'])
+                    'timestamp': str(tweet['created_at']),
+                    'ai_score': ai_score,
                 })
 
         cluster_tweet_data = transform_to_cluster_tweet_data_textclust(tweet_cluster_mapping, cluster_tweet_data, start_time,
@@ -97,7 +106,7 @@ def transform_to_cluster_tweet_data_textclust(tweet_cluster_mapping, cluster_twe
     # Erstellen einer neuen DataFrame für das aktuelle Zeitintervall
     new_cluster_tweet_data = pd.DataFrame(
         columns=['cluster_id', 'timestamp', 'tweet_count', 'average_tweet_count', 'std_dev_tweet_count',
-                 'lower_threshold', 'upper_threshold', 'center'])
+                 'lower_threshold', 'upper_threshold', 'center','ai_abs'])
 
     # Zählen der Tweets für das aktuelle Zeitintervall und Berechnung des Durchschnitts und der Standardabweichung
     rows_to_add = []
@@ -121,6 +130,9 @@ def transform_to_cluster_tweet_data_textclust(tweet_cluster_mapping, cluster_twe
         lower_threshold = tweet_count - 6 * prev_std_dev_tweet_count
         upper_threshold = tweet_count + 6 * prev_std_dev_tweet_count
 
+        #ai_abs = df_filtered[(df_filtered['cluster_id'] == cluster_id) & (df_filtered['ai_score'] == 1).shape[0]]
+        ai_abs = 0
+
         # Hinzufügen des Clusterzentrums
         #center = micro_cluster_centers.get(cluster_id, None)
         center = 0
@@ -133,7 +145,8 @@ def transform_to_cluster_tweet_data_textclust(tweet_cluster_mapping, cluster_twe
             'std_dev_tweet_count': std_dev_tweet_count,
             'lower_threshold': lower_threshold,
             'upper_threshold': upper_threshold,
-            'center': center
+            'center': center,
+            'ai_abs': ai_abs
         })
 
     # Sicherstellen, dass Cluster ohne Einträge im Zeitintervall hinzugefügt werden
@@ -159,6 +172,9 @@ def transform_to_cluster_tweet_data_textclust(tweet_cluster_mapping, cluster_twe
             lower_threshold = 0 - 6 * prev_std_dev_tweet_count
             upper_threshold = 0 + 6 * prev_std_dev_tweet_count
 
+            #ai_abs = df_filtered[(df_filtered['cluster_id'] == cluster_id) & (df_filtered['ai_score'] == 1).shape[0]]
+            ai_abs = 0
+
             # Hinzufügen des Clusterzentrums
             #center = micro_cluster_centers.get(cluster_id, None)
             center = 0
@@ -171,7 +187,8 @@ def transform_to_cluster_tweet_data_textclust(tweet_cluster_mapping, cluster_twe
                 'std_dev_tweet_count': std_dev_tweet_count,
                 'lower_threshold': lower_threshold,
                 'upper_threshold': upper_threshold,
-                'center': center
+                'center': center,
+                'ai_abs': ai_abs
             })
 
     new_cluster_tweet_data = pd.concat([new_cluster_tweet_data, pd.DataFrame(rows_to_add)], ignore_index=True)

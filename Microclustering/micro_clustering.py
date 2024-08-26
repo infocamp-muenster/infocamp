@@ -213,11 +213,12 @@ def main_loop(db, index, micro_algo):
     tweet_cluster_mapping = []
 
     data_for_export = tweet_cluster_mapping
+    ai_detector = Detector('http://ls-stat-ml.uni-muenster.de:7100/compute')
 
     if micro_algo == "Textclust":
         # Sorting dataframe ascending via 'created_at'
         tweets_selected = tweets_selected.sort_values(by='created_at', ascending=True)
-        process_tweets_textclust(tweets_selected, tweet_cluster_mapping, db)
+        process_tweets_textclust(tweets_selected, tweet_cluster_mapping, db, ai_detector)
 
     if micro_algo == "Clustream":
 
@@ -228,7 +229,6 @@ def main_loop(db, index, micro_algo):
         stop_words = set(stopwords.words('english'))  # TODO: Add stopwords for german and other languages
         nlp = spacy.load('en_core_web_sm')
         stemmer = PorterStemmer()
-        ai_detector = Detector('http://ls-stat-ml.uni-muenster.de:7100/compute')
 
 
         # cluster_tweet_data Dataframe initialisieren
