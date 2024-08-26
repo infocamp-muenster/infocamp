@@ -6,7 +6,7 @@
 '''
 
 # Import of function ToDo: Check if all imports are needed
-from dash import dcc, html
+from dash import dcc, html, dash_table
 from dash.dependencies import Output, Input
 import plotly.graph_objs as go
 import pandas as pd
@@ -69,6 +69,7 @@ def initialize_dash_app():
                         html.Div(id='tab-1-content')
                     ]),
                     dcc.Tab(label='KI-Summary', value='tab-2', children=[
+                        html.Button('Generate Summary', id='generate-summary-button', n_clicks=0),
                         html.Div(id='tab-2-content')
                     ]),
                     dcc.Tab(label='Most Recent Posts', value='tab-3', children=[
@@ -142,30 +143,38 @@ def update_graph_live(n):
 # Unified callback for popup micro cluster with tabs
 @app.callback(
     [Output('tab-1-content', 'children'),
-     Output('tab-2-content', 'children'),
      Output('tab-3-content', 'children')],
     [Input('popup-tabs', 'value'),
      Input('live-update-graph', 'clickData')]
 )
 def update_popup_content(selected_tab, clickData):
-    # Default content if no data is clicked
-    cluster_content = html.Div('Click on cluster for detailed information')
-    summary_content = 'Click on a cluster to view the summary.'
+    cluster_content = 'Click on cluster for detailed information'
     posts_content = 'Click on a cluster to view the most recent posts.'
 
     if clickData:
-        point = clickData['points'][0]
-        # For tab-1: Micro Cluster Information
+        # Update content for Cluster Information (tab-1)
         cluster_content = micro_cluster_pop_up(clickData)
 
-        # For tab-2: KI-Summary
+        # Example logic for posts content
+        posts_content = html.Div('Example of most recent posts')
+
+    return cluster_content, posts_content
+
+
+@app.callback(
+    Output('tab-2-content', 'children'),
+    [Input('generate-summary-button', 'n_clicks')],
+    [Input('live-update-graph', 'clickData')]
+)
+def generate_summary(n_clicks, clickData):
+    if n_clicks > 0 and clickData:
+        point = clickData['points'][0]
         cluster_key_words_string = ", ".join(point['customdata'][0].keys()) if point['customdata'][0] else ""
         summary_content = summarize_tweets(cluster_key_words_string)
+        return summary_content
 
-        # For tab-3: Most Recent Posts (Example content)
-        posts_content = html.Div('Example of most recent posts')  # Replace with your data processing logic
-
-    return cluster_content, summary_content, posts_content
+    # Default message before button is clicked
+    return ''
 
 
 # Function including HTML Output for micro cluster pop up information
@@ -254,21 +263,6 @@ def micro_cluster_pop_up(clickData):
             ]),
         ]),
     ])
-
-
-# Callback für den Button-Klick
-@app.callback(
-    Output('summary-output', 'children'),
-    Input('live-update-graph', 'clickData')
-)
-def update_summary(clickData):
-    if clickData is None:
-        return []
-    point = clickData['points'][0]
-    # Get cluster keywords
-    cluster_key_words_string = ", ".join(point['customdata'][0].keys()) if point['customdata'][0] else ""
-    summary = summarize_tweets(cluster_key_words_string)
-    return summary
 
 if __name__ == '__main__':
     app.run_server(debug=True)
