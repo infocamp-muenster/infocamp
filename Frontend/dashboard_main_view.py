@@ -36,6 +36,7 @@ def initialize_dash_app():
          # Include the header HTML
         *header,
 
+
         # Main Div element named 'main-body' contains import style information and all widgets are childs of it
         html.Div(className='main-body', children=[
 
@@ -61,28 +62,21 @@ def initialize_dash_app():
                     n_intervals=0
                 )
             ]),
-            # Pop Up Widget. Gets activated by clicking on data point of micro cluster widget
-            # HTML Output of widget is defined below
+            #Pop up widget with three different tabs Cluster Inf., KI Summ. and recent posts of the micro cluster point
             html.Div(className='widget widget-pop-up', id='popup-micro-cluster', children=[
-                    html.Span('Micro Cluster Pop Up'),
+                dcc.Tabs(id="popup-tabs", value='tab-1', children=[
+                    dcc.Tab(label='Cluster Information', value='tab-1', children=[
+                        html.Div(id='tab-1-content')
+                    ]),
+                    dcc.Tab(label='KI-Summary', value='tab-2', children=[
+                        html.Div(id='tab-2-content')
+                    ]),
+                    dcc.Tab(label='Most Recent Posts', value='tab-3', children=[
+                        html.Div(id='tab-3-content')
+                    ]),
+                ]),
             ]),
-            html.Div(className='widget', style={'grid-column': 'span 6'}, children=[
-                html.H3('KI-Summary Widget', style={'text-align': 'center', 'padding': '20px 0'}),
-                html.Div(id='summary-output', style={
-                    'padding': '20px',
-                    'border': '1px solid #ddd',
-                    'border-radius': '10px',
-                    'background-color': '#f9f9f9',
-                    'box-shadow': '0 2px 4px rgba(0,0,0,0.1)',
-                    'max-width': '800px',
-                    'margin': 'auto'  # Zentriert das Widget
-                })
-            ]),
-            html.Div(className='widget', style={'grid-column':'span 6'}, children=[
-                html.H3('Most Recent Posts'),
-                html.Span('Post Analysis'),
-                    # Widget can be embedded here!
-            ]),
+
             html.Div(className='widget', style={'grid-column':'span 6'}, children=[
                 html.H3('Topic Focus'),
                 html.Span('Cluster Analysis'),
@@ -145,20 +139,42 @@ def update_graph_live(n):
 
     return last_figure
 
-# Callback for Micro Cluster Pop Up Widget Information of Datapoints will be shown in widget with id #popup-micro-cluster
+# Unified callback for popup micro cluster with tabs
 @app.callback(
-        Output('popup-micro-cluster', 'children'),
-        [Input('live-update-graph', 'clickData')]
+    [Output('tab-1-content', 'children'),
+     Output('tab-2-content', 'children'),
+     Output('tab-3-content', 'children')],
+    [Input('popup-tabs', 'value'),
+     Input('live-update-graph', 'clickData')]
 )
+def update_popup_content(selected_tab, clickData):
+    # Default content if no data is clicked
+    cluster_content = html.Div('Click on cluster for detailed information')
+    summary_content = 'Click on a cluster to view the summary.'
+    posts_content = 'Click on a cluster to view the most recent posts.'
+
+    if clickData:
+        point = clickData['points'][0]
+        # For tab-1: Micro Cluster Information
+        cluster_content = micro_cluster_pop_up(clickData)
+
+        # For tab-2: KI-Summary
+        cluster_key_words_string = ", ".join(point['customdata'][0].keys()) if point['customdata'][0] else ""
+        summary_content = summarize_tweets(cluster_key_words_string)
+
+        # For tab-3: Most Recent Posts (Example content)
+        posts_content = html.Div('Example of most recent posts')  # Replace with your data processing logic
+
+    return cluster_content, summary_content, posts_content
+
 
 # Function including HTML Output for micro cluster pop up information
 def micro_cluster_pop_up(clickData):
-    # Default HTML Output of Widget
     if clickData is None:
-        return html.Div(className='widget-pop-up-default',children=[
-        html.H4('Click on cluster for detailed information')
-    ])
-    
+        return html.Div(className='widget-pop-up-default', children=[
+            html.H4('Click on cluster for detailed information')
+        ])
+
     point = clickData['points'][0]
     cluster_number = point['curveNumber']
     cluster_index = point['pointNumber']
@@ -175,13 +191,15 @@ def micro_cluster_pop_up(clickData):
     # Get std_dev_tweet_count
     cluster_std_dev = int(point['customdata'][3]) if point['customdata'][3] else ""
 
-    # Calculation of CSS-Width-vlaues
+    # Calculation of CSS-Width-values
     if cluster_std_dev != None and cluster_lower_threshold != None and cluster_upper_threshold != None:
         lower_bound = cluster_tweet_count - cluster_std_dev
         upper_bound = cluster_tweet_count + cluster_std_dev
 
-        lower_bound_percentage = 100 * (lower_bound - cluster_lower_threshold) / (cluster_upper_threshold - cluster_lower_threshold)
-        upper_bound_percentage = 100 * (upper_bound - cluster_lower_threshold) / (cluster_upper_threshold - cluster_lower_threshold)
+        lower_bound_percentage = 100 * (lower_bound - cluster_lower_threshold) / (
+                    cluster_upper_threshold - cluster_lower_threshold)
+        upper_bound_percentage = 100 * (upper_bound - cluster_lower_threshold) / (
+                    cluster_upper_threshold - cluster_lower_threshold)
         width_percentage = upper_bound_percentage - lower_bound_percentage
     else:
         width_percentage = 100
