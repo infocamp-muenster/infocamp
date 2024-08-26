@@ -9,6 +9,9 @@ class MicroClusteringThread(threading.Thread):
         self.upload_event = upload_event
 
     def run(self):
+
+        micro_algo = "Textclust" # "Clustream"
+ 
         try:
             # Wait for the SSH tunnel to be established
             self.ssh_event.wait()
@@ -21,7 +24,7 @@ class MicroClusteringThread(threading.Thread):
 
             # Start the data fetching and clustering
             index_name = "data_import"
-            main_loop(db, index_name)
+            main_loop(db, index_name, micro_algo)
 
         except KeyboardInterrupt:
             print("Terminating the program...")
