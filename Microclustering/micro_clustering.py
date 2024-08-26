@@ -180,6 +180,8 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
 
     # Kombinieren mit dem bestehenden DataFrame
     cluster_tweet_data = pd.concat([cluster_tweet_data, new_cluster_tweet_data], ignore_index=True)
+    print("AI DF")
+    print(cluster_tweet_data)
     return cluster_tweet_data
 
 

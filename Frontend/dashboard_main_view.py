@@ -141,15 +141,22 @@ def ai_prob_update_graph_live(n):
         # Ensure 'timestamp' is in datetime format
         cluster_tweet_data['timestamp'] = pd.to_datetime(cluster_tweet_data['timestamp'])
 
-        ai_abs_counter = cluster_tweet_data.groupby('timestamp')['ai_abs'].sum().reset_index()
+        # Predefined line colors
+        line_colors_list = ['#07368C', '#707FDD', '#BBC4FD', '#455BE7', '#F1F2FC']
 
         # Plotting
-        ai_prob_traces = go.Scatter(
-            x=cluster_tweet_data['timestamp'],
-            y=ai_abs_counter,
-            mode='lines+markers',
-            name='AI Prob'
-        )
+        ai_prob_traces = []
+        for i, cluster_id in enumerate(cluster_tweet_data['cluster_id'].unique()):
+            cluster_data = cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id]
+
+            ai_prob_traces.append(go.Scatter(
+                x=cluster_data['timestamp'],
+                y=cluster_data['tweet_count'],
+                mode='lines+markers',
+                name=f'Cluster {cluster_id}',
+                line=dict(color=line_colors_list[i % len(line_colors_list)]), # Assign color from predefined list
+                customdata=list(zip(cluster_data['lower_threshold'],cluster_data['upper_threshold'],cluster_data['std_dev_tweet_count'])),
+            ))
 
         ai_prob_layout = go.Layout(
             title={
@@ -191,13 +198,9 @@ def ai_prob_pop_up(clickData):
         ])
 
     point = clickData['points'][0]
-    cluster_number = point['curveNumber']
     cluster_index = point['pointNumber']
-    cluster_timestamp = convert_date(point['x'])
+    cluster_timestamp = point['x']
     cluster_tweet_count = point['y']
-
-    # Get cluster keywords
-    cluster_key_words_string = ", ".join(point['customdata'][0].keys()) if point['customdata'][0] else ""
 
     # HTML Output of Pop Up Widgets
     return html.Div(children=[
@@ -207,10 +210,6 @@ def ai_prob_pop_up(clickData):
             html.Div(children=[
                 html.Span(f'Cluster Index:',className="label"),
                 html.Span(f'{cluster_index}',className="value"),
-            ]),
-            html.Div(className="keywords",children=[
-                html.Span(f'Cluster Keywords:',className="label"),
-                html.Span(f'{cluster_key_words_string}',className="value"),
             ]),
             html.Div(children=[
                 html.Span(f'Timestamp:',className="label"),
@@ -252,7 +251,7 @@ def micro_cluster_update_graph_live(n):
                 mode='lines+markers',
                 name=f'Cluster {cluster_id}',
                 line=dict(color=line_colors_list[i % len(line_colors_list)]), # Assign color from predefined list
-                customdata=list(zip(cluster_data['center'],cluster_data['lower_threshold'],cluster_data['upper_threshold'],cluster_data['std_dev_tweet_count'])),
+                customdata=list(zip(cluster_data['lower_threshold'],cluster_data['upper_threshold'],cluster_data['std_dev_tweet_count'])),
             ))
 
         micro_cluster_layout = go.Layout(
@@ -297,47 +296,15 @@ def micro_cluster_pop_up(clickData):
     point = clickData['points'][0]
     cluster_number = point['curveNumber']
     cluster_index = point['pointNumber']
-    cluster_timestamp = convert_date(point['x'])
+    cluster_timestamp = point['x']
     cluster_tweet_count = point['y']
 
-    # Get cluster keywords
-    cluster_key_words_string = ", ".join(point['customdata'][0].keys()) if point['customdata'][0] else ""
-
     # Get cluster threshold
-    cluster_lower_threshold = point['customdata'][1] if point['customdata'][1] else ""
-    cluster_upper_threshold = point['customdata'][2] if point['customdata'][2] else ""
+    cluster_lower_threshold = point['customdata'][0] if point['customdata'][0] else ""
+    cluster_upper_threshold = point['customdata'][1] if point['customdata'][1] else ""
 
     # Get std_dev_tweet_count
-    cluster_std_dev = int(point['customdata'][3]) if point['customdata'][3] else ""
-
-    width_percentage = 0
-    lower_bound_percentage = 0
-
-    if cluster_std_dev is not None:
-        try:
-            lower_bound = int(cluster_tweet_count) - int(cluster_std_dev)
-            upper_bound = int(cluster_tweet_count) + int(cluster_std_dev)
-            cluster_std_dev_frontend = round(cluster_std_dev,2)
-        except (TypeError, ValueError):
-            lower_bound = None
-            upper_bound = None
-            cluster_std_dev_frontend = cluster_std_dev
-
-        if None not in (lower_bound, upper_bound, cluster_lower_threshold, cluster_upper_threshold):
-            try:
-                lower_bound_percentage = 100 * (lower_bound - cluster_lower_threshold) / (
-                            cluster_upper_threshold - cluster_lower_threshold)
-                upper_bound_percentage = 100 * (upper_bound - cluster_lower_threshold) / (
-                            cluster_upper_threshold - cluster_lower_threshold)
-                width_percentage = upper_bound_percentage - lower_bound_percentage
-            except ZeroDivisionError:
-                width_percentage = 0
-                lower_bound_percentage = 0
-
-    # Predefined line colors
-    line_colors_list = ['#07368C', '#707FDD', '#BBC4FD', '#455BE7', '#F1F2FC']
-    #cluster_color = line_colors_list[cluster_number]
-    cluster_color = '#07368C'
+    cluster_std_dev = int(point['customdata'][2]) if point['customdata'][2] else ""
 
     # HTML Output of Pop Up Widgets
     return html.Div(children=[
@@ -345,16 +312,12 @@ def micro_cluster_pop_up(clickData):
         html.Span('Analytics for selected cluster'),
         html.Div(className="popup-widget-info",children=[
             html.Div(children=[
-                html.Span(f'Cluster Index:',className="label"),
-                html.Span(f'{cluster_index}',className="value"),
+                html.Span(f'Cluster ID:',className="label"),
+                html.Span(f'{cluster_number}',className="value"),
             ]),
             html.Div(children=[
-                html.Span(f'Cluster Color:',className="label"),
-                html.Span(f'{cluster_color}',style={'color': cluster_color},className="value"),
-            ]),
-            html.Div(className="keywords",children=[ # Extra CSS class for larger width handling
-                html.Span(f'Cluster Keywords:',className="label"),
-                html.Span(f'{cluster_key_words_string}',className="value"),
+                html.Span(f'Cluster Index:',className="label"),
+                html.Span(f'{cluster_index}',className="value"),
             ]),
             html.Div(children=[
                 html.Span(f'Timestamp:',className="label"),
@@ -366,21 +329,15 @@ def micro_cluster_pop_up(clickData):
             ]),
             html.Div(children=[
                 html.Span(f'Lower Threshold:',className="label"),
-                html.Span(f'{round(cluster_lower_threshold,2)}',className="value"),
+                html.Span(f'{round(int(cluster_lower_threshold),2)}',className="value"),
             ]),
             html.Div(children=[
                 html.Span(f'Upper Threshold:',className="label"),
-                html.Span(f'{round(cluster_upper_threshold,2)}',className="value"),
+                html.Span(f'{round(int(cluster_upper_threshold),2)}',className="value"),
             ]),
             html.Div(children=[
                 html.Span(f'Standard Deviation:',className="label"),
-                html.Span(f'{cluster_std_dev_frontend}', className="value"),
-            ]),
-            html.Div(children=[
-                html.Span(f'Position in Cluster:', className="label"),
-                html.Div(className="threshold-bar", children=[
-                        html.Div(className="threshold-bar-inner",style={'width': f'{round(width_percentage,0)}%','left': f'{round(lower_bound_percentage)}%'}),
-                ])
+                html.Span(f'{cluster_std_dev}', className="value"),
             ]),
         ]),
 
@@ -424,11 +381,16 @@ comments_list = []
     State('comment-list', 'children')
 )
 def update_display(n_clicks, comment, category, current_children):
+    if current_children is None or len(current_children) == 0:
+        current_children = []
     if n_clicks > 0:
         new_comment = html.Div([
-            html.Span(f'Comment: {comment}'),
-            html.Span(f'Category: {category}'),
-            html.Span(f'Timestamp: {datetime.now()}')
+            html.Span(f'Comment:'),
+            html.Span(f'{comment}',style={'font-weight:':'600'}),
+            html.Span(f'Category:'),
+            html.Span(f'{category}', style={'font-weight:': '600'}),
+            html.Span(f'Timestamp:'),
+            html.Span(f'{datetime.now()}', style={'font-weight:': '600'}),
         ])
         current_children.append(new_comment)
         return {'display': 'block'}, current_children
