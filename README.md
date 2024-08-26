@@ -1,5 +1,7 @@
 # INFOCAMP - Board
 
+![INFOCAMP - Board](Readme/Screenshot_Dashboard.png)
+
 ## Motivation
 Social media platforms are becoming the dominant source of information for a significant proportion of the global population. With the deliberate dissemination of false and harmful information, it is crucial that individuals are made aware and that public discourse in online media can continue without malicious intent. We are therefore developing a dashboard to visualize disinformation campaigns in social media posts in real time, utilizing emerging technologies such as word embedding methods like Word2vec and stream clustering. The dashboard will allow users to upload their own social media data and analyse it for anomalies in the activity patterns of related users. Furthermore, it will enable the integration of the probability of AI-generated content to detect disinformation campaigns. Our goal is to aid e.g. computational social scientists to detect and combat disinformation in online media.
 
