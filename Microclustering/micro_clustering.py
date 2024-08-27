@@ -190,16 +190,18 @@ def export_data():
     global data_for_export
     global all_tweets
 
+    # Daten in DataFrames umwandeln
     mapping = pd.DataFrame(data_for_export)
     tweets = pd.DataFrame(all_tweets)
 
-    
-    print(data_for_export)
-    print(all_tweets)
+    # Anpassungen für den join
+    tweets = tweets.rename(columns={'id_str':'tweet_id'})
+    tweets = tweets.drop(columns=['created_at'])
 
-    # result = pd.merge(mapping, tweets, how="left", on="tweet_id")
+    # Join der beiden DataFrames
+    result = pd.merge(mapping, tweets, how="left", on="tweet_id")
 
-    # return data_for_export
+    return result
 
 
 def main_loop(db, index, micro_algo):
@@ -220,14 +222,13 @@ def main_loop(db, index, micro_algo):
 
 
 
-    all_tweets = all_tweets_from_db
-
     # Initializing macro-cluster call
     macro_cluster_iterations = 8  # Counter after how many micro-clustering iterations macro clustering starts
     micro_cluster_iterations = 0  # Setting micro-cluster iterations initially on 0
 
     tweets = pd.DataFrame([hit["_source"] for hit in all_tweets_from_db])
     tweets_selected = tweets[['created_at', 'text', 'id_str']]
+    all_tweets = tweets_selected
     tweets_selected.loc[:, 'created_at'] = pd.to_datetime(tweets_selected['created_at'],
                                                           format='%a %b %d %H:%M:%S %z %Y')
 

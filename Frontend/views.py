@@ -163,20 +163,16 @@ def upload(request, upload_complete_event):
 
 
 def dataExport(request):
-    export_data()
+    # Aufrufen der Funktion export_data() im microclustering
+    data = export_data()
     
-    # data = export_data()
+    # Erstellen der CSV Datei
+    csv_buffer = io.StringIO()
+    data.to_csv(csv_buffer, index=False, sep=';')
+    csv_buffer.seek(0)
 
-    # Erstellt einen Pandas DataFrame aus den Daten
-    # df = pd.DataFrame(data)
-    
-    # Generiert die CSV-Datei in einem StringIO-Objekt
-    # csv_buffer = io.StringIO()
-    # data.to_csv(csv_buffer, index=False, sep=';')
-    # csv_buffer.seek(0)
+    # Erstellen des HTTPResponse
+    response = HttpResponse(csv_buffer, content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="data-export.csv"'
 
-    # Erstellt einen HttpResponse mit dem CSV-Inhalt
-    # response = HttpResponse(csv_buffer, content_type='text/csv')
-    # response['Content-Disposition'] = 'attachment; filename="data-export.csv"'
-
-    return redirect('realtime')
+    return response
