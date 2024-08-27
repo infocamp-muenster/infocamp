@@ -14,6 +14,7 @@ from Microclustering.textclust import process_tweets_textclust
 from Microclustering.detector import Detector
 
 data_for_export = []
+all_tweets = []
 
 # Funktionen
 from datetime import datetime
@@ -187,12 +188,25 @@ def transform_to_cluster_tweet_data(tweet_cluster_mapping, cluster_tweet_data, s
 
 def export_data():
     global data_for_export
-    return data_for_export
+    global all_tweets
+
+    mapping = pd.DataFrame(data_for_export)
+    tweets = pd.DataFrame(all_tweets)
+
+    
+    print(data_for_export)
+    print(all_tweets)
+
+    # result = pd.merge(mapping, tweets, how="left", on="tweet_id")
+
+    # return data_for_export
 
 
 def main_loop(db, index, micro_algo):
     global all_tweets_from_db
     global data_for_export
+    global all_tweets
+    
 
     print("Starting micro_clustering main loop...")
 
@@ -203,6 +217,14 @@ def main_loop(db, index, micro_algo):
         print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
     finally:
         global_lock.release()
+
+
+
+    all_tweets = all_tweets_from_db
+
+    # Initializing macro-cluster call
+    macro_cluster_iterations = 8  # Counter after how many micro-clustering iterations macro clustering starts
+    micro_cluster_iterations = 0  # Setting micro-cluster iterations initially on 0
 
     tweets = pd.DataFrame([hit["_source"] for hit in all_tweets_from_db])
     tweets_selected = tweets[['created_at', 'text', 'id_str']]
