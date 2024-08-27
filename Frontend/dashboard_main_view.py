@@ -59,7 +59,7 @@ def initialize_dash_app():
                 ),
                 dcc.Interval(
                     id='interval-component',
-                    interval=1 * 3000,  # in milliseconds (3 seconds)
+                    interval=1 * 30000,  # in milliseconds (30 seconds)
                     n_intervals=0
                 )
             ]),
@@ -77,7 +77,7 @@ def initialize_dash_app():
                 ),
                 dcc.Interval(
                     id='interval-component',
-                    interval=1 * 3000,  # in milliseconds (3 seconds)
+                    interval=1 * 30000,  # in milliseconds (30 seconds)
                     n_intervals=0
                 )
             ]),
@@ -95,7 +95,7 @@ def initialize_dash_app():
                 ),
                 dcc.Interval(
                     id='macro-cluster-interval-component',
-                    interval=1 * 10000,  # in milliseconds (10 seconds)
+                    interval=1 * 30000,  # in milliseconds (30 seconds)
                     n_intervals=0
                 )
             ]),
@@ -118,10 +118,10 @@ def initialize_dash_app():
 
 def convert_date(date_str):
     # Parse the input date string to a datetime object
-    dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+    dt = datetime.strptime(date_str, '%Y-%m-%d %H:%M')
 
     # Format the datetime object to the desired output format
-    european_format_date_str = dt.strftime('%d.%m.%Y %H:%M:%S')
+    european_format_date_str = dt.strftime('%d.%m.%Y %H:%M')
 
     return european_format_date_str
 
@@ -155,7 +155,7 @@ def ai_prob_update_graph_live(n):
                 mode='lines+markers',
                 name=f'Cluster {cluster_id}',
                 line=dict(color=line_colors_list[i % len(line_colors_list)]), # Assign color from predefined list
-                customdata=list(zip(cluster_data['center'],cluster_data['lower_threshold'],cluster_data['upper_threshold'],cluster_data['std_dev_tweet_count'])),
+                customdata=list(zip(cluster_data['lower_threshold'],cluster_data['upper_threshold'],cluster_data['std_dev_tweet_count'])),
             ))
 
         ai_prob_layout = go.Layout(
@@ -198,13 +198,9 @@ def ai_prob_pop_up(clickData):
         ])
 
     point = clickData['points'][0]
-    cluster_number = point['curveNumber']
     cluster_index = point['pointNumber']
-    cluster_timestamp = convert_date(point['x'])
+    cluster_timestamp = point['x']
     cluster_tweet_count = point['y']
-
-    # Get cluster keywords
-    cluster_key_words_string = ", ".join(point['customdata'][0].keys()) if point['customdata'][0] else ""
 
     # HTML Output of Pop Up Widgets
     return html.Div(children=[
@@ -214,10 +210,6 @@ def ai_prob_pop_up(clickData):
             html.Div(children=[
                 html.Span(f'Cluster Index:',className="label"),
                 html.Span(f'{cluster_index}',className="value"),
-            ]),
-            html.Div(className="keywords",children=[
-                html.Span(f'Cluster Keywords:',className="label"),
-                html.Span(f'{cluster_key_words_string}',className="value"),
             ]),
             html.Div(children=[
                 html.Span(f'Timestamp:',className="label"),
@@ -259,7 +251,7 @@ def micro_cluster_update_graph_live(n):
                 mode='lines+markers',
                 name=f'Cluster {cluster_id}',
                 line=dict(color=line_colors_list[i % len(line_colors_list)]), # Assign color from predefined list
-                customdata=list(zip(cluster_data['center'],cluster_data['lower_threshold'],cluster_data['upper_threshold'],cluster_data['std_dev_tweet_count'])),
+                customdata=list(zip(cluster_data['lower_threshold'],cluster_data['upper_threshold'],cluster_data['std_dev_tweet_count'])),
             ))
 
         micro_cluster_layout = go.Layout(
@@ -304,46 +296,15 @@ def micro_cluster_pop_up(clickData):
     point = clickData['points'][0]
     cluster_number = point['curveNumber']
     cluster_index = point['pointNumber']
-    cluster_timestamp = convert_date(point['x'])
+    cluster_timestamp = point['x']
     cluster_tweet_count = point['y']
 
-    # Get cluster keywords
-    cluster_key_words_string = ", ".join(point['customdata'][0].keys()) if point['customdata'][0] else ""
-
     # Get cluster threshold
-    cluster_lower_threshold = point['customdata'][1] if point['customdata'][1] else ""
-    cluster_upper_threshold = point['customdata'][2] if point['customdata'][2] else ""
+    cluster_lower_threshold = point['customdata'][0] if point['customdata'][0] else ""
+    cluster_upper_threshold = point['customdata'][1] if point['customdata'][1] else ""
 
     # Get std_dev_tweet_count
-    cluster_std_dev = int(point['customdata'][3]) if point['customdata'][3] else ""
-
-    width_percentage = 0
-    lower_bound_percentage = 0
-
-    if cluster_std_dev is not None:
-        try:
-            lower_bound = int(cluster_tweet_count) - int(cluster_std_dev)
-            upper_bound = int(cluster_tweet_count) + int(cluster_std_dev)
-            cluster_std_dev_frontend = round(cluster_std_dev,2)
-        except (TypeError, ValueError):
-            lower_bound = None
-            upper_bound = None
-            cluster_std_dev_frontend = cluster_std_dev
-
-        if None not in (lower_bound, upper_bound, cluster_lower_threshold, cluster_upper_threshold):
-            try:
-                lower_bound_percentage = 100 * (lower_bound - cluster_lower_threshold) / (
-                            cluster_upper_threshold - cluster_lower_threshold)
-                upper_bound_percentage = 100 * (upper_bound - cluster_lower_threshold) / (
-                            cluster_upper_threshold - cluster_lower_threshold)
-                width_percentage = upper_bound_percentage - lower_bound_percentage
-            except ZeroDivisionError:
-                width_percentage = 0
-                lower_bound_percentage = 0
-
-    # Predefined line colors
-    line_colors_list = ['#07368C', '#707FDD', '#BBC4FD', '#455BE7', '#F1F2FC']
-    cluster_color = line_colors_list[cluster_number]
+    cluster_std_dev = int(point['customdata'][2]) if point['customdata'][2] else ""
 
     # HTML Output of Pop Up Widgets
     return html.Div(children=[
@@ -351,16 +312,12 @@ def micro_cluster_pop_up(clickData):
         html.Span('Analytics for selected cluster'),
         html.Div(className="popup-widget-info",children=[
             html.Div(children=[
-                html.Span(f'Cluster Index:',className="label"),
-                html.Span(f'{cluster_index}',className="value"),
+                html.Span(f'Cluster ID:',className="label"),
+                html.Span(f'{cluster_number}',className="value"),
             ]),
             html.Div(children=[
-                html.Span(f'Cluster Color:',className="label"),
-                html.Span(f'{cluster_color}',style={'color': cluster_color},className="value"),
-            ]),
-            html.Div(className="keywords",children=[ # Extra CSS class for larger width handling
-                html.Span(f'Cluster Keywords:',className="label"),
-                html.Span(f'{cluster_key_words_string}',className="value"),
+                html.Span(f'Cluster Index:',className="label"),
+                html.Span(f'{cluster_index}',className="value"),
             ]),
             html.Div(children=[
                 html.Span(f'Timestamp:',className="label"),
@@ -372,41 +329,25 @@ def micro_cluster_pop_up(clickData):
             ]),
             html.Div(children=[
                 html.Span(f'Lower Threshold:',className="label"),
-                html.Span(f'{round(cluster_lower_threshold,2)}',className="value"),
+                html.Span(f'{round(int(cluster_lower_threshold),2)}',className="value"),
             ]),
             html.Div(children=[
                 html.Span(f'Upper Threshold:',className="label"),
-                html.Span(f'{round(cluster_upper_threshold,2)}',className="value"),
+                html.Span(f'{round(int(cluster_upper_threshold),2)}',className="value"),
             ]),
             html.Div(children=[
                 html.Span(f'Standard Deviation:',className="label"),
-                html.Span(f'{cluster_std_dev_frontend}', className="value"),
-            ]),
-            html.Div(children=[
-                html.Span(f'Position in Cluster:', className="label"),
-                html.Div(className="threshold-bar", children=[
-                        html.Div(className="threshold-bar-inner",style={'width': f'{round(width_percentage,0)}%','left': f'{round(lower_bound_percentage)}%'}),
-                ])
+                html.Span(f'{cluster_std_dev}', className="value"),
             ]),
         ]),
 
         # Display Comments
-        html.Div(id='submitted-data', style={'display': 'none'}, children=[
+        html.Div(id='submitted-data', children=[
             html.H3('Comment Section'),
-            html.Div(children=[
-                html.Span('Comment:', className="label"),
-                html.Span(id='display-comment', className="value"),
-            ]),
-            html.Div(children=[
-                html.Span('Category:', className="label"),
-                html.Span(id='display-category', className="value"),
-            ]),
-            html.Div(children=[
-                html.Span('Timestamp:', className="label"),
-                html.Span(id='display-timestamp', className="value"),
-            ]),
-        ]),
+            html.Div(id='comment-list'),
+        ], style={'display': 'none'}),
 
+        # Comment Form
         html.H3('Comment Form', style={'margin-bottom': '10px'}),
         html.Div(className="comment-form", children=[
             dcc.Textarea(id='comment', className="value", style={'width': '100%', 'height': 60}),
@@ -424,44 +365,37 @@ def micro_cluster_pop_up(clickData):
                 labelStyle={'display': 'block'}
             ),
         ]),
-        #html.Div([
-         #   html.Input(type='hidden', id='cluster-timestamp', value=cluster_timestamp),
-        #]),
-        html.Button('Submit', id='submit-button', n_clicks=0, className="comment-form-button"),
+        html.Button('Submit', id='submit-button', n_clicks=0, className="submit-button"),
     ])
 
 # empty list for comments
 comments_list = []
 
+# Callback to update displayed comments
 @app.callback(
-    Output('comments-section', 'children'),
     Output('submitted-data', 'style'),
-    Input('comment-form-button', 'n_clicks'),
+    Output('comment-list', 'children'),
+    Input('submit-button', 'n_clicks'),
     State('comment', 'value'),
-    State('category', 'value')
+    State('category', 'value'),
+    State('comment-list', 'children')
 )
-def update_display(n_clicks, comment, category):
-    if n_clicks == 0:
-        return "", {'display': 'none'}
-
-    # Kommentar und Kategorie der Liste hinzufügen
-    comments_list.append((comment, category))
-
-    # Alle Kommentare anzeigen
-    comments_list_display = []
-    for i, (comment, category) in enumerate(comments_list):
-        comments_list_display.extend([
-            html.Div(children=[
-                html.Span(f'Comment {i + 1}:', className="label"),
-                html.Span(comment, className="value"),
-            ]),
-            html.Div(children=[
-                html.Span('Category:', className="label"),
-                html.Span(category, className="value"),
-            ]),
+def update_display(n_clicks, comment, category, current_children):
+    if current_children is None or len(current_children) == 0:
+        current_children = []
+    if n_clicks > 0:
+        new_comment = html.Div([
+            html.Span(f'Comment:'),
+            html.Span(f'{comment}',style={'font-weight:':'600'}),
+            html.Span(f'Category:'),
+            html.Span(f'{category}', style={'font-weight:': '600'}),
+            html.Span(f'Timestamp:'),
+            html.Span(f'{datetime.now()}', style={'font-weight:': '600'}),
         ])
-
-    return comments_list_display, {'display': 'block'}
+        current_children.append(new_comment)
+        return {'display': 'block'}, current_children
+    else:
+        return {'display': 'none'}, current_children
 
 # -- MACRO CLUSTER WIDGET --
 @app.callback(

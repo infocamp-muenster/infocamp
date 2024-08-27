@@ -169,26 +169,18 @@ def get_cluster_tweet_data(db, index):
     df = pd.DataFrame()
 
     while df.empty:
-        if global_lock.acquire(blocking=False):
-            try:
-                cluster_tweet_data = db.search_get_all(index)
-                # Extracting the '_source' part of each dictionary to create a DataFrame
-                data = [item['_source'] for item in cluster_tweet_data]
-                df = pd.DataFrame(data)
+        try:
+            cluster_tweet_data = db.search_get_all(index)
+            # Extracting the '_source' part of each dictionary to create a DataFrame
+            data = [item['_source'] for item in cluster_tweet_data]
+            df = pd.DataFrame(data)
 
-                if not df.empty:
-                    return df
+            if not df.empty:
+                return df
 
-            except Exception as e:
-                print("Fehler bei der Durchführung der Abfragen auf Elasticsearch:", e)
-                raise FatalError("Error in get_cluster_tweet_data(db, index)")
-
-            finally:
-                global_lock.release()  # Make sure to release lock
-
-        else:
-            # If lock not available, try again in 5 seconds
-            time.sleep(5)
+        except Exception as e:
+            print("Waiting on new data upload...", e)
+            raise FatalError("Warning in get_cluster_tweet_data(db, index)")
 
 
 def get_micro_macro_data(db, index):
