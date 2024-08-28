@@ -194,14 +194,20 @@ def export_data():
     mapping = pd.DataFrame(data_for_export)
     tweets = pd.DataFrame(all_tweets)
 
-    # Anpassungen für den join
-    tweets = tweets.rename(columns={'id_str':'tweet_id'})
-    tweets = tweets.drop(columns=['created_at'])
+    if tweets.empty:
+        return mapping
+    
+    if mapping.empty:
+        return tweets   
 
-    # Join der beiden DataFrames
-    result = pd.merge(mapping, tweets, how="left", on="tweet_id")
+    if not mapping.empty and not tweets.empty:
+         # Anpassungen für den join
+        tweets = tweets.rename(columns={'id_str':'tweet_id'})
+        tweets = tweets.drop(columns=['created_at'])
 
-    return result
+        # Join der beiden DataFrames
+        result = pd.merge(mapping, tweets, how="left", on="tweet_id")
+        return result
 
 
 def main_loop(db, index, micro_algo):
