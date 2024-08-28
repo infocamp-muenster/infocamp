@@ -1,7 +1,10 @@
 import json
+import time
+import pandas as pd
 import requests
 from elasticsearch import Elasticsearch, helpers
 from sshtunnel import SSHTunnelForwarder
+from Infodash.globals import global_lock
 
 
 class Database:
@@ -163,3 +166,41 @@ class Database:
             }
 
 
+def get_cluster_tweet_data(db, index):
+    df = pd.DataFrame()
+
+    while df.empty:
+        try:
+            cluster_tweet_data = db.search_get_all(index)
+            # Extracting the '_source' part of each dictionary to create a DataFrame
+            data = [item['_source'] for item in cluster_tweet_data]
+            df = pd.DataFrame(data)
+
+            if not df.empty:
+                return df
+
+        except Exception as e:
+            print("Waiting on new data upload...", e)
+            raise FatalError("Warning in get_cluster_tweet_data(db, index)")
+
+
+def get_micro_macro_data(db, index):
+    df = pd.DataFrame()
+
+    while df.empty:
+        try:
+            micro_macro_dict = db.search_get_all(index)
+            # Extracting the '_source' part of each dictionary to create a DataFrame
+            data = [item['_source'] for item in micro_macro_dict]
+            df = pd.DataFrame(data)
+            if df.empty:
+                time.sleep(20)
+            else:
+                return df
+
+        except Exception as e:
+            print("Fehler bei der Durchführung der Abfragen auf Elasticsearch (Getting Macro-Data):", e)
+            raise FatalError("Error in get_micro_macro_data(db, index)")
+
+class FatalError(Exception):
+    pass

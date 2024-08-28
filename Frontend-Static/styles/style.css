@@ -52,6 +52,7 @@ body {
     display: flex;
     gap: 20px; /* Space between the items */
     margin-right: 60px;
+    align-items: center;
 }
 .header-right div {
     display: flex;
@@ -78,7 +79,29 @@ body {
     padding: 20px;
     margin-left: 20px;
 }
-
+/* Toggle menu header */
+.header-menu {
+    position: relative;
+    display: inline-block;
+}
+.dropdown-content {
+    text-align: center;
+    display: none;
+    top: 80px;
+    margin-left: 50px;
+    position: absolute;
+    background-color: var(--bg-blue);
+    min-width: 130px;
+    z-index: 1;
+}
+.dropdown-content a {
+    padding: 12px 16px;
+    display: block;
+}
+.dropdown-content a:hover {
+    background-color: var(--white);
+    color: var(--bg-blue);
+}
 
 /* --- CSS related to widgets --- */
 .widget {
@@ -117,6 +140,11 @@ body {
     justify-content: center;
     align-items: center;
 }
+.widget-pop-up-default h4 {
+    font-weight: 500;
+    padding: 50px;
+    text-align: center;
+}
 .popup-widget-info {
     margin-top: 20px;
 }
@@ -136,26 +164,18 @@ body {
     font-weight: 600;
     margin-right: 20px;
 }
-.popup-widget-info .keywords {
-    display: flex;
-    flex-wrap: wrap;
+.comment-form {
+    padding: 10px;
 }
-.popup-widget-info .keywords .value {
-    flex: 1;
-}
-.popup-widget-info .threshold-bar-inner {
-    position: relative;
+.comment-form-button {
     background-color: var(--bg-blue);
-    margin: 0;
-}
-.popup-widget-info .threshold-bar {
-    width: 60%;
-    background-color: var(--bg-color);
-    height: 20px;
+    border: none;
+    color: var(--white);
+    padding: 10px 20px;
     border-radius: 5px;
-    margin: 0 20px 0 0;
+    cursor: pointer;
+    margin: auto;
 }
-
 
 
 /* --- CSS for upload page --- */
