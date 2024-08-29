@@ -130,8 +130,7 @@ def transform_to_cluster_tweet_data_textclust(tweet_cluster_mapping, cluster_twe
         lower_threshold = tweet_count - 6 * prev_std_dev_tweet_count
         upper_threshold = tweet_count + 6 * prev_std_dev_tweet_count
 
-        #ai_abs = df_filtered[(df_filtered['cluster_id'] == cluster_id) & (df_filtered['ai_score'] == 1).shape[0]]
-        ai_abs = 0
+        ai_abs = df_filtered[(df_filtered['cluster_id'] == cluster_id) & (df_filtered['ai_score'] == 1).shape[0]]
 
         # Hinzufügen des Clusterzentrums
         #center = micro_cluster_centers.get(cluster_id, None)
@@ -172,8 +171,7 @@ def transform_to_cluster_tweet_data_textclust(tweet_cluster_mapping, cluster_twe
             lower_threshold = 0 - 6 * prev_std_dev_tweet_count
             upper_threshold = 0 + 6 * prev_std_dev_tweet_count
 
-            #ai_abs = df_filtered[(df_filtered['cluster_id'] == cluster_id) & (df_filtered['ai_score'] == 1).shape[0]]
-            ai_abs = 0
+            ai_abs = df_filtered[(df_filtered['cluster_id'] == cluster_id) & (df_filtered['ai_score'] == 1).shape[0]]
 
             # Hinzufügen des Clusterzentrums
             #center = micro_cluster_centers.get(cluster_id, None)

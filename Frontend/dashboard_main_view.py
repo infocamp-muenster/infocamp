@@ -137,26 +137,20 @@ def ai_prob_update_graph_live(n):
     try:
         # Trying to get cluster data from db
         cluster_tweet_data = get_cluster_tweet_data(db, 'cluster_tweet_data')
+        print(cluster_tweet_data)
 
         # Ensure 'timestamp' is in datetime format
         cluster_tweet_data['timestamp'] = pd.to_datetime(cluster_tweet_data['timestamp'])
 
-        # Predefined line colors
-        line_colors_list = ['#07368C', '#707FDD', '#BBC4FD', '#455BE7', '#F1F2FC']
+        ai_abs_counter = cluster_tweet_data.groupby('timestamp')['ai_abs'].sum().reset_index()
 
         # Plotting
-        ai_prob_traces = []
-        for i, cluster_id in enumerate(cluster_tweet_data['cluster_id'].unique()):
-            cluster_data = cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id]
-
-            ai_prob_traces.append(go.Scatter(
-                x=cluster_data['timestamp'],
-                y=cluster_data['tweet_count'],
-                mode='lines+markers',
-                name=f'Cluster {cluster_id}',
-                line=dict(color=line_colors_list[i % len(line_colors_list)]), # Assign color from predefined list
-                customdata=list(zip(cluster_data['lower_threshold'],cluster_data['upper_threshold'],cluster_data['std_dev_tweet_count'])),
-            ))
+        ai_prob_traces = go.Scatter(
+            x=cluster_tweet_data['timestamp'],
+            y=ai_abs_counter,
+            mode='lines+markers',
+            name='AI Prob'
+        )
 
         ai_prob_layout = go.Layout(
             title={
