@@ -295,7 +295,8 @@ def micro_cluster_update_graph_live(n):
 
     return micro_cluster_last_figure
 
-# Unified callback for popup micro cluster with tabs
+
+# callback for first tab of popup micro cluster
 @app.callback(
     Output('popup-micro-cluster', 'children'),
     Input('micro-cluster-live-update-graph', 'clickData')
@@ -381,6 +382,8 @@ def micro_cluster_pop_up(clickData):
         ]),
         html.Button('Submit', id='submit-button', n_clicks=0, className="submit-button"),
     ])
+
+# callback for second tab of popup micro cluster
 @app.callback(
     Output('tab-2-content', 'children'),
     Input('micro-cluster-live-update-graph', 'clickData')
@@ -393,22 +396,23 @@ def generate_summary(clickData):
     point = clickData['points'][0]
     cluster_key_words_string = ", ".join(point['customdata'][0].keys()) if point['customdata'][0] else ""
     summary_content = summarize_tweets(cluster_key_words_string)
-    return summary_content
+
+    return html.Div(className='widget-pop-up-default', children=[
+            html.H4(summary_content)])
+
 @app.callback(
     Output('tab-3-content', 'children'),
-    [Input('micro-cluster-live-update-graph', 'clickData')]
+    Input('micro-cluster-live-update-graph', 'clickData')
 )
 def update_recent_posts(clickData):
     if clickData is None:
         return html.Div(className='widget-pop-up-default', children=[
             html.H4('Click on a data point in Micro Cluster widget for Recent Posts.')
         ])
-    #if clickData:
-        # Example table for posts
     tweets = export_data()
     posts_content = dash_table.DataTable(tweets, page_size=10)
-    return posts_content
 
+    return html.Div(posts_content)
 
 # empty list for comments
 comments_list = []
