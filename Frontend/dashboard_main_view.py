@@ -146,8 +146,8 @@ def ai_prob_update_graph_live(n):
 
         # Plotting
         ai_prob_traces = go.Scatter(
-            x=cluster_tweet_data['timestamp'],
-            y=ai_abs_counter,
+            x=ai_abs_counter['timestamp'],
+            y=ai_abs_counter['ai_abs'],
             mode='lines+markers',
             name='AI Prob'
         )
@@ -162,20 +162,28 @@ def ai_prob_update_graph_live(n):
                 }
             },
             xaxis=dict(title='Time'),
-            yaxis=dict(title='Number of Tweets'),
+            yaxis=dict(
+                title='Number of Tweets',
+                range=[0, None],
+                fixedrange=False,
+                autorange=False,
+            ),
             height=360,
             font=dict(
                 family="Inter, sans-serif",
                 size=14,
                 color="#1F384C"
-            )
+            ),
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)'
         )
 
-        # Update last_figure only if there were no issues while fetching data
-        ai_prop_last_figure = {'data': ai_prob_traces, 'layout': ai_prob_layout}
+        # Erstellung des Figure-Objekts
+        ai_prop_last_figure = go.Figure(data=[ai_prob_traces], layout=ai_prob_layout)
 
     except Exception as e:
         print(f"An error occurred: {e}")
+        ai_prop_last_figure = go.Figure()
 
     return ai_prop_last_figure
 

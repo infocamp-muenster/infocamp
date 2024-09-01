@@ -130,7 +130,15 @@ def transform_to_cluster_tweet_data_textclust(tweet_cluster_mapping, cluster_twe
         lower_threshold = tweet_count - 6 * prev_std_dev_tweet_count
         upper_threshold = tweet_count + 6 * prev_std_dev_tweet_count
 
-        ai_abs = df_filtered[(df_filtered['cluster_id'] == cluster_id) & (df_filtered['ai_score'] == 1).shape[0]]
+        # DataFrame nach den gewünschten Bedingungen filtern
+        ai_abs_pre = df_filtered[(df_filtered['cluster_id'] == cluster_id) & (df_filtered['ai_score'] == 1)]
+
+        # Überprüfen, ob das Ergebnis nicht leer ist, um Fehler zu vermeiden
+        if not ai_abs_pre.empty:
+            # Ersten Wert der Spalte 'ai_score' extrahieren
+            ai_abs = ai_abs_pre['ai_score'].iloc[0]
+        else:
+            ai_abs = 0
 
         # Hinzufügen des Clusterzentrums
         #center = micro_cluster_centers.get(cluster_id, None)
@@ -171,7 +179,15 @@ def transform_to_cluster_tweet_data_textclust(tweet_cluster_mapping, cluster_twe
             lower_threshold = 0 - 6 * prev_std_dev_tweet_count
             upper_threshold = 0 + 6 * prev_std_dev_tweet_count
 
-            ai_abs = df_filtered[(df_filtered['cluster_id'] == cluster_id) & (df_filtered['ai_score'] == 1).shape[0]]
+            # DataFrame nach den gewünschten Bedingungen filtern
+            ai_abs_pre = df_filtered[(df_filtered['cluster_id'] == cluster_id) & (df_filtered['ai_score'] == 1)]
+
+            # Überprüfen, ob das Ergebnis nicht leer ist, um Fehler zu vermeiden
+            if not ai_abs_pre.empty:
+                # Ersten Wert der Spalte 'ai_score' extrahieren
+                ai_abs = ai_abs_pre['ai_score'].iloc[0]
+            else:
+                ai_abs = 0
 
             # Hinzufügen des Clusterzentrums
             #center = micro_cluster_centers.get(cluster_id, None)
