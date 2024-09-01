@@ -126,7 +126,6 @@ def convert_date(date_str):
     return european_format_date_str
 
 # Callback and calculation functions for all widgets
-
 # -- AI PROBABILITY WIDGET --
 @app.callback(
 Output('ai-prob-live-update-graph', 'figure'),
@@ -141,7 +140,6 @@ def ai_prob_update_graph_live(n):
 
         # Ensure 'timestamp' is in datetime format
         cluster_tweet_data['timestamp'] = pd.to_datetime(cluster_tweet_data['timestamp'])
-
         ai_abs_counter = cluster_tweet_data.groupby('timestamp')['ai_abs'].sum().reset_index()
 
         # Plotting
@@ -161,12 +159,12 @@ def ai_prob_update_graph_live(n):
                     'color': '#1F384C'
                 }
             },
-            xaxis=dict(title='Time'),
+            xaxis=dict(
+                title='Time'
+            ),
             yaxis=dict(
                 title='Number of Tweets',
-                range=[0, None],
-                fixedrange=False,
-                autorange=False,
+                range=[0, 20] #TODO: set max y axis value to max value of df
             ),
             height=360,
             font=dict(
