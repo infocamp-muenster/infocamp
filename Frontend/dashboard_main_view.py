@@ -91,18 +91,7 @@ def initialize_dash_app():
                     dcc.Tab(label='Cluster Information', value='tab-1', children=[
                         html.Div(id='popup-micro-cluster')
                     ]),
-                    dcc.Tab(label='KI-Summary', value='tab-2', children=[
-                        html.Button('Generate Summary', id='generate-summary-button', style={
-                            'background-color': '#007bff',  # Primary color
-                            'color': '#ffffff',  # Text color
-                            'border': 'none',
-                            'border-radius': '5px',  # Rounded edges
-                            'padding': '10px 20px',  # Padding
-                            'cursor': 'pointer',
-                            'font-size': '16px',  # Font size
-                            'box-shadow': '0 4px 6px rgba(0, 0, 0, 0.1)',  # Subtle shadow
-                            'transition': 'background-color 0.3s ease',  # Smooth transition
-                        }, n_clicks=0),
+                    dcc.Tab(label='AI-Summary', value='tab-2', children=[
                         html.Div(id='tab-2-content')
                     ]),
                     dcc.Tab(label='Most Recent Posts', value='tab-3', children=[
@@ -308,46 +297,8 @@ def micro_cluster_update_graph_live(n):
 
 # Unified callback for popup micro cluster with tabs
 @app.callback(
-    [Output('tab-3-content', 'children')],
-    [Input('popup-tabs', 'value'),
-     Input('live-update-graph', 'clickData')]
-)
-
-def update_popup_content(selected_tab, clickData):
-    cluster_content = 'Click on cluster for detailed information'
-    posts_content = 'Click on a cluster to view the most recent posts.'
-
-    if clickData:
-        # Update content for Cluster Information (tab-1)
-        cluster_content = micro_cluster_pop_up(clickData)
-
-        # Example table for posts
-        tweets = export_data()
-        posts_content = dash_table.DataTable(tweets, page_size = 10)
-
-    return cluster_content, posts_content
-
-
-
-@app.callback(
-    Output('tab-2-content', 'children'),
-    [Input('generate-summary-button', 'n_clicks')],
-    [Input('live-update-graph', 'clickData')]
-)
-
-def generate_summary(n_clicks, clickData):
-    if n_clicks > 0 and clickData:
-        point = clickData['points'][0]
-        cluster_key_words_string = ", ".join(point['customdata'][0].keys()) if point['customdata'][0] else ""
-        summary_content = summarize_tweets(cluster_key_words_string)
-        return summary_content
-
-    # Default message before button is clicked
-    return ''
-
-@app.callback(
-        Output('popup-micro-cluster', 'children'),
-        [Input('micro-cluster-live-update-graph', 'clickData')]
+    Output('popup-micro-cluster', 'children'),
+    Input('micro-cluster-live-update-graph', 'clickData')
 )
 # Function including HTML Output for micro cluster pop up information
 def micro_cluster_pop_up(clickData):
@@ -430,6 +381,34 @@ def micro_cluster_pop_up(clickData):
         ]),
         html.Button('Submit', id='submit-button', n_clicks=0, className="submit-button"),
     ])
+@app.callback(
+    Output('tab-2-content', 'children'),
+    Input('micro-cluster-live-update-graph', 'clickData')
+)
+def generate_summary(clickData):
+    if clickData is None:
+        return html.Div(className='widget-pop-up-default', children=[
+            html.H4('Click on a data point in Micro Cluster widget for Summary.')
+        ])
+    point = clickData['points'][0]
+    cluster_key_words_string = ", ".join(point['customdata'][0].keys()) if point['customdata'][0] else ""
+    summary_content = summarize_tweets(cluster_key_words_string)
+    return summary_content
+@app.callback(
+    Output('tab-3-content', 'children'),
+    [Input('micro-cluster-live-update-graph', 'clickData')]
+)
+def update_recent_posts(clickData):
+    if clickData is None:
+        return html.Div(className='widget-pop-up-default', children=[
+            html.H4('Click on a data point in Micro Cluster widget for Recent Posts.')
+        ])
+    #if clickData:
+        # Example table for posts
+    tweets = export_data()
+    posts_content = dash_table.DataTable(tweets, page_size=10)
+    return posts_content
+
 
 # empty list for comments
 comments_list = []

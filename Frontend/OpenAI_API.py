@@ -18,7 +18,7 @@ def summarize_tweets(data):
     # Anfrage an die OpenAI API, um die Tweets zusammenzufassen
     response = client.chat.completions.create(model="gpt-3.5-turbo",
     messages=[
-        {"role": "system", "content": "Bestimme das einwörtige Thema mit maximal 12 Buchstaben der folgenden Tweets, setze dann : und eläutere kurz das Thema mit den Inhalten der Tweets weiter."},
+        {"role": "system", "content": "Determine the single-word topic with a maximum of 12 letters of the following tweets, then set : and briefly explain the topic with the content of the tweets further in english."},
         {"role": "user", "content": data}
     ])
 
