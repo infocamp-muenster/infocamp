@@ -126,7 +126,6 @@ def convert_date(date_str):
     return european_format_date_str
 
 # Callback and calculation functions for all widgets
-
 # -- AI PROBABILITY WIDGET --
 @app.callback(
 Output('ai-prob-live-update-graph', 'figure'),
@@ -137,26 +136,19 @@ def ai_prob_update_graph_live(n):
     try:
         # Trying to get cluster data from db
         cluster_tweet_data = get_cluster_tweet_data(db, 'cluster_tweet_data')
+        print(cluster_tweet_data)
 
         # Ensure 'timestamp' is in datetime format
         cluster_tweet_data['timestamp'] = pd.to_datetime(cluster_tweet_data['timestamp'])
-
-        # Predefined line colors
-        line_colors_list = ['#07368C', '#707FDD', '#BBC4FD', '#455BE7', '#F1F2FC']
+        ai_abs_counter = cluster_tweet_data.groupby('timestamp')['ai_abs'].sum().reset_index()
 
         # Plotting
-        ai_prob_traces = []
-        for i, cluster_id in enumerate(cluster_tweet_data['cluster_id'].unique()):
-            cluster_data = cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id]
-
-            ai_prob_traces.append(go.Scatter(
-                x=cluster_data['timestamp'],
-                y=cluster_data['tweet_count'],
-                mode='lines+markers',
-                name=f'Cluster {cluster_id}',
-                line=dict(color=line_colors_list[i % len(line_colors_list)]), # Assign color from predefined list
-                customdata=list(zip(cluster_data['lower_threshold'],cluster_data['upper_threshold'],cluster_data['std_dev_tweet_count'])),
-            ))
+        ai_prob_traces = go.Scatter(
+            x=ai_abs_counter['timestamp'],
+            y=ai_abs_counter['ai_abs'],
+            mode='lines+markers',
+            name='AI Prob'
+        )
 
         ai_prob_layout = go.Layout(
             title={
@@ -167,21 +159,29 @@ def ai_prob_update_graph_live(n):
                     'color': '#1F384C'
                 }
             },
-            xaxis=dict(title='Time'),
-            yaxis=dict(title='Number of Tweets'),
+            xaxis=dict(
+                title='Time'
+            ),
+            yaxis=dict(
+                title='Number of Tweets',
+                range=[0, 20] #TODO: set max y axis value to max value of df
+            ),
             height=360,
             font=dict(
                 family="Inter, sans-serif",
                 size=14,
                 color="#1F384C"
-            )
+            ),
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)'
         )
 
-        # Update last_figure only if there were no issues while fetching data
-        ai_prop_last_figure = {'data': ai_prob_traces, 'layout': ai_prob_layout}
+        # Erstellung des Figure-Objekts
+        ai_prop_last_figure = go.Figure(data=[ai_prob_traces], layout=ai_prob_layout)
 
     except Exception as e:
         print(f"An error occurred: {e}")
+        ai_prop_last_figure = go.Figure()
 
     return ai_prop_last_figure
 
