@@ -169,11 +169,17 @@ def ai_prob_update_graph_live(n):
                 }
             },
             xaxis=dict(
-                title='Time'
+                title='Time',
+                showgrid=True,  # Show grid lines on the x-axis
+                gridcolor='lightgray',  # Grid color (adjust as needed)
+                gridwidth=1  # Grid line width
             ),
             yaxis=dict(
                 title='Number of Tweets',
-                range=[0, 20] #TODO: set max y axis value to max value of df
+                range=[0, 20],#TODO: set max y axis value to max value of df
+                showgrid=True,  # Show grid lines on the y-axis
+                gridcolor='lightgray',  # Grid color (adjust as needed)
+                gridwidth=1  # Grid line width
             ),
             height=360,
             font=dict(
