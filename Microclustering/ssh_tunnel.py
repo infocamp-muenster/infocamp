@@ -9,8 +9,8 @@ class SSHTunnelThread(threading.Thread):
         self.event = event
 
     def run(self):
-        ssh_user = 'nsalfeld'  # 'bwulf'
-        ssh_private_key = '/Users/nicksalfeld/.ssh/id_rsa'  # '/Users/bastianwulf/.ssh/id_rsa_uni'
+        ssh_user = 'theitger'  # 'bwulf'
+        ssh_private_key = '/Users/theitger/.ssh/id_rsa'  # '/Users/bastianwulf/.ssh/id_rsa_uni'
         self.tunnel1, self.tunnel2 = self.create_ssh_tunnel(ssh_user, ssh_private_key)
         self.tunnel1.start()
         self.tunnel2.start()
