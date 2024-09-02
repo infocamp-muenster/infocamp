@@ -388,17 +388,25 @@ def micro_cluster_pop_up(clickData):
     Output('tab-2-content', 'children'),
     Input('micro-cluster-live-update-graph', 'clickData')
 )
+
 def generate_summary(clickData):
     if clickData is None:
         return html.Div(className='widget-pop-up-default', children=[
             html.H4('Click on a data point in Micro Cluster widget for Summary.')
         ])
     point = clickData['points'][0]
+    print('point:')
+    print(point)
+    print('point cusotmdata:')
+    print(point['customdata'])
     cluster_key_words_string = ", ".join(point['customdata'][0].keys()) if point['customdata'][0] else ""
+    print('cluster_key_words_string:')
+    print('cluster_key_words_string:'+cluster_key_words_string)
     summary_content = summarize_tweets(cluster_key_words_string)
+    print('summary_content:')
+    print(summary_content)
 
-    return html.Div(className='widget-pop-up-default', children=[
-            html.H4(summary_content)])
+    return html.Div(summary_content)
 
 @app.callback(
     Output('tab-3-content', 'children'),
@@ -407,11 +415,34 @@ def generate_summary(clickData):
 def update_recent_posts(clickData):
     if clickData is None:
         return html.Div(className='widget-pop-up-default', children=[
-            html.H4('Click on a data point in Micro Cluster widget for Recent Posts.')
-        ])
+          html.H4('Click on a data point in Micro Cluster widget for Recent Posts.')])
     tweets = export_data()
-    posts_content = dash_table.DataTable(tweets, page_size=10)
+    #posts_content = dash_table.DataTable(tweets, page_size=10)
 
+    # Example data for the table
+    data = [
+        {'user_id': '183474', 'comment': 'Loving the new features on the app! #TechTrends'},
+        {'user_id': '183474', 'comment': 'Can’t believe how fast time flies, already the weekend again!'},
+        {'user_id': '138487', 'comment': 'Just finished a 10k run, feeling great! #FitnessGoals'},
+        {'user_id': '192847', 'comment': 'The weather today is perfect for a picnic in the park.'},
+        {'user_id': '183474', 'comment': 'Reading an interesting article on machine learning and AI advancements.'},
+        {'user_id': '145683', 'comment': 'Had an amazing dinner at the new restaurant downtown! #Foodie'},
+        {'user_id': '138487', 'comment': 'Excited to start this new project at work, big things ahead! #Motivation'},
+        {'user_id': '192847', 'comment': 'Listening to my favorite podcast on the way to work.'},
+        {'user_id': '145683', 'comment': 'The sunset over the beach was breathtaking today.'},
+        {'user_id': '138487', 'comment': 'Grateful for the support from my team, couldn’t have done it without them.'},
+    ]
+
+    #create table of example data
+    posts_content = dash_table.DataTable(
+            id='example-table',
+            columns=[
+                {'name': 'user_id', 'id': 'user_id'},
+                {'name': 'comment', 'id': 'comment'}
+            ],
+            data=data,
+            page_size=10  # Show 10 rows per page
+        )
     return html.Div(posts_content)
 
 # empty list for comments
