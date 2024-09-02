@@ -141,13 +141,15 @@ def ai_prob_update_graph_live(n):
         # Ensure 'timestamp' is in datetime format
         cluster_tweet_data['timestamp'] = pd.to_datetime(cluster_tweet_data['timestamp'])
         ai_abs_counter = cluster_tweet_data.groupby('timestamp')['ai_abs'].sum().reset_index()
+        number_of_total_tweets_per_time = len(cluster_tweet_data.groupby('timestamp'))
 
         # Plotting
         ai_prob_traces = go.Scatter(
             x=ai_abs_counter['timestamp'],
             y=ai_abs_counter['ai_abs'],
             mode='lines+markers',
-            name='AI Prob'
+            name='AI Prob',
+            customdata=list(zip(number_of_total_tweets_per_time)),
         )
 
         ai_prob_layout = go.Layout(
@@ -181,7 +183,6 @@ def ai_prob_update_graph_live(n):
 
     except Exception as e:
         print(f"An error occurred: {e}")
-        ai_prop_last_figure = go.Figure()
 
     return ai_prop_last_figure
 
@@ -198,7 +199,7 @@ def ai_prob_pop_up(clickData):
         ])
 
     point = clickData['points'][0]
-    cluster_index = point['pointNumber']
+    number_of_total_tweets_per_time = point['customdata'][0]
     cluster_timestamp = point['x']
     cluster_tweet_count = point['y']
 
@@ -208,16 +209,19 @@ def ai_prob_pop_up(clickData):
         html.Span('Analytics for selected data point'),
         html.Div(className="popup-widget-info",children=[
             html.Div(children=[
-                html.Span(f'Cluster Index:',className="label"),
-                html.Span(f'{cluster_index}',className="value"),
-            ]),
-            html.Div(children=[
                 html.Span(f'Timestamp:',className="label"),
                 html.Span(f'{cluster_timestamp}',className="value"),
             ]),
             html.Div(children=[
                 html.Span(f'Tweet Count:',className="label"),
                 html.Span(f'{cluster_tweet_count}',className="value"),
+            ]),
+            html.Div(children=[
+                html.Span(f'Total Count of Tweets:', className="label"),
+                html.Span(f'{number_of_total_tweets_per_time}', className="value"),
+            ]),
+            html.Div(children=[
+                html.Span(f'This chart displays the absolut number of tweets which have an AI Probability of more then 99% as per our model. ', className="label"),
             ]),
         ]),
     ])
@@ -338,6 +342,11 @@ def micro_cluster_pop_up(clickData):
             html.Div(children=[
                 html.Span(f'Standard Deviation:',className="label"),
                 html.Span(f'{cluster_std_dev}', className="value"),
+            ]),
+            html.Div(children=[
+                html.Span(
+                    f'This chart displays all micro clusters created by our textclust algorithm based on all tweets per time. ',
+                    className="label"),
             ]),
         ]),
 

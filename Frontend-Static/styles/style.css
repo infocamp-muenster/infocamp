@@ -207,6 +207,15 @@ body {
     cursor: pointer;
     margin: auto;
 }
+.submit-button button {
+    background-color: var(--bg-blue);
+    border: none;
+    color: var(--white);
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: auto;
+}
 .upload_form form {
     display: flex;
     flex-direction: column;
