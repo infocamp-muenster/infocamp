@@ -141,15 +141,22 @@ def ai_prob_update_graph_live(n):
         # Ensure 'timestamp' is in datetime format
         cluster_tweet_data['timestamp'] = pd.to_datetime(cluster_tweet_data['timestamp'])
         ai_abs_counter = cluster_tweet_data.groupby('timestamp')['ai_abs'].sum().reset_index()
-        number_of_total_tweets_per_time = len(cluster_tweet_data.groupby('timestamp'))
+
+        # Group by 'timestamp' to get the count of rows per timestamp
+        rows_per_timestamp = cluster_tweet_data.groupby('timestamp').size().reset_index(name='rows_per_timestamp')
+
+        # Merge the two dataframes on 'timestamp'
+        ai_prob_df = pd.merge(ai_abs_counter, rows_per_timestamp, on='timestamp')
+
+
 
         # Plotting
         ai_prob_traces = go.Scatter(
-            x=ai_abs_counter['timestamp'],
-            y=ai_abs_counter['ai_abs'],
+            x=ai_prob_df['timestamp'],
+            y=ai_prob_df['ai_abs'],
             mode='lines+markers',
             name='AI Prob',
-            customdata=list(zip(number_of_total_tweets_per_time)),
+            customdata=list(zip(ai_prob_df['rows_per_timestamp'])),
         )
 
         ai_prob_layout = go.Layout(
@@ -221,7 +228,7 @@ def ai_prob_pop_up(clickData):
                 html.Span(f'{number_of_total_tweets_per_time}', className="value"),
             ]),
             html.Div(children=[
-                html.Span(f'This chart displays the absolut number of tweets which have an AI Probability of more then 99% as per our model. ', className="label"),
+                html.Span(f'This chart displays the absolut number of tweets which have an AI probability of more then 99% as per our model. ', className="label"),
             ]),
         ]),
     ])
