@@ -7,11 +7,14 @@
 
 from datetime import datetime
 import plotly.express as px
-from dash import dcc, html
+from dash import dcc, html, dash_table
 from dash.dependencies import Output, Input, State
 import plotly.graph_objs as go
 import pandas as pd
+
+from Frontend.OpenAI_API import summarize_tweets
 from Macroclustering.macro_clustering_using_database import convert_macro_cluster_visualization
+from Microclustering.micro_clustering import export_data
 from django_plotly_dash import DjangoDash
 from Datamanagement.Database import Database, get_cluster_tweet_data, get_micro_macro_data
 import Infodash.globals as glob
@@ -83,8 +86,19 @@ def initialize_dash_app():
             ]),
             # Pop Up Widget. Gets activated by clicking on data point of micro cluster widget
             # HTML Output of widget is defined below
-            html.Div(className='widget widget-pop-up', id='popup-micro-cluster'),
-            # Main Macro Cluster Widget
+            html.Div(className='widget widget-pop-up', children=[
+                dcc.Tabs(id="popup-tabs", value='tab-1', children=[
+                    dcc.Tab(label='Cluster Information', value='tab-1', children=[
+                        html.Div(id='popup-micro-cluster')
+                    ]),
+                    dcc.Tab(label='AI-Summary', value='tab-2', children=[
+                        html.Div(id='tab-2-content')
+                    ]),
+                    dcc.Tab(label='Most Recent Posts', value='tab-3', children=[
+                        html.Div(id='tab-3-content')
+                    ]),
+                ]),
+            ]),
             html.Div(className='widget', style={'grid-column': 'span 6'}, children=[
                 html.H3('Macro Cluster'),
                 html.Span('Bar Chart'),
@@ -126,7 +140,6 @@ def convert_date(date_str):
     return european_format_date_str
 
 # Callback and calculation functions for all widgets
-
 # -- AI PROBABILITY WIDGET --
 @app.callback(
 Output('ai-prob-live-update-graph', 'figure'),
@@ -137,26 +150,28 @@ def ai_prob_update_graph_live(n):
     try:
         # Trying to get cluster data from db
         cluster_tweet_data = get_cluster_tweet_data(db, 'cluster_tweet_data')
+        print(cluster_tweet_data)
 
         # Ensure 'timestamp' is in datetime format
         cluster_tweet_data['timestamp'] = pd.to_datetime(cluster_tweet_data['timestamp'])
+        ai_abs_counter = cluster_tweet_data.groupby('timestamp')['ai_abs'].sum().reset_index()
 
-        # Predefined line colors
-        line_colors_list = ['#07368C', '#707FDD', '#BBC4FD', '#455BE7', '#F1F2FC']
+        # Group by 'timestamp' to get the count of rows per timestamp
+        rows_per_timestamp = cluster_tweet_data.groupby('timestamp').size().reset_index(name='rows_per_timestamp')
+
+        # Merge the two dataframes on 'timestamp'
+        ai_prob_df = pd.merge(ai_abs_counter, rows_per_timestamp, on='timestamp')
+
+
 
         # Plotting
-        ai_prob_traces = []
-        for i, cluster_id in enumerate(cluster_tweet_data['cluster_id'].unique()):
-            cluster_data = cluster_tweet_data[cluster_tweet_data['cluster_id'] == cluster_id]
-
-            ai_prob_traces.append(go.Scatter(
-                x=cluster_data['timestamp'],
-                y=cluster_data['tweet_count'],
-                mode='lines+markers',
-                name=f'Cluster {cluster_id}',
-                line=dict(color=line_colors_list[i % len(line_colors_list)]), # Assign color from predefined list
-                customdata=list(zip(cluster_data['lower_threshold'],cluster_data['upper_threshold'],cluster_data['std_dev_tweet_count'])),
-            ))
+        ai_prob_traces = go.Scatter(
+            x=ai_prob_df['timestamp'],
+            y=ai_prob_df['ai_abs'],
+            mode='lines+markers',
+            name='AI Prob',
+            customdata=list(zip(ai_prob_df['rows_per_timestamp'])),
+        )
 
         ai_prob_layout = go.Layout(
             title={
@@ -167,18 +182,31 @@ def ai_prob_update_graph_live(n):
                     'color': '#1F384C'
                 }
             },
-            xaxis=dict(title='Time'),
-            yaxis=dict(title='Number of Tweets'),
+            xaxis=dict(
+                title='Time',
+                showgrid=True,  # Show grid lines on the x-axis
+                gridcolor='lightgray',  # Grid color (adjust as needed)
+                gridwidth=1  # Grid line width
+            ),
+            yaxis=dict(
+                title='Number of Tweets',
+                range=[0, 20],#TODO: set max y axis value to max value of df
+                showgrid=True,  # Show grid lines on the y-axis
+                gridcolor='lightgray',  # Grid color (adjust as needed)
+                gridwidth=1  # Grid line width
+            ),
             height=360,
             font=dict(
                 family="Inter, sans-serif",
                 size=14,
                 color="#1F384C"
-            )
+            ),
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)'
         )
 
-        # Update last_figure only if there were no issues while fetching data
-        ai_prop_last_figure = {'data': ai_prob_traces, 'layout': ai_prob_layout}
+        # Erstellung des Figure-Objekts
+        ai_prop_last_figure = go.Figure(data=[ai_prob_traces], layout=ai_prob_layout)
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -198,7 +226,7 @@ def ai_prob_pop_up(clickData):
         ])
 
     point = clickData['points'][0]
-    cluster_index = point['pointNumber']
+    number_of_total_tweets_per_time = point['customdata'][0]
     cluster_timestamp = point['x']
     cluster_tweet_count = point['y']
 
@@ -208,16 +236,19 @@ def ai_prob_pop_up(clickData):
         html.Span('Analytics for selected data point'),
         html.Div(className="popup-widget-info",children=[
             html.Div(children=[
-                html.Span(f'Cluster Index:',className="label"),
-                html.Span(f'{cluster_index}',className="value"),
-            ]),
-            html.Div(children=[
                 html.Span(f'Timestamp:',className="label"),
                 html.Span(f'{cluster_timestamp}',className="value"),
             ]),
             html.Div(children=[
                 html.Span(f'Tweet Count:',className="label"),
                 html.Span(f'{cluster_tweet_count}',className="value"),
+            ]),
+            html.Div(children=[
+                html.Span(f'Total Count of Tweets:', className="label"),
+                html.Span(f'{number_of_total_tweets_per_time}', className="value"),
+            ]),
+            html.Div(children=[
+                html.Span(f'This chart displays the absolut number of tweets which have an AI probability of more then 99% as per our model. ', className="label"),
             ]),
         ]),
     ])
@@ -281,13 +312,14 @@ def micro_cluster_update_graph_live(n):
 
     return micro_cluster_last_figure
 
-# -- MICRO CLUSTER WIDGET POP UP --
+
+# callback for first tab of popup micro cluster
 @app.callback(
-        Output('popup-micro-cluster', 'children'),
-        [Input('micro-cluster-live-update-graph', 'clickData')]
+    Output('popup-micro-cluster', 'children'),
+    Input('micro-cluster-live-update-graph', 'clickData')
 )
+# Function including HTML Output for micro cluster pop up information
 def micro_cluster_pop_up(clickData):
-    # Default HTML Output of Widget
     if clickData is None:
         return html.Div(className='widget-pop-up-default', children=[
             html.H4('Click on a data point in Micro Cluster widget for more detailed information')
@@ -339,6 +371,11 @@ def micro_cluster_pop_up(clickData):
                 html.Span(f'Standard Deviation:',className="label"),
                 html.Span(f'{cluster_std_dev}', className="value"),
             ]),
+            html.Div(children=[
+                html.Span(
+                    f'This chart displays all micro clusters created by our textclust algorithm based on all tweets per time. ',
+                    className="label"),
+            ]),
         ]),
 
         # Display Comments
@@ -367,6 +404,95 @@ def micro_cluster_pop_up(clickData):
         ]),
         html.Button('Submit', id='submit-button', n_clicks=0, className="submit-button"),
     ])
+
+# callback for second tab of popup micro cluster
+@app.callback(
+    Output('tab-2-content', 'children'),
+    Input('micro-cluster-live-update-graph', 'clickData')
+)
+
+def generate_summary(clickData):
+    if clickData is None:
+        return html.Div(className='widget-pop-up-default', children=[
+            html.H4('Click on a data point in Micro Cluster widget for Summary.')
+        ])
+    point = clickData['points'][0]
+    print('point:')
+    print(point)
+
+    # filter only tweets with same micro-cluster
+    tweets = export_data()  # Assuming this returns a DataFrame
+    point = clickData['points'][0]
+    cluster_index = point['pointNumber']
+    filt_tweets = tweets[
+        (tweets['cluster_id'] == cluster_index)
+    ][['text', 'tweet_id']]
+    filt_tweets = filt_tweets.drop_duplicates(subset='tweet_id')    # Drop duplicate tweet_ids
+
+
+
+    # Convert filt_tweets to a single string
+    messages = " ".join(filt_tweets['text'].tolist())
+
+    # Pass the list of dictionaries to the summarize_tweets function
+    summary_content = summarize_tweets(messages)
+    print('summary_content:')
+    print(summary_content)
+
+    return html.Div(summary_content)
+
+@app.callback(
+    Output('tab-3-content', 'children'),
+    Input('micro-cluster-live-update-graph', 'clickData')
+)
+def update_recent_posts(clickData):
+    if clickData is None:
+        return html.Div(className='widget-pop-up-default', children=[
+            html.H4('Click on a data point in Micro Cluster widget for Recent Posts.')
+        ])
+
+    # Filter tweets based on some condition (example given)
+    tweets = export_data()  # Assuming this returns a DataFrame
+
+    #filter only tweets with same micro-cluster and timestamp
+    point = clickData['points'][0]
+
+    timestamp = point['x']
+    #print('timestamp:')
+    #print(timestamp)
+
+    cluster_index = point['pointNumber']
+    #print('cluster_index:')
+    print(cluster_index)
+
+    #only show column tweet id and text
+    # Filter tweets based on timestamp and cluster_index
+    filt_tweets = tweets[
+        #(tweets['timestamp'] == timestamp) &
+        (tweets['cluster_id'] == cluster_index)
+        ][['text', 'tweet_id', 'timestamp']]
+
+    # Drop duplicate tweet_ids
+    filt_tweets = filt_tweets.drop_duplicates(subset='tweet_id')
+
+    # Sort the filtered DataFrame by 'timestamp' in descending order
+    filt_tweets = filt_tweets.sort_values(by='timestamp', ascending=False)
+
+    print('filt_tweets:')
+    print(filt_tweets)
+
+    # Convert the DataFrame to a format suitable for DataTable
+    posts_content = dash_table.DataTable(
+        data=filt_tweets.to_dict('records'),
+        columns=[{'name': 'text', 'id': 'text'}, {'name': 'tweet_id', 'id': 'tweet_id'}, {'name': 'timestamp', 'id': 'timestamp'}],
+        page_size=10,
+        style_cell={
+            'textAlign': 'left'}, # Align text to the left
+        sort_action='custom',
+        sort_mode='single')
+
+    # Wrap the DataTable in an HTML Div for rendering
+    return html.Div([posts_content])
 
 # empty list for comments
 comments_list = []
