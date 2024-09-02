@@ -3,7 +3,6 @@
 import os
 import sys
 import nltk
-nltk.download('stopwords')
 
 
 def main():
