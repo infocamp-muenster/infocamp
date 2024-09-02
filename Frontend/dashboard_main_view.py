@@ -397,12 +397,23 @@ def generate_summary(clickData):
     point = clickData['points'][0]
     print('point:')
     print(point)
-    print('point cusotmdata:')
-    print(point['customdata'])
-    cluster_key_words_string = ", ".join(point['customdata'][0].keys()) if point['customdata'][0] else ""
-    print('cluster_key_words_string:')
-    print('cluster_key_words_string:'+cluster_key_words_string)
-    summary_content = summarize_tweets(cluster_key_words_string)
+
+    # filter only tweets with same micro-cluster
+    tweets = export_data()  # Assuming this returns a DataFrame
+    point = clickData['points'][0]
+    cluster_index = point['pointNumber']
+    filt_tweets = tweets[
+        (tweets['cluster_id'] == cluster_index)
+    ][['text', 'tweet_id']]
+    filt_tweets = filt_tweets.drop_duplicates(subset='tweet_id')    # Drop duplicate tweet_ids
+
+
+
+    # Convert filt_tweets to a single string
+    messages = " ".join(filt_tweets['text'].tolist())
+
+    # Pass the list of dictionaries to the summarize_tweets function
+    summary_content = summarize_tweets(messages)
     print('summary_content:')
     print(summary_content)
 
@@ -415,35 +426,51 @@ def generate_summary(clickData):
 def update_recent_posts(clickData):
     if clickData is None:
         return html.Div(className='widget-pop-up-default', children=[
-          html.H4('Click on a data point in Micro Cluster widget for Recent Posts.')])
-    tweets = export_data()
-    #posts_content = dash_table.DataTable(tweets, page_size=10)
+            html.H4('Click on a data point in Micro Cluster widget for Recent Posts.')
+        ])
 
-    # Example data for the table
-    data = [
-        {'user_id': '183474', 'comment': 'Loving the new features on the app! #TechTrends'},
-        {'user_id': '183474', 'comment': 'Can’t believe how fast time flies, already the weekend again!'},
-        {'user_id': '138487', 'comment': 'Just finished a 10k run, feeling great! #FitnessGoals'},
-        {'user_id': '192847', 'comment': 'The weather today is perfect for a picnic in the park.'},
-        {'user_id': '183474', 'comment': 'Reading an interesting article on machine learning and AI advancements.'},
-        {'user_id': '145683', 'comment': 'Had an amazing dinner at the new restaurant downtown! #Foodie'},
-        {'user_id': '138487', 'comment': 'Excited to start this new project at work, big things ahead! #Motivation'},
-        {'user_id': '192847', 'comment': 'Listening to my favorite podcast on the way to work.'},
-        {'user_id': '145683', 'comment': 'The sunset over the beach was breathtaking today.'},
-        {'user_id': '138487', 'comment': 'Grateful for the support from my team, couldn’t have done it without them.'},
-    ]
+    # Filter tweets based on some condition (example given)
+    tweets = export_data()  # Assuming this returns a DataFrame
 
-    #create table of example data
+    #filter only tweets with same micro-cluster and timestamp
+    point = clickData['points'][0]
+
+    timestamp = point['x']
+    #print('timestamp:')
+    #print(timestamp)
+
+    cluster_index = point['pointNumber']
+    #print('cluster_index:')
+    print(cluster_index)
+
+    #only show column tweet id and text
+    # Filter tweets based on timestamp and cluster_index
+    filt_tweets = tweets[
+        #(tweets['timestamp'] == timestamp) &
+        (tweets['cluster_id'] == cluster_index)
+        ][['text', 'tweet_id', 'timestamp']]
+
+    # Drop duplicate tweet_ids
+    filt_tweets = filt_tweets.drop_duplicates(subset='tweet_id')
+
+    # Sort the filtered DataFrame by 'timestamp' in descending order
+    filt_tweets = filt_tweets.sort_values(by='timestamp', ascending=False)
+
+    print('filt_tweets:')
+    print(filt_tweets)
+
+    # Convert the DataFrame to a format suitable for DataTable
     posts_content = dash_table.DataTable(
-            id='example-table',
-            columns=[
-                {'name': 'user_id', 'id': 'user_id'},
-                {'name': 'comment', 'id': 'comment'}
-            ],
-            data=data,
-            page_size=10  # Show 10 rows per page
-        )
-    return html.Div(posts_content)
+        data=filt_tweets.to_dict('records'),
+        columns=[{'name': 'text', 'id': 'text'}, {'name': 'tweet_id', 'id': 'tweet_id'}, {'name': 'timestamp', 'id': 'timestamp'}],
+        page_size=10,
+        style_cell={
+            'textAlign': 'left'}, # Align text to the left
+        sort_action='custom',
+        sort_mode='single')
+
+    # Wrap the DataTable in an HTML Div for rendering
+    return html.Div([posts_content])
 
 # empty list for comments
 comments_list = []
