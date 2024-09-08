@@ -1,4 +1,3 @@
-# micro_clustering.py
 import pandas as pd
 from datetime import timedelta
 import time
@@ -12,16 +11,10 @@ from Macroclustering.macro_clustering_using_database import main_macro
 from Infodash.globals import global_lock
 from Microclustering.detector import Detector
 from textClustPy import textclust, Preprocessor, InMemInput
-from Infodash.globals import global_lock
-from Macroclustering.macro_clustering_using_database import main_macro
 
 
 data_for_export = []
 all_tweets = []
-
-# Funktionen
-from datetime import datetime
-
 
 def initialize_time_window(df, time_column):
     """

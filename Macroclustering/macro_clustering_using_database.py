@@ -16,7 +16,7 @@ def compute_similarity_matrix(macro_centers):
     # Convert numpy ndarray to pandas DataFrame
     macro_similarity_matrix = pd.DataFrame(macro_similarity_matrix_ndarray)
     print("------cosine similarity matrix------")
-    print(macro_similarity_matrix)  # TODO: format z = [[1, .2, .3], [.4, 1, .6], [.7, .8, 1]]
+    print(macro_similarity_matrix)
     return macro_similarity_matrix
 
 def macro_clustering_textclust(db, index, dist_matrix, n_clusters):
@@ -172,12 +172,6 @@ def store_macro_micro_dict_in_database(db, macro_micro_dict, index_name):
             glob.macro_similarity_df = True
     except Exception as e:
         print(f"An error occurred during upload: {e}")
-
-
-# TODO: unused method?
-def delete_macro_micro_dict_in_database(db):
-    index_name = 'macro_micro_dict'
-    db.es.indices.delete(index=index_name)
 
 
 def convert_macro_cluster_visualization(micro_macro_df):

@@ -3,6 +3,7 @@ from openai import OpenAI
 import os
 
 # OpenAI API-Schlüssel konfigurieren
+# TODO: remove API key
 client = OpenAI(api_key='sk-proj-OXHaIyzphXpCX181eu20T3BlbkFJIv1dNOenFbjO9V4zaY3b')
 
 # Tweets einlesen

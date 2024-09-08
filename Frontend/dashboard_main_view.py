@@ -614,6 +614,5 @@ def macro_cluster_update_heatmap_live(n):
 
 
 # Run App
-# TODO: db Instanz aus dem Thread anders anbindbar, sodass keine neue erzeugt werden musss?
 db = Database()
 initialize_dash_app()
