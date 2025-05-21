@@ -16,7 +16,7 @@ You have to be part of the University of Muenster and have an account at the Uni
 ### Run the Dashboard locally
 1. Clone the repository:
 ```bash
-git clone https://github.com/MattisSipp/infocamp.git
+git clone https://github.com/infocamp-muenster/infocamp
 ```
 2. Log in via your user name and personal access token
 3. Change your working directory to the location of the cloned repository
@@ -54,7 +54,7 @@ To install INFOCAMP - Board, follow these steps:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/MattisSipp/infocamp.git
+git clone https://github.com/infocamp-muenster/infocamp
 ```
 2. Switch to your branch:
 ```bash
